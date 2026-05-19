@@ -222,6 +222,14 @@ textarea:focus {
   margin-left: auto;
 }
 
+.brand .github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-width: 36px;
+}
+
 .sidebar.desktop-collapsed .brand-text,
 .sidebar.desktop-collapsed .sidebar-body {
   display: none;
@@ -1522,6 +1530,11 @@ textarea:focus {
 
   .brand .mobile-sidebar-toggle {
     width: 36px;
+  }
+
+  .brand .github-link {
+    width: 36px;
+    min-width: 36px;
   }
 
   .question-card,

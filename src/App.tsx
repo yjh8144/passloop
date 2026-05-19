@@ -693,7 +693,7 @@ function Sidebar(props: {
           href="https://github.com/yjh8144/passloop"
           target="_blank"
           rel="noopener noreferrer"
-          className="icon-button"
+          className="icon-button github-link"
           title="GitHub"
         >
           <Github size={17} />
