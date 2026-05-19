@@ -12,6 +12,7 @@ import {
   Download,
   Edit3,
   FileJson,
+  Github,
   Languages,
   Moon,
   Plus,
@@ -688,6 +689,15 @@ function Sidebar(props: {
           <strong>PassLoop</strong>
           <span>纯前端题库</span>
         </div>
+        <a
+          href="https://github.com/yjh8144/passloop"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="icon-button"
+          title="GitHub"
+        >
+          <Github size={17} />
+        </a>
         <button
           className="icon-button desktop-sidebar-toggle"
           title={props.desktopCollapsed ? "展开侧边栏" : "收起侧边栏"}
