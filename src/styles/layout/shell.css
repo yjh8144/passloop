@@ -28,6 +28,7 @@
     display: block;
     grid-template-columns: none;
     height: 100vh;
+    overflow-x: hidden;
     overflow-y: auto;
     padding-bottom: var(--bottom-nav-height, 64px);
   }
