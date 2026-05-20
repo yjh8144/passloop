@@ -182,6 +182,9 @@ export function LlmConfigModal(props: {
                 ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, proxyKey: config.proxyKey })); setConfig({ ...config, proxyKey: "" }); }} title="清空"><X size={14} /></button>
                 : clearedFields.proxyKey && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, proxyKey: clearedFields.proxyKey! }); setClearedFields((f) => ({ ...f, proxyKey: undefined })); }} title="恢复"><Undo2 size={14} /></button>
               }
+              <button className="input-clear-btn" onClick={() => setConfig({ ...config, proxyKey: defaultLlmConfig.proxyKey })} title="重置为默认密钥">
+                <Undo2 size={14} />
+              </button>
               <button className="input-clear-btn" onClick={() => setShowProxyKey((v) => !v)} title={showProxyKey ? "隐藏" : "显示"}>
                 {showProxyKey ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
