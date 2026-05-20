@@ -1066,7 +1066,7 @@ function PracticePage(props: {
             hideSubmit={props.settings.submitMode === "paper"}
           />
         ))}
-        {props.settings.submitMode === "paper" && props.questions.some((q) => !(q.id in props.results)) && (
+        {props.settings.practiceMode !== "memorize" && props.settings.submitMode === "paper" && props.questions.some((q) => !(q.id in props.results)) && (
           <button className="submit-all-button" onClick={props.submitAll}>
             <Check size={18} /> 提交全部答案
           </button>
@@ -1218,7 +1218,7 @@ function QuestionCard(props: {
         <AnswerInput question={props.question} value={props.answers[props.question.id]} onChange={updateAnswer} practiceMode={props.practiceMode} />
       )}
 
-      {!props.compact && !props.hideSubmit && (
+      {!props.compact && !props.hideSubmit && props.practiceMode !== "memorize" && (
         <div className="question-actions">
           <button className="primary-button" onClick={props.onSubmit}>
             <Check size={17} /> 提交答案
@@ -1429,14 +1429,16 @@ function ControlPanel(props: {
         ]}
         onChange={(value) => props.updateSettings({ practiceMode: value as PracticeMode })}
       />
-      <Segmented
-        value={props.settings.submitMode}
-        options={[
-          ["each", "逐题提交"],
-          ["paper", "统一提交"],
-        ]}
-        onChange={(value) => props.updateSettings({ submitMode: value as SubmitMode })}
-      />
+      {props.settings.practiceMode !== "memorize" && (
+        <Segmented
+          value={props.settings.submitMode}
+          options={[
+            ["each", "逐题提交"],
+            ["paper", "统一提交"],
+          ]}
+          onChange={(value) => props.updateSettings({ submitMode: value as SubmitMode })}
+        />
+      )}
       {props.settings.practiceMode !== "memorize" && props.settings.submitMode !== "paper" && (
         <label className="toggle-row">
           <input
