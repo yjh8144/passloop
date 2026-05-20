@@ -325,19 +325,11 @@ export function App() {
   };
 
   const handleUrlImport = async (url: string) => {
-    const proxies = [(u: string) => `/api/proxy?url=${encodeURIComponent(u)}`];
+    const makeRequest = (u: string) => fetch("/api/proxy", { headers: { "X-Proxy-Url": u } });
     try {
       debugLog("URL import started", { url });
-      let response: Response | null = null;
-      for (const proxy of proxies) {
-        try {
-          response = await fetch(proxy(url));
-          if (response.ok) break;
-        } catch {
-          continue;
-        }
-      }
-      if (!response || !response.ok) throw new Error("所有代理均请求失败，请稍后重试");
+      const response = await makeRequest(url);
+      if (!response.ok) throw new Error(`请求失败：${response.status}`);
       const text = await response.text();
       const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }));
       debugLog("URL import success", { url, listCount: lists.length, totalQuestions: lists.reduce((sum, l) => sum + l.questions.length, 0) });
