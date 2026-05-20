@@ -1,0 +1,121 @@
+.parsed-editor-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 4px 0;
+}
+
+.parsed-question-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.parsed-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.parsed-card-index {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--accent);
+  min-width: 24px;
+}
+
+.parsed-card-header select {
+  font-size: 13px;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.parsed-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.parsed-options-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.parsed-options-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.parsed-option-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.parsed-option-row .option-label-input {
+  width: 36px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.parsed-option-row input:nth-child(2) {
+  flex: 1;
+}
+
+.parsed-option-row input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.danger-icon {
+  color: var(--danger);
+  opacity: 0.6;
+}
+.danger-icon:hover {
+  opacity: 1;
+}
+
+.add-question-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+}
+.add-question-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.parsed-subquestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+
+.parsed-subquestion-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}

@@ -1,0 +1,47 @@
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  color: var(--text);
+}
+
+.toggle-row input {
+  width: 18px;
+  height: 18px;
+}
+
+.field-label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+  margin-bottom: 10px;
+}
+
+.two-col-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.submit-all-button {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 650;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.submit-all-button:hover {
+  opacity: 0.9;
+}

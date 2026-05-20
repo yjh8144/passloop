@@ -1,0 +1,118 @@
+.topbar {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-box {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.search-box input {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.topbar-meta {
+  display: flex;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.topbar-actions,
+.inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inline-actions .segmented {
+  margin-bottom: 0;
+}
+
+.select-label {
+  min-width: 116px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding-left: 10px;
+}
+
+.select-label select {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.icon-button {
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+}
+
+.brand .mobile-sidebar-toggle {
+  width: 36px;
+  min-width: 36px;
+}
+
+.primary-button {
+  color: white;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.text-button {
+  border: 0;
+  padding: 0 4px;
+  min-height: 28px;
+  background: transparent;
+  color: var(--accent);
+}
+
+@media (max-width: 820px) {
+  .topbar {
+    grid-template-columns: 1fr;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding-bottom: 8px;
+  }
+
+  .topbar-actions {
+    flex-wrap: wrap;
+  }
+
+  .topbar-meta {
+    order: 3;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .select-label {
+    min-width: 0;
+    flex: 1 1 100px;
+  }
+}

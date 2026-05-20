@@ -1,0 +1,117 @@
+.topbar-settings-wrap {
+  position: relative;
+}
+
+.topbar-settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+}
+
+.topbar-settings-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  min-width: 260px;
+}
+
+.topbar-settings-dropdown .inspector-panel {
+  border: none;
+  padding: 8px;
+  margin: 0;
+}
+
+.completion-actions-panel {
+  background: var(--surface-alt, var(--surface));
+  border: 1px solid var(--accent);
+}
+
+.completion-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.completion-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.completion-buttons button:hover {
+  background: var(--hover);
+}
+
+.completion-buttons button.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.completion-buttons button.btn-danger:hover {
+  opacity: 0.85;
+}
+
+.completion-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.completion-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--hover);
+  font-size: 0.9rem;
+}
+
+.completion-stat-row strong {
+  font-size: 1.1rem;
+}
+
+.text-correct {
+  color: var(--success, #22c55e);
+}
+
+.text-wrong {
+  color: var(--danger);
+}
+
+@media (max-width: 820px) {
+  .topbar-settings-wrap {
+    position: static;
+    width: 100%;
+  }
+
+  .topbar-settings-dropdown {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 70vh;
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+}

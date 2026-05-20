@@ -1,0 +1,24 @@
+.empty-state {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.empty-state strong {
+  color: var(--text);
+  font-size: 17px;
+}
+
+.empty-state p {
+  max-width: 360px;
+  margin: 0;
+  line-height: 1.6;
+}

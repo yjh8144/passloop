@@ -1,0 +1,43 @@
+.question-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 7px;
+}
+
+.question-nav-grid button {
+  min-width: 0;
+  height: 38px;
+  padding: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.question-nav-grid button.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.question-nav-grid button.correct {
+  background: color-mix(in srgb, var(--success) 13%, var(--surface));
+}
+
+.question-nav-grid button.wrong {
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+}
+
+.question-nav-grid button.submitted {
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+}
+
+.mobile-navigator {
+  display: none;
+}
+
+@media (max-width: 820px) {
+  .mobile-navigator {
+    display: block;
+  }
+
+  .desktop-navigator {
+    display: none;
+  }
+}
