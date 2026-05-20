@@ -325,10 +325,7 @@ export function App() {
   };
 
   const handleUrlImport = async (url: string) => {
-    const proxies = [
-      (u: string) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-      (u: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-    ];
+    const proxies = [(u: string) => `/api/proxy?url=${encodeURIComponent(u)}`];
     try {
       debugLog("URL import started", { url });
       let response: Response | null = null;
