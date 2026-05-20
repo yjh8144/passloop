@@ -39,6 +39,7 @@ import type {
   QuestionList,
   QuestionType,
   SubmitMode,
+  RevealMode,
   Toast,
   ViewMode,
 } from "./lib/types";
@@ -93,9 +94,8 @@ const questionTypes: QuestionType[] = [
 
 const providerPlaceholders: Record<LlmConfig["provider"], { endpoint: string; model: string }> = {
   openai: { endpoint: "https://api.openai.com/v1/chat/completions", model: "gpt-4.1-mini" },
-  anthropic: { endpoint: "https://api.anthropic.com/v1/messages", model: "claude-3-5-sonnet-latest" },
   gemini: { endpoint: "https://generativelanguage.googleapis.com/v1beta/models/...", model: "gemini-1.5-pro" },
-  custom: { endpoint: "https://your-api.example.com/v1/chat/completions", model: "" },
+  anthropic: { endpoint: "https://api.anthropic.com/v1/messages", model: "claude-sonnet-4-20250514" },
 };
 
 const defaultLlmConfig: LlmConfig = {
@@ -105,6 +105,8 @@ const defaultLlmConfig: LlmConfig = {
   model: "",
   fillAnswer: true,
   fillExplanation: true,
+  proxyUrl: "https://passloop.mtwsf.workers.dev",
+  proxyKey: "d5c3cdc6210f8c9430c334c897bd883488f76d23b7d423d10e190a3d504e45d3",
 };
 
 function ResetConfirmDialog({ open, onClose, onConfirm }: { open: boolean; onClose: () => void; onConfirm: () => void }) {
@@ -152,6 +154,35 @@ function ResetConfirmDialog({ open, onClose, onConfirm }: { open: boolean; onClo
   );
 }
 
+const ANSWERS_SESSION_KEY = "passloop.session.answers";
+const INDEX_SESSION_KEY = "passloop.session.index";
+
+function loadSessionAnswers(): AnswerMap {
+  try {
+    const raw = sessionStorage.getItem(ANSWERS_SESSION_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveSessionAnswers(answers: AnswerMap) {
+  sessionStorage.setItem(ANSWERS_SESSION_KEY, JSON.stringify(answers));
+}
+
+function loadSessionIndex(): number {
+  try {
+    const raw = sessionStorage.getItem(INDEX_SESSION_KEY);
+    return raw ? Number(raw) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveSessionIndex(index: number) {
+  sessionStorage.setItem(INDEX_SESSION_KEY, String(index));
+}
+
 const ONBOARDING_KEY = "passloop.onboarding.shown";
 
 function OnboardingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -194,8 +225,8 @@ export function App() {
   const [data, setData] = useState<AppData>(() => loadData());
   const [page, setPage] = useState<Page>("practice");
   const [query, setQuery] = useState("");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<AnswerMap>({});
+  const [currentIndex, setCurrentIndex] = useState(() => loadSessionIndex());
+  const [answers, setAnswers] = useState<AnswerMap>(() => loadSessionAnswers());
   const [results, setResults] = useState<ResultMap>({});
   const [editing, setEditing] = useState<Question | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -210,6 +241,8 @@ export function App() {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem(ONBOARDING_KEY);
   });
+  const [llmConfig, setLlmConfig] = useState<LlmConfig>(() => loadLlmConfig(defaultLlmConfig));
+  const [showGlobalLlmConfig, setShowGlobalLlmConfig] = useState(false);
   const startedAtRef = useRef<Record<string, number>>({});
   const llmUnsavedRef = useRef(false);
   const t = getTranslator(data.settings.language);
@@ -252,6 +285,13 @@ export function App() {
   useEffect(() => saveData(data), [data]);
 
   useEffect(() => {
+    saveLlmConfig(llmConfig);
+  }, [llmConfig]);
+
+  useEffect(() => saveSessionAnswers(answers), [answers]);
+  useEffect(() => saveSessionIndex(currentIndex), [currentIndex]);
+
+  useEffect(() => {
     const body = document.body;
     body.dataset.theme = data.settings.theme;
     body.dataset.language = data.settings.language;
@@ -281,11 +321,21 @@ export function App() {
   }, [activeList.id]);
 
   const pushToast = (tone: Toast["tone"], message: string) => {
-    const id = createId();
-    setToasts((items) => [...items, { id, tone, message }]);
-    window.setTimeout(() => {
-      setToasts((items) => items.filter((item) => item.id !== id));
-    }, 3200);
+    setToasts((items) => {
+      const last = items[items.length - 1];
+      if (last && last.message === message) {
+        return items.map((item) =>
+          item.id === last.id
+            ? { ...item, bump: Date.now(), repeatCount: Math.min((item.repeatCount ?? 1) + 1, 5) }
+            : item,
+        );
+      }
+      const id = createId();
+      window.setTimeout(() => {
+        setToasts((current) => current.filter((item) => item.id !== id));
+      }, 3200);
+      return [...items, { id, tone, message, repeatCount: 1 }];
+    });
   };
 
   const updateData = (recipe: (draft: AppData) => AppData) => {
@@ -321,6 +371,32 @@ export function App() {
     } catch (error) {
       debugLog("Question import failed", error);
       pushToast("error", error instanceof Error ? error.message : "导入失败。");
+    }
+  };
+
+  const handleUrlImport = async (url: string) => {
+    const proxyUrl = llmConfig.proxyUrl || defaultLlmConfig.proxyUrl;
+    const proxyKey = llmConfig.proxyKey || defaultLlmConfig.proxyKey;
+    const fetchUrl = proxyUrl
+      ? `${proxyUrl.replace(/\/+$/, "")}/?url=${encodeURIComponent(url)}`
+      : url;
+    const headers: Record<string, string> = {};
+    if (proxyUrl && proxyKey) {
+      headers["X-Proxy-Key"] = proxyKey;
+    }
+    try {
+      const response = await fetch(fetchUrl, { headers });
+      if (!response.ok) {
+        throw new Error(`请求失败：${response.status}`);
+      }
+      const text = await response.text();
+      const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }));
+      debugLog("URL import", { url, listCount: lists.length, totalQuestions: lists.reduce((sum, l) => sum + l.questions.length, 0) });
+      setPendingImportLists(lists);
+      setShowImportDialog(false);
+    } catch (error) {
+      debugLog("URL import failed", error);
+      pushToast("error", error instanceof Error ? error.message : "URL 导入失败。");
     }
   };
 
@@ -510,55 +586,90 @@ export function App() {
     setPage(nextPage);
   };
 
-  const submitQuestion = (question: Question) => {
-    const startedAt = startedAtRef.current[question.id] ?? Date.now();
-    const correct = evaluateQuestion(question, answers);
-    debugLog("Question submitted", { questionId: question.id, title: question.title, correct, elapsedMs: Date.now() - startedAt, answer: answers[question.id] });
-    setResults((current) => ({ ...current, [question.id]: correct }));
-    if (page === "wrong") {
-      setWrongSession((session) =>
-        session
-          ? {
-              ...session,
-              elapsedSeconds: Math.max(0, Math.floor((Date.now() - session.startedAt) / 1000)),
-              submitted: session.submitted + 1,
-              correct: session.correct + (correct ? 1 : 0),
-            }
-          : session,
-      );
+  const isAnswerEmpty = (question: Question): boolean => {
+    if (question.type === "composite") {
+      if (!question.subQuestions.length) {
+        const val = answers[question.id];
+        return !val || (typeof val === "string" && !val.trim());
+      }
+      return question.subQuestions.some((sq) => isAnswerEmpty(sq));
     }
-    updateData((current) => ({
-      ...current,
-      attempts: [
-        ...current.attempts,
-        {
-          id: createId(),
-          listId: activeList.id,
-          questionId: question.id,
-          answer: answers[question.id] ?? collectCompositeAnswer(question, answers),
-          correct,
-          elapsedMs: Math.max(1000, Date.now() - startedAt),
-          submittedAt: new Date().toISOString(),
-        },
-      ],
-    }));
-    pushToast(correct ? "success" : "info", correct ? "回答正确。" : "已记录为错题。");
-    if (data.settings.autoNext) {
+    const val = answers[question.id];
+    if (val === undefined || val === null) return true;
+    if (Array.isArray(val)) return val.length === 0 || val.every((v) => !v.trim());
+    return typeof val === "string" && !val.trim();
+  };
+
+  const submitQuestion = (question: Question) => {
+    if (question.id in results) {
       const questions = page === "wrong" ? wrongQuestions : displayedQuestions;
-      if (data.settings.viewMode === "single") {
-        const questionCount = questions.length;
-        if (currentIndex < questionCount - 1) {
-          window.setTimeout(() => setCurrentIndex((index) => Math.min(index + 1, questionCount - 1)), 500);
-        }
-      } else if (data.settings.viewMode === "paper") {
-        const questionIndex = questions.findIndex((q) => q.id === question.id);
-        if (questionIndex >= 0 && questionIndex < questions.length - 1) {
-          window.setTimeout(() => {
-            const el = document.getElementById(`question-${questionIndex + 1}`);
-            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-          }, 500);
+      const allDone = questions.length > 0 && questions.every((q) => q.id in results);
+      if (allDone) {
+        pushToast("info", "题目已全部做完，请重新刷题后继续作答。");
+      }
+      return;
+    }
+    const doSubmit = () => {
+      const startedAt = startedAtRef.current[question.id] ?? Date.now();
+      const correct = evaluateQuestion(question, answers);
+      debugLog("Question submitted", { questionId: question.id, title: question.title, correct, elapsedMs: Date.now() - startedAt, answer: answers[question.id] });
+      setResults((current) => ({ ...current, [question.id]: correct }));
+      if (page === "wrong") {
+        setWrongSession((session) =>
+          session
+            ? {
+                ...session,
+                elapsedSeconds: Math.max(0, Math.floor((Date.now() - session.startedAt) / 1000)),
+                submitted: session.submitted + 1,
+                correct: session.correct + (correct ? 1 : 0),
+              }
+            : session,
+        );
+      }
+      updateData((current) => ({
+        ...current,
+        attempts: [
+          ...current.attempts,
+          {
+            id: createId(),
+            listId: activeList.id,
+            questionId: question.id,
+            answer: answers[question.id] ?? collectCompositeAnswer(question, answers),
+            correct,
+            elapsedMs: Math.max(1000, Date.now() - startedAt),
+            submittedAt: new Date().toISOString(),
+          },
+        ],
+      }));
+      if (data.settings.revealMode === "end") {
+        pushToast("info", "已提交。");
+      } else {
+        pushToast(correct ? "success" : "info", correct ? "回答正确。" : "已记录为错题。");
+      }
+      if (data.settings.autoNext) {
+        const questions = page === "wrong" ? wrongQuestions : displayedQuestions;
+        if (data.settings.viewMode === "single") {
+          const questionCount = questions.length;
+          if (currentIndex < questionCount - 1) {
+            window.setTimeout(() => setCurrentIndex((index) => Math.min(index + 1, questionCount - 1)), 500);
+          }
+        } else if (data.settings.viewMode === "paper") {
+          const questionIndex = questions.findIndex((q) => q.id === question.id);
+          if (questionIndex >= 0 && questionIndex < questions.length - 1) {
+            window.setTimeout(() => {
+              const el = document.getElementById(`question-${questionIndex + 1}`);
+              if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 500);
+          }
         }
       }
+    };
+    if (isAnswerEmpty(question)) {
+      const questions = page === "wrong" ? wrongQuestions : displayedQuestions;
+      const idx = questions.findIndex((q) => q.id === question.id);
+      showConfirm(`第 ${idx + 1} 题尚未作答，确定提交吗？`, doSubmit);
+    } else {
+      doSubmit();
     }
   };
 
@@ -566,43 +677,52 @@ export function App() {
     const questions = page === "wrong" ? wrongQuestions : displayedQuestions;
     const unsubmitted = questions.filter((q) => !(q.id in results));
     if (!unsubmitted.length) return;
-    debugLog("Submit all", { totalQuestions: questions.length, unsubmittedCount: unsubmitted.length });
-    let correctCount = 0;
-    const newAttempts: AppData["attempts"] = [];
-    const newResults: ResultMap = {};
-    for (const question of unsubmitted) {
-      const startedAt = startedAtRef.current[question.id] ?? Date.now();
-      const correct = evaluateQuestion(question, answers);
-      newResults[question.id] = correct;
-      if (correct) correctCount++;
-      newAttempts.push({
-        id: createId(),
-        listId: activeList.id,
-        questionId: question.id,
-        answer: answers[question.id] ?? collectCompositeAnswer(question, answers),
-        correct,
-        elapsedMs: Math.max(1000, Date.now() - startedAt),
-        submittedAt: new Date().toISOString(),
-      });
+    const emptyQuestions = unsubmitted.filter((q) => isAnswerEmpty(q));
+    const doSubmitAll = () => {
+      debugLog("Submit all", { totalQuestions: questions.length, unsubmittedCount: unsubmitted.length });
+      let correctCount = 0;
+      const newAttempts: AppData["attempts"] = [];
+      const newResults: ResultMap = {};
+      for (const question of unsubmitted) {
+        const startedAt = startedAtRef.current[question.id] ?? Date.now();
+        const correct = evaluateQuestion(question, answers);
+        newResults[question.id] = correct;
+        if (correct) correctCount++;
+        newAttempts.push({
+          id: createId(),
+          listId: activeList.id,
+          questionId: question.id,
+          answer: answers[question.id] ?? collectCompositeAnswer(question, answers),
+          correct,
+          elapsedMs: Math.max(1000, Date.now() - startedAt),
+          submittedAt: new Date().toISOString(),
+        });
+      }
+      setResults((current) => ({ ...current, ...newResults }));
+      updateData((current) => ({
+        ...current,
+        attempts: [...current.attempts, ...newAttempts],
+      }));
+      if (page === "wrong") {
+        setWrongSession((session) =>
+          session
+            ? {
+                ...session,
+                elapsedSeconds: Math.max(0, Math.floor((Date.now() - session.startedAt) / 1000)),
+                submitted: session.submitted + unsubmitted.length,
+                correct: session.correct + correctCount,
+              }
+            : session,
+        );
+      }
+      pushToast("success", `已提交 ${unsubmitted.length} 题，正确 ${correctCount} 题。`);
+    };
+    if (emptyQuestions.length) {
+      const nums = emptyQuestions.map((q) => questions.indexOf(q) + 1).join("、");
+      showConfirm(`第 ${nums} 题尚未作答，确定提交全部吗？`, doSubmitAll);
+    } else {
+      doSubmitAll();
     }
-    setResults((current) => ({ ...current, ...newResults }));
-    updateData((current) => ({
-      ...current,
-      attempts: [...current.attempts, ...newAttempts],
-    }));
-    if (page === "wrong") {
-      setWrongSession((session) =>
-        session
-          ? {
-              ...session,
-              elapsedSeconds: Math.max(0, Math.floor((Date.now() - session.startedAt) / 1000)),
-              submitted: session.submitted + unsubmitted.length,
-              correct: session.correct + correctCount,
-            }
-          : session,
-      );
-    }
-    pushToast("success", `已提交 ${unsubmitted.length} 题，正确 ${correctCount} 题。`);
   };
 
   const resetWrongPractice = () => {
@@ -621,6 +741,27 @@ export function App() {
       questions: wrongQuestions,
     });
     downloadJson(`${list.name}.json`, list);
+  };
+
+  const createWrongList = () => {
+    if (!wrongQuestions.length) {
+      pushToast("info", "当前题单还没有错题。");
+      return;
+    }
+    const newList: QuestionList = {
+      id: createId(),
+      name: `${activeList.name} - 错题`,
+      description: "由 PassLoop 根据答题记录生成的错题题单。",
+      questions: wrongQuestions.map((q) => ({ ...q, id: createId() })),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    updateData((current) => ({
+      ...current,
+      lists: [...current.lists, newList],
+      activeListId: newList.id,
+    }));
+    pushToast("success", `已生成错题题单「${newList.name}」，共 ${wrongQuestions.length} 题。`);
   };
 
   const addImportedList = (list: QuestionList) => {
@@ -654,6 +795,7 @@ export function App() {
         onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
         onExportBackup={() => downloadJson("passloop-config.json", data)}
         onResetAll={resetAll}
+        onOpenLlmConfig={() => setShowGlobalLlmConfig(true)}
         collapsed={mobileSidebarCollapsed}
         onToggleCollapsed={() => setMobileSidebarCollapsed((collapsed) => !collapsed)}
         desktopCollapsed={desktopSidebarCollapsed}
@@ -671,6 +813,7 @@ export function App() {
           activeList={activeList}
           onRedoWrong={resetWrongPractice}
           onExportWrong={exportWrongList}
+          onCreateWrongList={createWrongList}
           onClearListAttempts={clearActiveListAttempts}
         />
 
@@ -685,6 +828,8 @@ export function App() {
             showConfirm={showConfirm}
             showPrompt={showPrompt}
             onDeleteList={() => deleteList(activeList.id)}
+            llmConfig={llmConfig}
+            onOpenLlmConfig={() => setShowGlobalLlmConfig(true)}
           />
         ) : page === "llm" ? (
           <LlmPage
@@ -694,6 +839,8 @@ export function App() {
             addImportedList={addImportedList}
             pushToast={pushToast}
             unsavedRef={llmUnsavedRef}
+            llmConfig={llmConfig}
+            onOpenLlmConfig={() => setShowGlobalLlmConfig(true)}
           />
         ) : (
           <PracticePage
@@ -711,6 +858,10 @@ export function App() {
             updateSettings={updateSettings}
             stats={stats}
             wrongSession={page === "wrong" ? wrongSession : null}
+            onRedoWrong={resetWrongPractice}
+            onExportWrong={exportWrongList}
+            onCreateWrongList={createWrongList}
+            onClearListAttempts={clearActiveListAttempts}
             startedAtRef={startedAtRef}
           />
         )}
@@ -723,6 +874,7 @@ export function App() {
         open={showImportDialog}
         onClose={() => setShowImportDialog(false)}
         onFileSelect={handleQuestionImport}
+        onUrlImport={handleUrlImport}
       />
       <ImportChoiceDialog
         lists={pendingImportLists}
@@ -754,6 +906,13 @@ export function App() {
           setShowOnboarding(false);
         }}
       />
+      <LlmConfigModal
+        open={showGlobalLlmConfig}
+        onClose={() => setShowGlobalLlmConfig(false)}
+        config={llmConfig}
+        setConfig={setLlmConfig}
+        pushToast={pushToast}
+      />
     </div>
   );
 }
@@ -771,6 +930,7 @@ function Sidebar(props: {
   onExportList: () => void;
   onExportBackup: () => void;
   onResetAll: () => void;
+  onOpenLlmConfig: () => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
   desktopCollapsed: boolean;
@@ -872,6 +1032,9 @@ function Sidebar(props: {
         </div>
 
         <div className="sidebar-actions">
+          <button onClick={props.onOpenLlmConfig}>
+            <Settings2 size={16} /> LLM 配置
+          </button>
           <button onClick={props.onQuestionImport}>
             <Upload size={16} /> {t("importQuestions")}
           </button>
@@ -929,6 +1092,7 @@ function Topbar(props: {
   activeList: QuestionList;
   onRedoWrong: () => void;
   onExportWrong: () => void;
+  onCreateWrongList: () => void;
   onClearListAttempts: () => void;
 }) {
   const [showSettings, setShowSettings] = useState(false);
@@ -992,6 +1156,7 @@ function Topbar(props: {
                   updateSettings={props.updateSettings}
                   onRedoWrong={props.onRedoWrong}
                   onExportWrong={props.onExportWrong}
+                  onCreateWrongList={props.onCreateWrongList}
                   onClearListAttempts={props.onClearListAttempts}
                 />
               </div>
@@ -1019,9 +1184,14 @@ function PracticePage(props: {
   updateSettings: (patch: Partial<AppData["settings"]>) => void;
   stats: ReturnType<typeof getListStats>;
   wrongSession: WrongSession | null;
+  onRedoWrong: () => void;
+  onExportWrong: () => void;
+  onCreateWrongList: () => void;
+  onClearListAttempts: () => void;
   startedAtRef: MutableRefObject<Record<string, number>>;
 }) {
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
   const activeQuestion = props.questions[props.currentIndex];
   useEffect(() => {
     if (activeQuestion && !props.startedAtRef.current[activeQuestion.id]) {
@@ -1029,11 +1199,46 @@ function PracticePage(props: {
     }
   }, [activeQuestion, props.startedAtRef]);
 
+  const allSubmitted = props.questions.length > 0 && props.questions.every((q) => q.id in props.results);
+  const correctCount = props.questions.filter((q) => props.results[q.id] === true).length;
+  const wrongCount = props.questions.filter((q) => props.results[q.id] === false).length;
+
+  const prevAllSubmitted = useRef(false);
+  useEffect(() => {
+    if (allSubmitted && !prevAllSubmitted.current) {
+      setShowCompletionDialog(true);
+    }
+    prevAllSubmitted.current = allSubmitted;
+  }, [allSubmitted]);
+
+  const paperStackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (props.settings.viewMode !== "paper" || !props.questions.length) return;
+    const container = paperStackRef.current;
+    if (!container) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            const idx = Number(id.replace("question-", ""));
+            if (!isNaN(idx)) props.setCurrentIndex(idx);
+          }
+        }
+      },
+      { root: container.closest(".question-stage"), threshold: 0.5 },
+    );
+    const cards = container.querySelectorAll("[id^='question-']");
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, [props.settings.viewMode, props.questions.length]);
+
   const content =
     props.questions.length === 0 ? (
       <EmptyState title="暂无题目" description="请先导入题库 JSON，或在题库管理中新增题目。" />
     ) : props.settings.viewMode === "paper" ? (
-      <div className="paper-stack">
+      <div className="paper-stack" ref={paperStackRef}>
         {props.questions.map((question, index) => (
           <QuestionCard
             key={question.id}
@@ -1047,6 +1252,8 @@ function PracticePage(props: {
             practiceMode={props.settings.practiceMode}
             onSubmit={() => props.submitQuestion(question)}
             hideSubmit={props.settings.submitMode === "paper"}
+            revealMode={props.settings.revealMode}
+            allSubmitted={allSubmitted}
           />
         ))}
         {props.settings.practiceMode !== "memorize" && props.settings.submitMode === "paper" && props.questions.some((q) => !(q.id in props.results)) && (
@@ -1067,6 +1274,9 @@ function PracticePage(props: {
           practiceMode={props.settings.practiceMode}
           onSubmit={() => props.submitQuestion(activeQuestion)}
           onNext={props.currentIndex < props.questions.length - 1 ? () => props.setCurrentIndex((i) => i + 1) : undefined}
+          hideSubmit={props.settings.submitMode === "paper"}
+          revealMode={props.settings.revealMode}
+          allSubmitted={allSubmitted}
         />
       )
     );
@@ -1117,10 +1327,37 @@ function PracticePage(props: {
           </div>
         </div>
         {content}
+        {props.settings.viewMode === "single" && props.settings.submitMode === "paper" && props.settings.practiceMode !== "memorize" && props.currentIndex >= props.questions.length - 1 && props.questions.some((q) => !(q.id in props.results)) && (
+          <button className="submit-all-button" onClick={props.submitAll}>
+            <Check size={18} /> 提交全部答案
+          </button>
+        )}
       </section>
 
       {!inspectorCollapsed && (
         <aside className="inspector">
+          {allSubmitted && (
+            <section className="inspector-panel completion-actions-panel">
+              <h3>全部完成</h3>
+              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 10px" }}>
+                共 {props.questions.length} 题，正确 {correctCount} 题，错误 {wrongCount} 题
+              </p>
+              <div className="completion-buttons">
+                <button className="btn-danger" onClick={props.onClearListAttempts}>
+                  <Undo2 size={16} /> 重新刷题
+                </button>
+                <button onClick={props.onRedoWrong}>
+                  <Shuffle size={16} /> 重做错题
+                </button>
+                <button onClick={props.onExportWrong}>
+                  <Download size={16} /> 导出错题
+                </button>
+                <button onClick={props.onCreateWrongList}>
+                  <Plus size={16} /> 错题生成题单
+                </button>
+              </div>
+            </section>
+          )}
           <StatsPanel t={props.t} stats={props.stats} />
           {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
           <Navigator
@@ -1129,8 +1366,51 @@ function PracticePage(props: {
             results={props.results}
             setCurrentIndex={props.setCurrentIndex}
             viewMode={props.settings.viewMode}
+            revealMode={props.settings.revealMode}
+            allSubmitted={allSubmitted}
           />
         </aside>
+      )}
+
+      {showCompletionDialog && (
+        <div className="modal-overlay" onClick={() => setShowCompletionDialog(false)}>
+          <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>答题完成</h2>
+              <button className="icon-button" onClick={() => setShowCompletionDialog(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="completion-stats">
+              <div className="completion-stat-row">
+                <span>总题数</span><strong>{props.questions.length}</strong>
+              </div>
+              <div className="completion-stat-row">
+                <span>正确</span><strong className="text-correct">{correctCount}</strong>
+              </div>
+              <div className="completion-stat-row">
+                <span>错误</span><strong className="text-wrong">{wrongCount}</strong>
+              </div>
+              <div className="completion-stat-row">
+                <span>正确率</span><strong>{props.questions.length ? Math.round((correctCount / props.questions.length) * 100) : 0}%</strong>
+              </div>
+            </div>
+            <div className="completion-buttons">
+              <button className="btn-danger" onClick={() => { setShowCompletionDialog(false); props.onClearListAttempts(); }}>
+                <Undo2 size={16} /> 重新刷题
+              </button>
+              <button onClick={() => { setShowCompletionDialog(false); props.onRedoWrong(); }}>
+                <Shuffle size={16} /> 重做错题
+              </button>
+              <button onClick={() => { setShowCompletionDialog(false); props.onExportWrong(); }}>
+                <Download size={16} /> 导出错题
+              </button>
+              <button onClick={() => { setShowCompletionDialog(false); props.onCreateWrongList(); }}>
+                <Plus size={16} /> 错题生成题单
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -1149,8 +1429,11 @@ function QuestionCard(props: {
   onNext?: () => void;
   compact?: boolean;
   hideSubmit?: boolean;
+  revealMode?: "immediate" | "end";
+  allSubmitted?: boolean;
 }) {
-  const showAnswer = props.submitted || props.practiceMode === "memorize";
+  const showAnswer = props.practiceMode === "memorize"
+    || (props.submitted && (props.revealMode !== "end" || !!props.allSubmitted));
   const updateAnswer = (id: string, value: string | string[]) => {
     props.setAnswers((current) => ({ ...current, [id]: value }));
   };
@@ -1163,13 +1446,13 @@ function QuestionCard(props: {
             {props.index + 1}. {props.question.title}
           </h2>
         </div>
-        {props.submitted && (
+        {props.submitted && (props.revealMode !== "end" || !!props.allSubmitted) && (
           <span className={`result-chip ${props.result ? "correct" : "wrong"}`}>
             {props.result ? "正确" : "错误"}
           </span>
         )}
       </div>
-      {props.question.prompt && <p className="prompt-text">{props.question.prompt}</p>}
+      {props.question.prompt && props.question.prompt !== props.question.title && <p className="prompt-text">{props.question.prompt}</p>}
       {props.question.hint && <div className="hint-box">提示：{props.question.hint}</div>}
 
       {props.question.type === "composite" ? (
@@ -1211,6 +1494,14 @@ function QuestionCard(props: {
               下一题 <ChevronRight size={17} />
             </button>
           )}
+        </div>
+      )}
+
+      {!props.compact && props.hideSubmit && props.onNext && (
+        <div className="question-actions">
+          <button className="primary-button" onClick={props.onNext}>
+            下一题 <ChevronRight size={17} />
+          </button>
         </div>
       )}
 
@@ -1391,6 +1682,7 @@ function ControlPanel(props: {
   updateSettings: (patch: Partial<AppData["settings"]>) => void;
   onRedoWrong: () => void;
   onExportWrong: () => void;
+  onCreateWrongList: () => void;
   onClearListAttempts: () => void;
 }) {
   return (
@@ -1423,6 +1715,16 @@ function ControlPanel(props: {
         />
       )}
       {props.settings.practiceMode !== "memorize" && props.settings.submitMode !== "paper" && (
+        <Segmented
+          value={props.settings.revealMode}
+          options={[
+            ["immediate", "立即显示答案"],
+            ["end", "最后显示答案"],
+          ]}
+          onChange={(value) => props.updateSettings({ revealMode: value as RevealMode })}
+        />
+      )}
+      {props.settings.practiceMode !== "memorize" && props.settings.submitMode !== "paper" && (
         <label className="toggle-row">
           <input
             type="checkbox"
@@ -1449,6 +1751,11 @@ function ControlPanel(props: {
         <button onClick={props.onExportWrong}>{props.t("exportWrong")}</button>
       </div>
       <div className="two-col-actions">
+        <button onClick={props.onCreateWrongList}>
+          <Plus size={16} /> 错题生成题单
+        </button>
+      </div>
+      <div className="two-col-actions">
         <button className="danger-outline" onClick={props.onClearListAttempts}>
           <Eraser size={16} /> 清空刷题数据
         </button>
@@ -1463,6 +1770,8 @@ function Navigator(props: {
   results: ResultMap;
   setCurrentIndex: (value: number) => void;
   viewMode: "single" | "paper";
+  revealMode?: "immediate" | "end";
+  allSubmitted?: boolean;
 }) {
   const handleClick = (index: number) => {
     debugLog("Navigate to question", { index, questionId: props.questions[index]?.id });
@@ -1472,6 +1781,7 @@ function Navigator(props: {
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
+  const showResult = props.revealMode !== "end" || !!props.allSubmitted;
   return (
     <section className="inspector-panel navigator-panel">
       <h3>快捷切题</h3>
@@ -1480,7 +1790,9 @@ function Navigator(props: {
           <button
             key={question.id}
             className={`${index === props.currentIndex ? "active" : ""} ${
-              question.id in props.results ? (props.results[question.id] ? "correct" : "wrong") : ""
+              question.id in props.results
+                ? (showResult ? (props.results[question.id] ? "correct" : "wrong") : "submitted")
+                : ""
             }`}
             onClick={() => handleClick(index)}
           >
@@ -1502,39 +1814,37 @@ function ManagerPage(props: {
   showConfirm: (message: string, onConfirm: () => void) => void;
   showPrompt: (title: string, defaultValue: string, onSubmit: (value: string) => void) => void;
   onDeleteList: () => void;
+  llmConfig: LlmConfig;
+  onOpenLlmConfig: () => void;
 }) {
   const [localListName, setLocalListName] = useState(props.list.name);
-  const [showLlmConfig, setShowLlmConfig] = useState(false);
   const [showFillChoice, setShowFillChoice] = useState(false);
   const [showSelfFill, setShowSelfFill] = useState(false);
   const [selfFillMode, setSelfFillMode] = useState<"answer" | "explanation" | "both">("both");
-  const [llmConfig, setLlmConfig] = useState<LlmConfig>(() => loadLlmConfig(defaultLlmConfig));
   const [filling, setFilling] = useState(false);
   const [fillStreamText, setFillStreamText] = useState("");
 
   useEffect(() => setLocalListName(props.list.name), [props.list.id, props.list.name]);
 
   const handleFillAnswers = () => {
-    const config = loadLlmConfig(defaultLlmConfig);
-    setLlmConfig(config);
-    if (!config.apiKey.trim()) {
-      setShowLlmConfig(true);
+    if (!props.llmConfig.apiKey.trim()) {
+      props.onOpenLlmConfig();
       return;
     }
     setShowFillChoice(true);
   };
 
-  const runFill = async (config: LlmConfig, mode: "answer" | "explanation" | "both") => {
+  const runFill = async (mode: "answer" | "explanation" | "both") => {
     if (!props.list.questions.length) {
       props.pushToast("info", "当前题单没有题目。");
       return;
     }
-    debugLog("LLM fill started", { mode, questionCount: props.list.questions.length, provider: config.provider, model: config.model });
+    debugLog("LLM fill started", { mode, questionCount: props.list.questions.length, provider: props.llmConfig.provider, model: props.llmConfig.model });
     setShowFillChoice(false);
     setFilling(true);
     setFillStreamText("");
     try {
-      const updated = await fillAnswersWithLlm(props.list.questions, config, mode, (accumulated) => {
+      const updated = await fillAnswersWithLlm(props.list.questions, props.llmConfig, mode, (accumulated) => {
         setFillStreamText(accumulated);
       });
       debugLog("LLM fill completed", { mode, updatedCount: updated.length });
@@ -1554,14 +1864,6 @@ function ManagerPage(props: {
       props.pushToast("error", error instanceof Error ? error.message : "LLM 补充失败。");
     } finally {
       setFilling(false);
-    }
-  };
-
-  const saveLlmConfigAndRun = () => {
-    saveLlmConfig(llmConfig);
-    setShowLlmConfig(false);
-    if (llmConfig.apiKey.trim()) {
-      setShowFillChoice(true);
     }
   };
 
@@ -1672,62 +1974,6 @@ function ManagerPage(props: {
         )}
       </aside>
 
-      {showLlmConfig && (
-        <div className="modal-overlay" onClick={() => setShowLlmConfig(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>配置 LLM</h2>
-              <button className="icon-button" onClick={() => setShowLlmConfig(false)}>
-                <X size={18} />
-              </button>
-            </div>
-            <p className="modal-desc">请配置 LLM 参数后再使用补充功能。此配置与 LLM 解析页面共享。</p>
-            <div className="config-grid">
-              <label className="field-label">
-                提供商
-                <select value={llmConfig.provider} onChange={(e) => setLlmConfig({ ...llmConfig, provider: e.target.value as LlmConfig["provider"], endpoint: "", model: "" })}>
-                  <option value="openai">OpenAI 兼容</option>
-                  <option value="anthropic">Anthropic</option>
-                  <option value="gemini">Gemini</option>
-                  <option value="custom">自定义</option>
-                </select>
-              </label>
-              <label className="field-label">
-                模型
-                <input
-                  value={llmConfig.model}
-                  placeholder={providerPlaceholders[llmConfig.provider].model}
-                  onChange={(e) => setLlmConfig({ ...llmConfig, model: e.target.value })}
-                />
-              </label>
-              <label className="field-label wide">
-                API 地址
-                <input
-                  value={llmConfig.endpoint}
-                  placeholder={providerPlaceholders[llmConfig.provider].endpoint}
-                  onChange={(e) => setLlmConfig({ ...llmConfig, endpoint: e.target.value })}
-                />
-              </label>
-              <label className="field-label wide">
-                API Key
-                <input
-                  type="password"
-                  placeholder="sk-"
-                  value={llmConfig.apiKey}
-                  onChange={(e) => setLlmConfig({ ...llmConfig, apiKey: e.target.value })}
-                />
-              </label>
-            </div>
-            <div className="modal-actions">
-              <button onClick={() => setShowLlmConfig(false)}>取消</button>
-              <button className="primary-button" onClick={saveLlmConfigAndRun}>
-                <Check size={17} /> 保存并继续
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showFillChoice && (
         <div className="modal-overlay" onClick={() => setShowFillChoice(false)}>
           <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
@@ -1739,13 +1985,13 @@ function ManagerPage(props: {
             </div>
             <p className="modal-desc">选择需要 LLM 补充的部分，将对当前题单所有题目生效。</p>
             <div className="fill-choice-grid">
-              <button onClick={() => runFill(llmConfig, "answer")}>
+              <button onClick={() => runFill("answer")}>
                 <Check size={17} /> 仅补充答案
               </button>
-              <button onClick={() => runFill(llmConfig, "explanation")}>
+              <button onClick={() => runFill("explanation")}>
                 <BookOpen size={17} /> 仅补充解析
               </button>
-              <button className="primary-button" onClick={() => runFill(llmConfig, "both")}>
+              <button className="primary-button" onClick={() => runFill("both")}>
                 <Sparkles size={17} /> 同时补充
               </button>
             </div>
@@ -2236,43 +2482,21 @@ function QuestionEditor(props: {
   );
 }
 
-function LlmPage(props: {
-  t: (key: string) => string;
-  activeList: QuestionList;
-  updateActiveList: (recipe: (list: QuestionList) => QuestionList) => void;
-  addImportedList: (list: QuestionList) => void;
+function LlmConfigModal(props: {
+  open: boolean;
+  onClose: () => void;
+  config: LlmConfig;
+  setConfig: (config: LlmConfig) => void;
   pushToast: (tone: Toast["tone"], message: string) => void;
-  unsavedRef: MutableRefObject<boolean>;
 }) {
-  const [config, setConfig] = useState<LlmConfig>(() => loadLlmConfig(defaultLlmConfig));
-  const [rawText, setRawText] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [clearedFields, setClearedFields] = useState<{ model?: string; endpoint?: string; apiKey?: string }>({});
+  const [showProxyKey, setShowProxyKey] = useState(false);
+  const [clearedFields, setClearedFields] = useState<{ model?: string; endpoint?: string; apiKey?: string; proxyUrl?: string; proxyKey?: string }>({});
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
-  const [parsedList, setParsedList] = useState<QuestionList | null>(null);
-  const [parsedJsonText, setParsedJsonText] = useState("");
-  const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [modelList, setModelList] = useState<string[]>([]);
   const [fetchingModels, setFetchingModels] = useState(false);
-  const [streamingText, setStreamingText] = useState("");
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  const [outputTab, setOutputTab] = useState<"json" | "preview">("json");
-  const [saved, setSaved] = useState(false);
-  const [showSelfParse, setShowSelfParse] = useState(false);
-  const [selfParseMode, setSelfParseMode] = useState<"answer" | "explanation" | "both" | "none">("both");
-  const [manualInput, setManualInput] = useState(false);
-  const [manualJsonText, setManualJsonText] = useState("");
-  const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
-
-  useEffect(() => {
-    props.unsavedRef.current = parsedList !== null;
-  }, [parsedList]);
-
-  useEffect(() => {
-    saveLlmConfig(config);
-  }, [config.provider, config.model, config.endpoint, config.apiKey]);
 
   useEffect(() => {
     if (!modelDropdownOpen) return;
@@ -2284,6 +2508,220 @@ function LlmPage(props: {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [modelDropdownOpen]);
+
+  const updateProvider = (provider: LlmConfig["provider"]) => {
+    props.setConfig({ ...props.config, provider, endpoint: "", model: "" });
+  };
+
+  const runTest = async () => {
+    setTesting(true);
+    try {
+      const model = await testLlmConnection(props.config);
+      props.pushToast("success", `连接成功，模型 ${model} 可用。`);
+    } catch (error) {
+      props.pushToast("error", error instanceof Error ? error.message : "连接测试失败。");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const runFetchModels = async () => {
+    setFetchingModels(true);
+    try {
+      const models = await fetchModelList(props.config);
+      setModelList(models);
+      if (!models.length) {
+        props.pushToast("info", "未获取到可用模型。");
+      } else {
+        props.pushToast("success", `获取到 ${models.length} 个模型。`);
+      }
+    } catch (error) {
+      props.pushToast("error", error instanceof Error ? error.message : "获取模型列表失败。");
+    } finally {
+      setFetchingModels(false);
+    }
+  };
+
+  if (!props.open) return null;
+
+  const { config } = props;
+  const setConfig = props.setConfig;
+
+  return (
+    <div className="modal-overlay" onClick={props.onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>LLM 配置</h2>
+          <button className="icon-button" onClick={props.onClose}><X size={18} /></button>
+        </div>
+        <div className="config-grid">
+          <label className="field-label">
+            提供商
+            <select value={config.provider} onChange={(event) => updateProvider(event.target.value as LlmConfig["provider"])}>
+              <option value="openai">OpenAI 兼容</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="gemini">Gemini</option>
+            </select>
+          </label>
+          <label className="field-label">
+            模型
+            <div className="model-input-row" ref={modelDropdownRef}>
+              <button
+                className={`model-dropdown-toggle ${modelDropdownOpen ? "open" : ""}`}
+                onClick={() => { if (modelList.length > 0) setModelDropdownOpen((v) => !v); }}
+                disabled={modelList.length === 0}
+                title={modelList.length > 0 ? "选择模型" : "请先获取模型列表"}
+              >
+                <ChevronRight size={14} />
+              </button>
+              <div className="input-with-actions">
+                <input
+                  value={config.model}
+                  placeholder={providerPlaceholders[config.provider].model}
+                  onChange={(event) => setConfig({ ...config, model: event.target.value })}
+                />
+                {config.model
+                  ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, model: config.model })); setConfig({ ...config, model: "" }); }} title="清空"><X size={14} /></button>
+                  : clearedFields.model && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, model: clearedFields.model! }); setClearedFields((f) => ({ ...f, model: undefined })); }} title="恢复"><Undo2 size={14} /></button>
+                }
+              </div>
+              <button
+                className="test-button"
+                onClick={runFetchModels}
+                disabled={fetchingModels || !config.apiKey.trim()}
+                title="获取可用模型列表"
+              >
+                {fetchingModels ? "获取中…" : "获取列表"}
+              </button>
+              {modelDropdownOpen && modelList.length > 0 && (
+                <div className="model-dropdown-list">
+                  {modelList.map((m) => (
+                    <button key={m} className={m === config.model ? "active" : ""} onClick={() => { setConfig({ ...config, model: m }); setModelDropdownOpen(false); }}>{m}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </label>
+          <label className="field-label wide">
+            API 地址
+            <div className="input-with-actions">
+              <input
+                value={config.endpoint}
+                placeholder={providerPlaceholders[config.provider].endpoint}
+                onChange={(event) => setConfig({ ...config, endpoint: event.target.value })}
+              />
+              {config.endpoint
+                ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, endpoint: config.endpoint })); setConfig({ ...config, endpoint: "" }); }} title="清空"><X size={14} /></button>
+                : clearedFields.endpoint && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, endpoint: clearedFields.endpoint! }); setClearedFields((f) => ({ ...f, endpoint: undefined })); }} title="恢复"><Undo2 size={14} /></button>
+              }
+            </div>
+          </label>
+          <label className="field-label wide">
+            API Key
+            <div className="input-with-actions">
+              <input type={showApiKey ? "text" : "password"} placeholder="sk-" value={config.apiKey} onChange={(event) => setConfig({ ...config, apiKey: event.target.value })} />
+              {config.apiKey
+                ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, apiKey: config.apiKey })); setConfig({ ...config, apiKey: "" }); }} title="清空"><X size={14} /></button>
+                : clearedFields.apiKey && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, apiKey: clearedFields.apiKey! }); setClearedFields((f) => ({ ...f, apiKey: undefined })); }} title="恢复"><Undo2 size={14} /></button>
+              }
+              <button className="input-clear-btn" onClick={() => setShowApiKey((v) => !v)} title={showApiKey ? "隐藏" : "显示"}>
+                {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </label>
+          <label className="field-label wide">
+            CORS 代理地址
+            <div className="input-with-actions">
+              <input
+                value={config.proxyUrl}
+                placeholder="https://your-worker.workers.dev"
+                onChange={(event) => setConfig({ ...config, proxyUrl: event.target.value })}
+              />
+              {config.proxyUrl
+                ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, proxyUrl: config.proxyUrl })); setConfig({ ...config, proxyUrl: "" }); }} title="清空"><X size={14} /></button>
+                : clearedFields.proxyUrl && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, proxyUrl: clearedFields.proxyUrl! }); setClearedFields((f) => ({ ...f, proxyUrl: undefined })); }} title="恢复"><Undo2 size={14} /></button>
+              }
+              <button className="input-clear-btn" onClick={() => setConfig({ ...config, proxyUrl: defaultLlmConfig.proxyUrl, proxyKey: defaultLlmConfig.proxyKey })} title="重置为默认代理">
+                <Undo2 size={14} />
+              </button>
+            </div>
+          </label>
+          <label className="field-label wide">
+            代理密钥
+            <div className="input-with-actions">
+              <input
+                type={showProxyKey ? "text" : "password"}
+                value={config.proxyKey}
+                placeholder="留空则不发送 X-Proxy-Key"
+                onChange={(event) => setConfig({ ...config, proxyKey: event.target.value })}
+              />
+              {config.proxyKey
+                ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, proxyKey: config.proxyKey })); setConfig({ ...config, proxyKey: "" }); }} title="清空"><X size={14} /></button>
+                : clearedFields.proxyKey && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, proxyKey: clearedFields.proxyKey! }); setClearedFields((f) => ({ ...f, proxyKey: undefined })); }} title="恢复"><Undo2 size={14} /></button>
+              }
+              <button className="input-clear-btn" onClick={() => setShowProxyKey((v) => !v)} title={showProxyKey ? "隐藏" : "显示"}>
+                {showProxyKey ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </label>
+          <div className="field-label">
+            <button className="test-button" onClick={runTest} disabled={testing}>
+              {testing ? "测试中…" : "测试连接"}
+            </button>
+          </div>
+          <div className="field-label wide">
+            <span style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: "block" }}>生成内容</span>
+            <Segmented
+              value={config.fillAnswer && config.fillExplanation ? "both" : config.fillAnswer ? "answer" : config.fillExplanation ? "explanation" : "none"}
+              options={[
+                ["both", "答案 + 解析"],
+                ["answer", "仅答案"],
+                ["explanation", "仅解析"],
+                ["none", "仅题目"],
+              ]}
+              onChange={(v) => setConfig({
+                ...config,
+                fillAnswer: v === "both" || v === "answer",
+                fillExplanation: v === "both" || v === "explanation",
+              })}
+            />
+          </div>
+        </div>
+        <div className="modal-actions">
+          <button className="primary-button" onClick={props.onClose}>完成</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LlmPage(props: {
+  t: (key: string) => string;
+  activeList: QuestionList;
+  updateActiveList: (recipe: (list: QuestionList) => QuestionList) => void;
+  addImportedList: (list: QuestionList) => void;
+  pushToast: (tone: Toast["tone"], message: string) => void;
+  unsavedRef: MutableRefObject<boolean>;
+  llmConfig: LlmConfig;
+  onOpenLlmConfig: () => void;
+}) {
+  const config = props.llmConfig;
+  const [rawText, setRawText] = useState("");
+  const [parsedList, setParsedList] = useState<QuestionList | null>(null);
+  const [parsedJsonText, setParsedJsonText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
+  const [outputTab, setOutputTab] = useState<"json" | "preview">("json");
+  const [saved, setSaved] = useState(false);
+  const [showSelfParse, setShowSelfParse] = useState(false);
+  const [selfParseMode, setSelfParseMode] = useState<"answer" | "explanation" | "both" | "none">("both");
+  const [manualInput, setManualInput] = useState(false);
+  const [manualJsonText, setManualJsonText] = useState("");
+  const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
+
+  useEffect(() => {
+    props.unsavedRef.current = parsedList !== null;
+  }, [parsedList]);
 
   const runParser = async () => {
     if (!rawText.trim()) {
@@ -2322,44 +2760,6 @@ function LlmPage(props: {
       props.pushToast("error", error instanceof Error ? error.message : "LLM 解析失败。");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const updateProvider = (provider: LlmConfig["provider"]) => {
-    setConfig((current) => ({
-      ...current,
-      provider,
-      endpoint: "",
-      model: "",
-    }));
-  };
-
-  const runTest = async () => {
-    setTesting(true);
-    try {
-      const model = await testLlmConnection(config);
-      props.pushToast("success", `连接成功，模型 ${model} 可用。`);
-    } catch (error) {
-      props.pushToast("error", error instanceof Error ? error.message : "连接测试失败。");
-    } finally {
-      setTesting(false);
-    }
-  };
-
-  const runFetchModels = async () => {
-    setFetchingModels(true);
-    try {
-      const models = await fetchModelList(config);
-      setModelList(models);
-      if (!models.length) {
-        props.pushToast("info", "未获取到可用模型。");
-      } else {
-        props.pushToast("success", `获取到 ${models.length} 个模型。`);
-      }
-    } catch (error) {
-      props.pushToast("error", error instanceof Error ? error.message : "获取模型列表失败。");
-    } finally {
-      setFetchingModels(false);
     }
   };
 
@@ -2428,123 +2828,11 @@ function LlmPage(props: {
             </button>
           </div>
         </div>
-        <button className="llm-config-trigger" onClick={() => setShowConfigModal(true)}>
+        <button className="llm-config-trigger" onClick={props.onOpenLlmConfig}>
           <Settings2 size={16} />
-          <span>{config.provider === "openai" ? "OpenAI 兼容" : config.provider === "anthropic" ? "Anthropic" : config.provider === "gemini" ? "Gemini" : "自定义"} / {config.model || "未设置模型"}</span>
+          <span>{config.provider === "openai" ? "OpenAI 兼容" : config.provider === "anthropic" ? "Anthropic" : "Gemini"} / {config.model || "未设置模型"}</span>
           <ChevronRight size={14} />
         </button>
-        {showConfigModal && (
-          <div className="modal-overlay" onClick={() => setShowConfigModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>LLM 配置</h2>
-                <button className="icon-button" onClick={() => setShowConfigModal(false)}><X size={18} /></button>
-              </div>
-              <div className="config-grid">
-                <label className="field-label">
-                  提供商
-                  <select value={config.provider} onChange={(event) => updateProvider(event.target.value as LlmConfig["provider"])}>
-                    <option value="openai">OpenAI 兼容</option>
-                    <option value="anthropic">Anthropic</option>
-                    <option value="gemini">Gemini</option>
-                    <option value="custom">自定义</option>
-                  </select>
-                </label>
-                <label className="field-label">
-                  模型
-                  <div className="model-input-row" ref={modelDropdownRef}>
-                    <button
-                      className={`model-dropdown-toggle ${modelDropdownOpen ? "open" : ""}`}
-                      onClick={() => { if (modelList.length > 0) setModelDropdownOpen((v) => !v); }}
-                      disabled={modelList.length === 0}
-                      title={modelList.length > 0 ? "选择模型" : "请先获取模型列表"}
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                    <div className="input-with-actions">
-                      <input
-                        value={config.model}
-                        placeholder={providerPlaceholders[config.provider].model}
-                        onChange={(event) => setConfig({ ...config, model: event.target.value })}
-                      />
-                      {config.model
-                        ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, model: config.model })); setConfig({ ...config, model: "" }); }} title="清空"><X size={14} /></button>
-                        : clearedFields.model && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, model: clearedFields.model! }); setClearedFields((f) => ({ ...f, model: undefined })); }} title="恢复"><Undo2 size={14} /></button>
-                      }
-                    </div>
-                    <button
-                      className="test-button"
-                      onClick={runFetchModels}
-                      disabled={fetchingModels || !config.apiKey.trim()}
-                      title="获取可用模型列表"
-                    >
-                      {fetchingModels ? "获取中…" : "获取列表"}
-                    </button>
-                    {modelDropdownOpen && modelList.length > 0 && (
-                      <div className="model-dropdown-list">
-                        {modelList.map((m) => (
-                          <button key={m} className={m === config.model ? "active" : ""} onClick={() => { setConfig({ ...config, model: m }); setModelDropdownOpen(false); }}>{m}</button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </label>
-                <label className="field-label wide">
-                  API 地址
-                  <div className="input-with-actions">
-                    <input
-                      value={config.endpoint}
-                      placeholder={providerPlaceholders[config.provider].endpoint}
-                      onChange={(event) => setConfig({ ...config, endpoint: event.target.value })}
-                    />
-                    {config.endpoint
-                      ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, endpoint: config.endpoint })); setConfig({ ...config, endpoint: "" }); }} title="清空"><X size={14} /></button>
-                      : clearedFields.endpoint && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, endpoint: clearedFields.endpoint! }); setClearedFields((f) => ({ ...f, endpoint: undefined })); }} title="恢复"><Undo2 size={14} /></button>
-                    }
-                  </div>
-                </label>
-                <label className="field-label wide">
-                  API Key
-                  <div className="input-with-actions">
-                    <input type={showApiKey ? "text" : "password"} placeholder="sk-" value={config.apiKey} onChange={(event) => setConfig({ ...config, apiKey: event.target.value })} />
-                    {config.apiKey
-                      ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, apiKey: config.apiKey })); setConfig({ ...config, apiKey: "" }); }} title="清空"><X size={14} /></button>
-                      : clearedFields.apiKey && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, apiKey: clearedFields.apiKey! }); setClearedFields((f) => ({ ...f, apiKey: undefined })); }} title="恢复"><Undo2 size={14} /></button>
-                    }
-                    <button className="input-clear-btn" onClick={() => setShowApiKey((v) => !v)} title={showApiKey ? "隐藏" : "显示"}>
-                      {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </label>
-                <div className="field-label">
-                  <button className="test-button" onClick={runTest} disabled={testing}>
-                    {testing ? "测试中…" : "测试连接"}
-                  </button>
-                </div>
-                <div className="field-label wide">
-                  <span style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: "block" }}>生成内容</span>
-                  <Segmented
-                    value={config.fillAnswer && config.fillExplanation ? "both" : config.fillAnswer ? "answer" : config.fillExplanation ? "explanation" : "none"}
-                    options={[
-                      ["both", "答案 + 解析"],
-                      ["answer", "仅答案"],
-                      ["explanation", "仅解析"],
-                      ["none", "仅题目"],
-                    ]}
-                    onChange={(v) => setConfig({
-                      ...config,
-                      fillAnswer: v === "both" || v === "answer",
-                      fillExplanation: v === "both" || v === "explanation",
-                    })}
-                  />
-                </div>
-              </div>
-              <div className="modal-actions">
-                <button className="primary-button" onClick={() => setShowConfigModal(false)}>完成</button>
-              </div>
-            </div>
-          </div>
-        )}
         <label className="upload-raw-text">
           <Upload size={16} /> 上传文本文件
           <input type="file" accept=".txt,.md,text/plain" onChange={(e) => {
@@ -3009,11 +3297,17 @@ function EmptyState(props: { title: string; description: string }) {
 function ToastStack(props: { toasts: Toast[] }) {
   return (
     <div className="toast-stack">
-      {props.toasts.map((toast) => (
-        <div className={`toast ${toast.tone}`} key={toast.id}>
-          {toast.message}
-        </div>
-      ))}
+      {props.toasts.map((toast) => {
+        const level = Math.min((toast.repeatCount ?? 1) - 1, 4);
+        return (
+          <div
+            className={`toast ${toast.tone} ${toast.bump ? "bump" : ""} ${level > 0 ? `toast-level-${level}` : ""}`}
+            key={toast.id + (toast.bump ?? "")}
+          >
+            {toast.message}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -3105,16 +3399,34 @@ function PromptDialog({ state, onClose }: { state: PromptDialogState; onClose: (
   );
 }
 
-function ImportSourceDialog({ open, onClose, onFileSelect }: {
+function ImportSourceDialog({ open, onClose, onFileSelect, onUrlImport }: {
   open: boolean;
   onClose: () => void;
   onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
+  onUrlImport: (url: string) => void;
 }) {
+  const [urlMode, setUrlMode] = useState(false);
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (urlMode) setTimeout(() => inputRef.current?.focus(), 0);
+  }, [urlMode]);
+
   if (!open) return null;
+
+  const handleUrlSubmit = () => {
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    onUrlImport(trimmed);
+    setUrl("");
+    setUrlMode(false);
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
         <div className="modal-header">
           <h2>导入题目</h2>
           <button className="icon-button" onClick={onClose}><X size={18} /></button>
@@ -3125,9 +3437,42 @@ function ImportSourceDialog({ open, onClose, onFileSelect }: {
             <Upload size={16} /> 上传本地 JSON 文件
             <input type="file" accept=".json,application/json" onChange={onFileSelect} />
           </label>
+          <button onClick={() => setUrlMode(true)} style={urlMode ? { display: "none" } : undefined}>
+            <Download size={16} /> 从 URL 导入 JSON
+          </button>
         </div>
+        {urlMode && (
+          <div style={{ marginTop: 12 }}>
+            <label className="field-label">
+              JSON 文件 URL
+              <input
+                ref={inputRef}
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleUrlSubmit(); }}
+                placeholder="https://example.com/questions.json"
+              />
+            </label>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "6px 0 0" }}>
+              请求将通过 LLM 配置中的 CORS 代理转发（如已配置）。
+            </p>
+          </div>
+        )}
         <div className="modal-actions">
-          <button onClick={onClose}>取消</button>
+          {urlMode ? (
+            <>
+              <button onClick={() => { setUrlMode(false); setUrl(""); }}>返回</button>
+              <button
+                className="primary-button"
+                onClick={handleUrlSubmit}
+                disabled={!url.trim()}
+              >
+                <Download size={16} /> 导入
+              </button>
+            </>
+          ) : (
+            <button onClick={() => { setUrlMode(false); setUrl(""); onClose(); }}>取消</button>
+          )}
         </div>
       </div>
     </div>

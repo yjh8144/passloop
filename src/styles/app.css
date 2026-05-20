@@ -927,6 +927,10 @@ textarea:focus {
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
 }
 
+.question-nav-grid button.submitted {
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+}
+
 .list-editor {
   display: grid;
   grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
@@ -1678,6 +1682,40 @@ textarea:focus {
   border-color: color-mix(in srgb, var(--accent-2) 45%, var(--border));
 }
 
+.toast.bump {
+  animation: toast-bump 0.3s ease;
+}
+
+.toast.toast-level-1 {
+  padding: 13px 16px;
+  font-size: 1rem;
+  max-width: min(400px, calc(100vw - 36px));
+}
+
+.toast.toast-level-2 {
+  padding: 15px 18px;
+  font-size: 1.05rem;
+  max-width: min(430px, calc(100vw - 36px));
+}
+
+.toast.toast-level-3 {
+  padding: 17px 20px;
+  font-size: 1.1rem;
+  max-width: min(460px, calc(100vw - 36px));
+}
+
+.toast.toast-level-4 {
+  padding: 19px 22px;
+  font-size: 1.15rem;
+  max-width: min(480px, calc(100vw - 36px));
+}
+
+@keyframes toast-bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
 @media (max-width: 1180px) {
   .app-shell {
     grid-template-columns: 228px minmax(0, 1fr);
@@ -1975,4 +2013,73 @@ textarea:focus {
   border: none;
   padding: 8px;
   margin: 0;
+}
+
+.completion-actions-panel {
+  background: var(--surface-alt, var(--surface));
+  border: 1px solid var(--accent);
+}
+
+.completion-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.completion-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.completion-buttons button:hover {
+  background: var(--hover);
+}
+
+.completion-buttons button.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.completion-buttons button.btn-danger:hover {
+  opacity: 0.85;
+}
+
+.completion-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.completion-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--hover);
+  font-size: 0.9rem;
+}
+
+.completion-stat-row strong {
+  font-size: 1.1rem;
+}
+
+.text-correct {
+  color: var(--success, #22c55e);
+}
+
+.text-wrong {
+  color: var(--danger);
 }

@@ -52,6 +52,7 @@ export interface AttemptRecord {
 }
 
 export type SubmitMode = "each" | "paper";
+export type RevealMode = "immediate" | "end";
 
 export interface Settings {
   theme: ThemeName;
@@ -61,6 +62,7 @@ export interface Settings {
   practiceMode: PracticeMode;
   sortMode: SortMode;
   submitMode: SubmitMode;
+  revealMode: RevealMode;
 }
 
 export interface AppData {
@@ -72,16 +74,20 @@ export interface AppData {
 }
 
 export interface LlmConfig {
-  provider: "openai" | "anthropic" | "gemini" | "custom";
+  provider: "openai" | "gemini" | "anthropic";
   endpoint: string;
   apiKey: string;
   model: string;
   fillAnswer: boolean;
   fillExplanation: boolean;
+  proxyUrl: string;
+  proxyKey: string;
 }
 
 export interface Toast {
   id: string;
   tone: "success" | "error" | "info";
   message: string;
+  bump?: number;
+  repeatCount?: number;
 }

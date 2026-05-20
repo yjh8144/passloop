@@ -14,6 +14,7 @@ export const defaultSettings: Settings = {
   practiceMode: "practice",
   sortMode: "manual",
   submitMode: "each",
+  revealMode: "immediate",
 };
 
 export function createEmptyQuestionList(name = "默认题单"): QuestionList {
@@ -64,6 +65,8 @@ export function loadLlmConfig(fallback: LlmConfig): LlmConfig {
       model: typeof source.model === "string" ? source.model : fallback.model,
       endpoint: typeof source.endpoint === "string" ? source.endpoint : fallback.endpoint,
       apiKey: typeof source.apiKey === "string" ? source.apiKey : fallback.apiKey,
+      proxyUrl: typeof source.proxyUrl === "string" ? source.proxyUrl : fallback.proxyUrl,
+      proxyKey: typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey,
     };
   } catch {
     return fallback;
@@ -78,6 +81,8 @@ export function saveLlmConfig(config: LlmConfig) {
       model: config.model,
       endpoint: config.endpoint,
       apiKey: config.apiKey,
+      proxyUrl: config.proxyUrl,
+      proxyKey: config.proxyKey,
     }),
   );
 }
@@ -89,9 +94,8 @@ export function clearLlmConfig() {
 function isLlmProvider(value: unknown): value is LlmConfig["provider"] {
   return (
     value === "openai" ||
-    value === "anthropic" ||
     value === "gemini" ||
-    value === "custom"
+    value === "anthropic"
   );
 }
 

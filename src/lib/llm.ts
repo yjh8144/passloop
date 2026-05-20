@@ -7,6 +7,17 @@ function assertConfigValid(apiKey: string, model: string, endpoint: string): voi
   if (!endpoint) throw new Error("请填写 API 地址。");
 }
 
+function buildProxyUrl(targetUrl: string, config: LlmConfig): string {
+  if (!config.proxyUrl) return targetUrl;
+  const proxy = config.proxyUrl.replace(/\/+$/, "");
+  return `${proxy}/?url=${encodeURIComponent(targetUrl)}`;
+}
+
+function proxyHeaders(config: LlmConfig): Record<string, string> {
+  if (!config.proxyUrl || !config.proxyKey) return {};
+  return { "X-Proxy-Key": config.proxyKey };
+}
+
 const SYSTEM_PROMPT = `你是题库整理助手。请把用户提供的未整理题目转换为 PassLoop 标准 JSON。
 只返回 JSON，不要 Markdown。
 输出结构为：{"name":"题单名称","description":"","questions":[...]}。
@@ -31,11 +42,11 @@ export async function streamParseLlm(
 原始题目：
 ${input}`;
 
-  if (config.provider === "anthropic") {
-    return streamAnthropic(prompt, config, onChunk);
-  }
   if (config.provider === "gemini") {
     return streamGemini(prompt, config, onChunk);
+  }
+  if (config.provider === "anthropic") {
+    return streamAnthropic(prompt, config, onChunk);
   }
   return streamOpenAiCompatible(prompt, config, onChunk);
 }
@@ -55,14 +66,23 @@ async function streamOpenAiCompatible(prompt: string, config: LlmConfig, onChunk
     temperature: 0.2,
     stream: true,
   };
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch(buildProxyUrl(endpoint, config), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.apiKey}`,
+        ...proxyHeaders(config),
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。");
+    }
+    throw error;
+  }
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || `请求失败：${response.status}`);
@@ -76,25 +96,74 @@ async function streamOpenAiCompatible(prompt: string, config: LlmConfig, onChunk
   }, onChunk);
 }
 
+async function streamGemini(prompt: string, config: LlmConfig, onChunk: (accumulated: string) => void) {
+  const model = config.model.trim() || "gemini-1.5-pro";
+  const baseEndpoint =
+    config.endpoint.trim() ||
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${config.apiKey}`;
+  assertConfigValid(config.apiKey, model, baseEndpoint);
+  const endpoint = baseEndpoint.includes("streamGenerateContent")
+    ? baseEndpoint
+    : baseEndpoint.replace(":generateContent", ":streamGenerateContent").replace(/\?/, "?alt=sse&");
+  let response: Response;
+  try {
+    response = await fetch(buildProxyUrl(endpoint, config), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...proxyHeaders(config),
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
+      }),
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。");
+    }
+    throw error;
+  }
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `请求失败：${response.status}`);
+  }
+  return readSSEStream(response, (data) => {
+    try {
+      const parsed = JSON.parse(data);
+      return parsed.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("") ?? "";
+    } catch { return ""; }
+  }, onChunk);
+}
+
 async function streamAnthropic(prompt: string, config: LlmConfig, onChunk: (accumulated: string) => void) {
   const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages";
-  const model = config.model.trim() || "claude-3-5-sonnet-latest";
+  const model = config.model.trim() || "claude-sonnet-4-20250514";
   assertConfigValid(config.apiKey, model, endpoint);
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": config.apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 6000,
-      temperature: 0.2,
-      stream: true,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(buildProxyUrl(endpoint, config), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": config.apiKey,
+        "anthropic-version": "2023-06-01",
+        ...proxyHeaders(config),
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 8000,
+        temperature: 0.2,
+        stream: true,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。");
+    }
+    throw error;
+  }
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || `请求失败：${response.status}`);
@@ -107,35 +176,6 @@ async function streamAnthropic(prompt: string, config: LlmConfig, onChunk: (accu
       }
       if (parsed.type === "message_stop") return null;
       return "";
-    } catch { return ""; }
-  }, onChunk);
-}
-
-async function streamGemini(prompt: string, config: LlmConfig, onChunk: (accumulated: string) => void) {
-  const model = config.model.trim() || "gemini-1.5-pro";
-  const baseEndpoint =
-    config.endpoint.trim() ||
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${config.apiKey}`;
-  assertConfigValid(config.apiKey, model, baseEndpoint);
-  const endpoint = baseEndpoint.includes("streamGenerateContent")
-    ? baseEndpoint
-    : baseEndpoint.replace(":generateContent", ":streamGenerateContent").replace(/\?/, "?alt=sse&");
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
-    }),
-  });
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || `请求失败：${response.status}`);
-  }
-  return readSSEStream(response, (data) => {
-    try {
-      const parsed = JSON.parse(data);
-      return parsed.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("") ?? "";
     } catch { return ""; }
   }, onChunk);
 }
@@ -192,10 +232,10 @@ ${modeInstruction}
 题目列表：
 ${JSON.stringify(questions.map(q => ({ id: q.id, type: q.type, title: q.title, prompt: q.prompt, options: q.options.map(o => ({ label: o.label, text: o.text })) })), null, 2)}`;
 
-  const fullText = await (config.provider === "anthropic"
-    ? streamAnthropic(fillPrompt, config, onChunk)
-    : config.provider === "gemini"
-      ? streamGemini(fillPrompt, config, onChunk)
+  const fullText = await (config.provider === "gemini"
+    ? streamGemini(fillPrompt, config, onChunk)
+    : config.provider === "anthropic"
+      ? streamAnthropic(fillPrompt, config, onChunk)
       : streamOpenAiCompatible(fillPrompt, config, onChunk));
 
   const parsed = JSON.parse(extractJsonText(fullText));
@@ -222,13 +262,29 @@ ${JSON.stringify(questions.map(q => ({ id: q.id, type: q.type, title: q.title, p
 export async function fetchModelList(config: LlmConfig): Promise<string[]> {
   if (!config.apiKey.trim()) throw new Error("请先填写 API Key。");
   if (config.provider === "anthropic") {
-    throw new Error("Anthropic 暂不支持获取模型列表，请手动输入模型名称。");
+    return [
+      "claude-opus-4-20250514",
+      "claude-sonnet-4-20250514",
+      "claude-3-5-sonnet-20241022",
+      "claude-3-5-haiku-20241022",
+      "claude-3-opus-20240229",
+    ];
   }
   if (config.provider === "gemini") {
     const baseUrl = config.endpoint.trim()
       ? config.endpoint.trim().replace(/\/models.*$/, "")
       : "https://generativelanguage.googleapis.com/v1beta";
-    const response = await fetch(`${baseUrl}/models?key=${config.apiKey}`);
+    let response: Response;
+    try {
+      response = await fetch(buildProxyUrl(`${baseUrl}/models?key=${config.apiKey}`, config), {
+        headers: { ...proxyHeaders(config) },
+      });
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。");
+      }
+      throw error;
+    }
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || `请求失败：${response.status}`);
@@ -240,9 +296,20 @@ export async function fetchModelList(config: LlmConfig): Promise<string[]> {
   }
   const raw = config.endpoint.trim() || "https://api.openai.com/v1";
   const base = normalizeModelsEndpoint(raw);
-  const response = await fetch(base, {
-    headers: { Authorization: `Bearer ${config.apiKey}` },
-  });
+  let response: Response;
+  try {
+    response = await fetch(buildProxyUrl(base, config), {
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        ...proxyHeaders(config),
+      },
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。");
+    }
+    throw error;
+  }
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || `请求失败：${response.status}`);
@@ -279,43 +346,63 @@ function normalizeModelsEndpoint(endpoint: string) {
 }
 
 export async function testLlmConnection(config: LlmConfig): Promise<string> {
-  if (config.provider === "anthropic") {
-    const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages";
-    const model = config.model.trim() || "claude-3-5-sonnet-latest";
-    assertConfigValid(config.apiKey, model, endpoint);
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": config.apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 10,
-        messages: [{ role: "user", content: "hi" }],
-      }),
-    });
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text || `请求失败：${response.status}`);
-    }
-    return model;
-  }
   if (config.provider === "gemini") {
     const model = config.model.trim() || "gemini-1.5-pro";
     const endpoint =
       config.endpoint.trim() ||
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey}`;
     assertConfigValid(config.apiKey, model, endpoint);
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: "hi" }] }],
-        generationConfig: { maxOutputTokens: 10 },
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(buildProxyUrl(endpoint, config), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...proxyHeaders(config),
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: "hi" }] }],
+          generationConfig: { maxOutputTokens: 10 },
+        }),
+      });
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。");
+      }
+      throw error;
+    }
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `请求失败：${response.status}`);
+    }
+    return model;
+  }
+  if (config.provider === "anthropic") {
+    const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages";
+    const model = config.model.trim() || "claude-sonnet-4-20250514";
+    assertConfigValid(config.apiKey, model, endpoint);
+    let response: Response;
+    try {
+      response = await fetch(buildProxyUrl(endpoint, config), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": config.apiKey,
+          "anthropic-version": "2023-06-01",
+          ...proxyHeaders(config),
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 10,
+          messages: [{ role: "user", content: "hi" }],
+        }),
+      });
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。");
+      }
+      throw error;
+    }
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || `请求失败：${response.status}`);
@@ -327,31 +414,32 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
   );
   const model = config.model.trim() || "gpt-4.1-mini";
   assertConfigValid(config.apiKey, model, endpoint);
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: "hi" }],
-      max_tokens: 10,
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(buildProxyUrl(endpoint, config), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.apiKey}`,
+        ...proxyHeaders(config),
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: "hi" }],
+        max_tokens: 10,
+      }),
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。");
+    }
+    throw error;
+  }
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || `请求失败：${response.status}`);
   }
   return model;
-}
-
-async function readJsonResponse(response: Response) {
-  const text = await response.text();
-  if (!response.ok) {
-    throw new Error(text || `请求失败：${response.status}`);
-  }
-  return JSON.parse(text);
 }
 
 function normalizeOpenAiChatEndpoint(endpoint: string) {
