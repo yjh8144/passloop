@@ -1,0 +1,6 @@
+name = "passloop-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# AUTH_SECRET 请在 Cloudflare Dashboard 中设置为加密环境变量，不要写在此文件中

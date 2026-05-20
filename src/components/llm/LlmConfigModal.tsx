@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Eye, EyeOff, Undo2, X } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, HelpCircle, Undo2, X } from "lucide-react";
 import type { LlmConfig, Toast } from "../../lib/types";
 import { testLlmConnection, fetchModelList } from "../../lib/llm";
 import { providerPlaceholders, defaultLlmConfig } from "../../utils/constants";
@@ -14,6 +14,7 @@ export function LlmConfigModal(props: {
 }) {
   const [showApiKey, setShowApiKey] = useState(false);
   const [showProxyKey, setShowProxyKey] = useState(false);
+  const [showProxyHelp, setShowProxyHelp] = useState(false);
   const [clearedFields, setClearedFields] = useState<{ model?: string; endpoint?: string; apiKey?: string; proxyUrl?: string; proxyKey?: string }>({});
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
@@ -71,6 +72,7 @@ export function LlmConfigModal(props: {
   const setConfig = props.setConfig;
 
   return (
+    <>
     <div className="modal-overlay" onClick={props.onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -153,7 +155,17 @@ export function LlmConfigModal(props: {
             </div>
           </label>
           <label className="field-label wide">
-            CORS 代理地址
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              CORS 代理地址
+              <button
+                className="icon-button"
+                style={{ padding: 2 }}
+                onClick={() => setShowProxyHelp(true)}
+                title="什么是 CORS 代理？"
+              >
+                <HelpCircle size={14} />
+              </button>
+            </span>
             <div className="input-with-actions">
               <input
                 value={config.proxyUrl}
@@ -218,5 +230,49 @@ export function LlmConfigModal(props: {
         </div>
       </div>
     </div>
+    {showProxyHelp && (
+      <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setShowProxyHelp(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
+          <div className="modal-header">
+            <h2>为什么需要 CORS 代理？</h2>
+            <button className="icon-button" onClick={() => setShowProxyHelp(false)}><X size={18} /></button>
+          </div>
+          <div style={{ lineHeight: 1.8, fontSize: "0.92rem" }}>
+            <p style={{ marginBottom: 12 }}>
+              <strong>CORS（跨源资源共享）</strong>是浏览器的一项安全策略：当网页向不同域名的服务器发送请求时，浏览器会检查目标服务器是否允许此来源访问。
+            </p>
+            <p style={{ marginBottom: 12 }}>
+              PassLoop 是纯前端应用，LLM 请求直接从浏览器发出。但大多数 AI 接口（OpenAI、Anthropic 等）不允许浏览器直接调用，会返回 CORS 错误。
+            </p>
+            <p style={{ marginBottom: 12 }}>
+              <strong>CORS 代理</strong>是一个中间服务器，它接收你的请求、转发给目标 API，再把响应返回给浏览器，同时添加允许跨域的响应头。这样浏览器就不会拦截了。
+            </p>
+            <p style={{ marginBottom: 12 }}>
+              简单来说：<br />
+              <span style={{ color: "var(--text-muted)" }}>
+                浏览器 → 代理服务器 → AI 接口 → 代理服务器 → 浏览器
+              </span>
+            </p>
+            <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
+              你可以使用默认提供的公共代理，也可以自行部署私有代理以获得更好的稳定性和安全性。
+            </p>
+            <p style={{ marginTop: 12 }}>
+              <a
+                href="https://github.com/yjh8144/passloop/tree/main/proxy"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--accent)" }}
+              >
+                查看部署指南 →
+              </a>
+            </p>
+          </div>
+          <div className="modal-actions">
+            <button className="primary-button" onClick={() => setShowProxyHelp(false)}>了解了</button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
