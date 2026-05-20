@@ -29,5 +29,6 @@
     grid-template-columns: none;
     height: 100vh;
     overflow-y: auto;
+    padding-bottom: var(--bottom-nav-height, 64px);
   }
 }

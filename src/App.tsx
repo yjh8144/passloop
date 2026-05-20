@@ -41,6 +41,7 @@ import { ImportSourceDialog } from "./components/dialogs/ImportSourceDialog";
 import { ImportChoiceDialog } from "./components/dialogs/ImportChoiceDialog";
 import { BackupImportDialog } from "./components/dialogs/BackupImportDialog";
 import { Sidebar } from "./components/layout/Sidebar";
+import { BottomNav } from "./components/layout/BottomNav";
 import { Topbar } from "./components/layout/Topbar";
 import { ManagerPage } from "./components/manager/ManagerPage";
 import { LlmConfigModal } from "./components/llm/LlmConfigModal";
@@ -679,6 +680,22 @@ export function App() {
           />
         )}
       </main>
+
+      <BottomNav
+        t={t}
+        page={page}
+        setPage={changePage}
+        data={data}
+        activeList={activeList}
+        setData={setData}
+        createList={createList}
+        onQuestionImport={() => setShowImportDialog(true)}
+        onBackupImport={handleBackupImport}
+        onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
+        onExportBackup={() => downloadJson("passloop-config.json", data)}
+        onResetAll={resetAll}
+        onOpenLlmConfig={() => setShowGlobalLlmConfig(true)}
+      />
 
       <ToastStack toasts={toasts} />
       <ConfirmDialog state={confirmDialog} onClose={() => setConfirmDialog(null)} />

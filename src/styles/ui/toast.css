@@ -61,3 +61,16 @@
   50% { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
+
+@media (max-width: 820px) {
+  .toast-stack {
+    top: 18px;
+    bottom: auto;
+    right: 12px;
+    left: 12px;
+  }
+
+  .toast {
+    max-width: 100%;
+  }
+}

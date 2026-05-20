@@ -9,6 +9,7 @@
 @import "./layout/workspace.css";
 @import "./layout/topbar.css";
 @import "./layout/panels.css";
+@import "./layout/bottom-nav.css";
 
 /* Practice */
 @import "./practice/practice.css";
