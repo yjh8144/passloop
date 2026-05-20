@@ -1716,6 +1716,10 @@ textarea:focus {
   100% { transform: scale(1); }
 }
 
+.mobile-navigator {
+  display: none;
+}
+
 @media (max-width: 1180px) {
   .app-shell {
     grid-template-columns: 228px minmax(0, 1fr);
@@ -1831,6 +1835,11 @@ textarea:focus {
 
   .topbar {
     grid-template-columns: 1fr;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding-bottom: 8px;
   }
 
   .topbar-actions {
@@ -1841,24 +1850,30 @@ textarea:focus {
     order: 3;
   }
 
-  .stage-header,
+  .stage-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
   .question-heading,
   .answer-panel {
     display: grid;
   }
 
   .stage-tools {
-    justify-content: stretch;
-  }
-
-  .stage-tools .pager,
-  .sidebar-toggle-button {
-    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
   }
 
   .stage-tools .pager {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-toggle-button {
+    display: none;
   }
 
   .inspector {
@@ -1866,6 +1881,14 @@ textarea:focus {
     position: static;
     max-height: none;
     overflow-y: visible;
+  }
+
+  .mobile-navigator {
+    display: block;
+  }
+
+  .desktop-navigator {
+    display: none;
   }
 
   .inspector-edge-toggle {
@@ -1881,17 +1904,41 @@ textarea:focus {
   }
 
   .list-editor,
-  .config-grid,
-  .question-row {
+  .config-grid {
     grid-template-columns: 1fr;
   }
 
+  .topbar-settings-wrap {
+    position: static;
+    width: 100%;
+  }
+
+  .topbar-settings-dropdown {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 70vh;
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+
   .question-row {
-    align-items: start;
+    grid-template-columns: 32px minmax(0, 1fr) auto auto auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+  }
+
+  .question-row p {
+    grid-column: 2 / -1;
+    margin-top: -4px;
   }
 
   .question-row .icon-button {
-    width: 100%;
+    width: 36px;
   }
 }
 
@@ -1901,28 +1948,47 @@ textarea:focus {
     padding: 12px;
   }
 
-  .nav-stack,
-  .sidebar-actions {
-    grid-template-columns: 1fr;
+  .nav-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .topbar-actions,
+  .sidebar-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .topbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
   .inline-actions,
   .question-actions,
   .editor-actions {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .question-actions button,
+  .editor-actions button {
+    flex: 1 1 auto;
   }
 
   .answer-panel {
     grid-template-columns: 1fr;
+    gap: 0;
   }
 
-  .select-label,
-  .icon-button,
-  .question-actions button,
-  .editor-actions button {
-    width: 100%;
+  .answer-panel > div:not(:first-child) {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 12px;
+  }
+
+  .select-label {
+    min-width: 0;
+    flex: 1 1 100px;
   }
 
   .brand .mobile-sidebar-toggle {
@@ -1954,14 +2020,6 @@ textarea:focus {
   .option-row {
     grid-template-columns: 22px 28px minmax(0, 1fr);
     padding: 9px;
-  }
-
-  .topbar-settings-dropdown {
-    right: auto;
-    left: 0;
-    min-width: 0;
-    width: calc(100vw - 24px);
-    max-width: 320px;
   }
 }
 
