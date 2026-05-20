@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Download, Upload, X } from "lucide-react";
+import { Download, Loader2, Upload, X } from "lucide-react";
 
 export function ImportSourceDialog({ open, onClose, onFileSelect, onUrlImport }: {
   open: boolean;
   onClose: () => void;
   onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
-  onUrlImport: (url: string) => void;
+  onUrlImport: (url: string) => Promise<void>;
 }) {
   const [urlMode, setUrlMode] = useState(false);
   const [url, setUrl] = useState("");
@@ -19,20 +19,25 @@ export function ImportSourceDialog({ open, onClose, onFileSelect, onUrlImport }:
 
   if (!open) return null;
 
-  const handleUrlSubmit = () => {
+  const handleUrlSubmit = async () => {
     const trimmed = url.trim();
     if (!trimmed) return;
-    onUrlImport(trimmed);
+    setLoading(true);
+    try {
+      await onUrlImport(trimmed);
+    } finally {
+      setLoading(false);
+    }
     setUrl("");
     setUrlMode(false);
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={loading ? undefined : onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
         <div className="modal-header">
           <h2>导入题目</h2>
-          <button className="icon-button" onClick={onClose}><X size={18} /></button>
+          <button className="icon-button" onClick={onClose} disabled={loading}><X size={18} /></button>
         </div>
         <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>选择题目来源：</p>
         <div className="import-choice-buttons">
@@ -64,13 +69,13 @@ export function ImportSourceDialog({ open, onClose, onFileSelect, onUrlImport }:
         <div className="modal-actions">
           {urlMode ? (
             <>
-              <button onClick={() => { setUrlMode(false); setUrl(""); }}>返回</button>
+              <button onClick={() => { setUrlMode(false); setUrl(""); }} disabled={loading}>返回</button>
               <button
                 className="primary-button"
                 onClick={handleUrlSubmit}
-                disabled={!url.trim()}
+                disabled={!url.trim() || loading}
               >
-                <Download size={16} /> 导入
+                {loading ? <><Loader2 size={16} className="spin" /> 下载中…</> : <><Download size={16} /> 导入</>}
               </button>
             </>
           ) : (

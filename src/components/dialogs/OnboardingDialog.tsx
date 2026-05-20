@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { Github, X } from "lucide-react";
 
 export function OnboardingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
@@ -20,6 +20,17 @@ export function OnboardingDialog({ open, onClose }: { open: boolean; onClose: ()
           </ol>
           <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>
             提示：数据存储在浏览器本地，清除浏览器缓存会丢失数据。建议定期使用「导出配置」备份。
+          </p>
+          <p style={{ marginTop: 12, fontSize: "0.9rem" }}>
+            <a
+              href="https://github.com/yjh8144/passloop"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--accent)" }}
+            >
+              <Github size={16} /> GitHub 仓库
+            </a>
+            {" "}— 欢迎 Star 与反馈问题。
           </p>
         </div>
         <div className="modal-actions">
