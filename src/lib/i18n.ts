@@ -1,6 +1,6 @@
-import type { LanguageName } from "./types";
+import type { LanguageName } from "./types"
 
-type Dict = Record<string, string>;
+type Dict = Record<string, string>
 
 const zh: Dict = {
   dashboard: "刷题台",
@@ -44,7 +44,7 @@ const zh: Dict = {
   parse: "解析",
   directImport: "导入题单",
   exportJson: "导出 JSON",
-};
+}
 
 const en: Dict = {
   dashboard: "Practice",
@@ -88,7 +88,7 @@ const en: Dict = {
   parse: "Parse",
   directImport: "Import",
   exportJson: "Export JSON",
-};
+}
 
 const ja: Dict = {
   dashboard: "練習",
@@ -132,7 +132,7 @@ const ja: Dict = {
   parse: "解析",
   directImport: "インポート",
   exportJson: "JSON エクスポート",
-};
+}
 
 const ko: Dict = {
   dashboard: "연습",
@@ -176,7 +176,7 @@ const ko: Dict = {
   parse: "분석",
   directImport: "가져오기",
   exportJson: "JSON 내보내기",
-};
+}
 
 const fr: Dict = {
   dashboard: "Pratique",
@@ -220,11 +220,11 @@ const fr: Dict = {
   parse: "Analyser",
   directImport: "Importer",
   exportJson: "Exporter JSON",
-};
+}
 
-const dicts: Record<LanguageName, Dict> = { zh, en, ja, ko, fr };
+const dicts: Record<LanguageName, Dict> = { zh, en, ja, ko, fr }
 
 export function getTranslator(language: LanguageName) {
-  const dict = dicts[language] ?? zh;
-  return (key: string) => dict[key] ?? key;
+  const dict = dicts[language] ?? zh
+  return (key: string) => dict[key] ?? key
 }

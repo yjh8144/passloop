@@ -6,18 +6,26 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc && vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.2.0",
-    "typescript": "^5.4.5",
+    "lucide-react": "^0.468.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "lucide-react": "^0.468.0"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/react": "^18.2.79",
-    "@types/react-dom": "^18.2.25"
+    "@types/react-dom": "^18.2.25",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.8.3",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.59.4",
+    "vite": "^5.2.0"
   }
 }

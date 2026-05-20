@@ -1,4 +1,4 @@
-import { FileJson } from "lucide-react";
+import { FileJson } from "lucide-react"
 
 export function EmptyState(props: { title: string; description: string }) {
   return (
@@ -7,5 +7,5 @@ export function EmptyState(props: { title: string; description: string }) {
       <strong>{props.title}</strong>
       <p>{props.description}</p>
     </div>
-  );
+  )
 }

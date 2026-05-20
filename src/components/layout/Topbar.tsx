@@ -1,26 +1,26 @@
-import { useState } from "react";
-import { Languages, Moon, Search, Settings2 } from "lucide-react";
-import type { AppData, QuestionList } from "../../lib/types";
-import { ControlPanel } from "../practice/ControlPanel";
+import { useState } from "react"
+import { Languages, Moon, Search, Settings2 } from "lucide-react"
+import type { AppData, QuestionList, TFunc } from "../../lib/types"
+import { ControlPanel } from "../practice/ControlPanel"
 
-type Page = "practice" | "manager" | "llm" | "wrong";
+type Page = "practice" | "manager" | "llm" | "wrong"
 
 export function Topbar(props: {
-  t: (key: string) => string;
-  page: Page;
-  query: string;
-  setQuery: (value: string) => void;
-  data: AppData;
-  updateSettings: (patch: Partial<AppData["settings"]>) => void;
-  activeList: QuestionList;
-  onRedoWrong: () => void;
-  onExportWrong: () => void;
-  onCreateWrongList: () => void;
-  onClearListAttempts: () => void;
+  t: TFunc
+  page: Page
+  query: string
+  setQuery: (value: string) => void
+  data: AppData
+  updateSettings: (patch: Partial<AppData["settings"]>) => void
+  activeList: QuestionList
+  onRedoWrong: () => void
+  onExportWrong: () => void
+  onCreateWrongList: () => void
+  onClearListAttempts: () => void
 }) {
-  const [showSettings, setShowSettings] = useState(false);
-  const showSearch = props.page === "practice" || props.page === "wrong";
-  const showSettingsButton = props.page === "practice" || props.page === "wrong";
+  const [showSettings, setShowSettings] = useState(false)
+  const showSearch = props.page === "practice" || props.page === "wrong"
+  const showSettingsButton = props.page === "practice" || props.page === "wrong"
   return (
     <header className="topbar">
       {showSearch && (
@@ -42,7 +42,9 @@ export function Topbar(props: {
           <Moon size={16} />
           <select
             value={props.data.settings.theme}
-            onChange={(event) => props.updateSettings({ theme: event.target.value as AppData["settings"]["theme"] })}
+            onChange={(event) =>
+              props.updateSettings({ theme: event.target.value as AppData["settings"]["theme"] })
+            }
           >
             <option value="mint">Mint</option>
             <option value="paper">Paper</option>
@@ -57,7 +59,11 @@ export function Topbar(props: {
           <Languages size={16} />
           <select
             value={props.data.settings.language}
-            onChange={(event) => props.updateSettings({ language: event.target.value as AppData["settings"]["language"] })}
+            onChange={(event) =>
+              props.updateSettings({
+                language: event.target.value as AppData["settings"]["language"],
+              })
+            }
           >
             <option value="zh">中文</option>
             <option value="en">English</option>
@@ -68,7 +74,11 @@ export function Topbar(props: {
         </label>
         {showSettingsButton && (
           <div className="topbar-settings-wrap">
-            <button className="icon-button" title="刷题设置" onClick={() => setShowSettings((v) => !v)}>
+            <button
+              className="icon-button"
+              title="刷题设置"
+              onClick={() => setShowSettings((v) => !v)}
+            >
               <Settings2 size={17} />
             </button>
             {showSettings && (
@@ -84,10 +94,12 @@ export function Topbar(props: {
                 />
               </div>
             )}
-            {showSettings && <div className="topbar-settings-backdrop" onClick={() => setShowSettings(false)} />}
+            {showSettings && (
+              <div className="topbar-settings-backdrop" onClick={() => setShowSettings(false)} />
+            )}
           </div>
         )}
       </div>
     </header>
-  );
+  )
 }

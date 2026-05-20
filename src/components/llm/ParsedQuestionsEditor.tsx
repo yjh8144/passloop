@@ -1,63 +1,63 @@
-import { Plus, Trash2, X } from "lucide-react";
-import type { ChoiceOption, Question, QuestionList, QuestionType } from "../../lib/types";
-import { createEmptyQuestion, createId, typeLabels } from "../../lib/question";
-import { questionTypes } from "../../utils/constants";
+import { Plus, Trash2, X } from "lucide-react"
+import type { ChoiceOption, Question, QuestionList, QuestionType } from "../../lib/types"
+import { createEmptyQuestion, createId, typeLabels } from "../../lib/question"
+import { questionTypes } from "../../utils/constants"
 
 export function ParsedQuestionsEditor(props: {
-  list: QuestionList;
-  readOnly?: boolean;
-  onChange: (list: QuestionList) => void;
+  list: QuestionList
+  readOnly?: boolean
+  onChange: (list: QuestionList) => void
 }) {
   const updateQuestion = (index: number, patch: Partial<Question>) => {
-    if (props.readOnly) return;
+    if (props.readOnly) return
     const questions = props.list.questions.map((q, i) =>
       i === index ? { ...q, ...patch, updatedAt: new Date().toISOString() } : q,
-    );
-    props.onChange({ ...props.list, questions, updatedAt: new Date().toISOString() });
-  };
+    )
+    props.onChange({ ...props.list, questions, updatedAt: new Date().toISOString() })
+  }
 
   const deleteQuestion = (index: number) => {
-    if (props.readOnly) return;
-    const questions = props.list.questions.filter((_, i) => i !== index);
-    props.onChange({ ...props.list, questions, updatedAt: new Date().toISOString() });
-  };
+    if (props.readOnly) return
+    const questions = props.list.questions.filter((_, i) => i !== index)
+    props.onChange({ ...props.list, questions, updatedAt: new Date().toISOString() })
+  }
 
   const addQuestion = () => {
-    if (props.readOnly) return;
-    const questions = [...props.list.questions, createEmptyQuestion()];
-    props.onChange({ ...props.list, questions, updatedAt: new Date().toISOString() });
-  };
+    if (props.readOnly) return
+    const questions = [...props.list.questions, createEmptyQuestion()]
+    props.onChange({ ...props.list, questions, updatedAt: new Date().toISOString() })
+  }
 
   const updateOption = (qIndex: number, optIndex: number, patch: Partial<ChoiceOption>) => {
-    if (props.readOnly) return;
-    const question = props.list.questions[qIndex];
-    const options = question.options.map((o, i) => (i === optIndex ? { ...o, ...patch } : o));
-    updateQuestion(qIndex, { options });
-  };
+    if (props.readOnly) return
+    const question = props.list.questions[qIndex]
+    const options = question.options.map((o, i) => (i === optIndex ? { ...o, ...patch } : o))
+    updateQuestion(qIndex, { options })
+  }
 
   const addOption = (qIndex: number) => {
-    if (props.readOnly) return;
-    const question = props.list.questions[qIndex];
-    const nextLabel = String.fromCharCode(65 + question.options.length);
-    const options = [...question.options, { id: createId(), label: nextLabel, text: "" }];
-    updateQuestion(qIndex, { options });
-  };
+    if (props.readOnly) return
+    const question = props.list.questions[qIndex]
+    const nextLabel = String.fromCharCode(65 + question.options.length)
+    const options = [...question.options, { id: createId(), label: nextLabel, text: "" }]
+    updateQuestion(qIndex, { options })
+  }
 
   const deleteOption = (qIndex: number, optIndex: number) => {
-    if (props.readOnly) return;
-    const question = props.list.questions[qIndex];
-    const options = question.options.filter((_, i) => i !== optIndex);
-    updateQuestion(qIndex, { options });
-  };
+    if (props.readOnly) return
+    const question = props.list.questions[qIndex]
+    const options = question.options.filter((_, i) => i !== optIndex)
+    updateQuestion(qIndex, { options })
+  }
 
   const updateSubQuestion = (qIndex: number, subIndex: number, patch: Partial<Question>) => {
-    if (props.readOnly) return;
-    const question = props.list.questions[qIndex];
+    if (props.readOnly) return
+    const question = props.list.questions[qIndex]
     const subQuestions = question.subQuestions.map((sq, i) =>
       i === subIndex ? { ...sq, ...patch, updatedAt: new Date().toISOString() } : sq,
-    );
-    updateQuestion(qIndex, { subQuestions });
-  };
+    )
+    updateQuestion(qIndex, { subQuestions })
+  }
 
   return (
     <div className="parsed-editor-stack">
@@ -71,11 +71,17 @@ export function ParsedQuestionsEditor(props: {
               onChange={(e) => updateQuestion(qIndex, { type: e.target.value as QuestionType })}
             >
               {questionTypes.map((t) => (
-                <option key={t} value={t}>{typeLabels[t]}</option>
+                <option key={t} value={t}>
+                  {typeLabels[t]}
+                </option>
               ))}
             </select>
             {!props.readOnly && (
-              <button className="icon-button danger-icon" title="删除题目" onClick={() => deleteQuestion(qIndex)}>
+              <button
+                className="icon-button danger-icon"
+                title="删除题目"
+                onClick={() => deleteQuestion(qIndex)}
+              >
                 <Trash2 size={15} />
               </button>
             )}
@@ -101,7 +107,11 @@ export function ParsedQuestionsEditor(props: {
               <div className="parsed-options-header">
                 <span className="parsed-options-label">选项</span>
                 {!props.readOnly && (
-                  <button className="icon-button" title="添加选项" onClick={() => addOption(qIndex)}>
+                  <button
+                    className="icon-button"
+                    title="添加选项"
+                    onClick={() => addOption(qIndex)}
+                  >
                     <Plus size={14} />
                   </button>
                 )}
@@ -120,7 +130,11 @@ export function ParsedQuestionsEditor(props: {
                     onChange={(e) => updateOption(qIndex, oIndex, { text: e.target.value })}
                   />
                   {!props.readOnly && (
-                    <button className="icon-button danger-icon" title="删除选项" onClick={() => deleteOption(qIndex, oIndex)}>
+                    <button
+                      className="icon-button danger-icon"
+                      title="删除选项"
+                      onClick={() => deleteOption(qIndex, oIndex)}
+                    >
                       <X size={14} />
                     </button>
                   )}
@@ -150,7 +164,10 @@ export function ParsedQuestionsEditor(props: {
                 updateQuestion(qIndex, {
                   answer:
                     question.type === "multiple" || question.type === "blank"
-                      ? e.target.value.split("|").map((s) => s.trim()).filter(Boolean)
+                      ? e.target.value
+                          .split("|")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
                       : e.target.value,
                 })
               }
@@ -170,14 +187,20 @@ export function ParsedQuestionsEditor(props: {
               {question.subQuestions.map((sub, sIndex) => (
                 <div className="parsed-subquestion-card" key={sub.id}>
                   <div className="parsed-card-header">
-                    <span className="parsed-card-index">{qIndex + 1}.{sIndex + 1}</span>
+                    <span className="parsed-card-index">
+                      {qIndex + 1}.{sIndex + 1}
+                    </span>
                     <select
                       value={sub.type}
                       disabled={props.readOnly}
-                      onChange={(e) => updateSubQuestion(qIndex, sIndex, { type: e.target.value as QuestionType })}
+                      onChange={(e) =>
+                        updateSubQuestion(qIndex, sIndex, { type: e.target.value as QuestionType })
+                      }
                     >
                       {questionTypes.map((t) => (
-                        <option key={t} value={t}>{typeLabels[t]}</option>
+                        <option key={t} value={t}>
+                          {typeLabels[t]}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -198,7 +221,10 @@ export function ParsedQuestionsEditor(props: {
                         updateSubQuestion(qIndex, sIndex, {
                           answer:
                             sub.type === "multiple" || sub.type === "blank"
-                              ? e.target.value.split("|").map((s) => s.trim()).filter(Boolean)
+                              ? e.target.value
+                                  .split("|")
+                                  .map((s) => s.trim())
+                                  .filter(Boolean)
                               : e.target.value,
                         })
                       }
@@ -209,7 +235,9 @@ export function ParsedQuestionsEditor(props: {
                     <textarea
                       value={sub.explanation}
                       disabled={props.readOnly}
-                      onChange={(e) => updateSubQuestion(qIndex, sIndex, { explanation: e.target.value })}
+                      onChange={(e) =>
+                        updateSubQuestion(qIndex, sIndex, { explanation: e.target.value })
+                      }
                     />
                   </label>
                 </div>
@@ -224,5 +252,5 @@ export function ParsedQuestionsEditor(props: {
         </button>
       )}
     </div>
-  );
+  )
 }

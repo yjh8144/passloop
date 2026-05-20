@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
-import type { ChangeEvent } from "react";
+import { useCallback, useEffect, useState } from "react"
 import {
   BookOpen,
   BrainCircuit,
@@ -11,51 +10,48 @@ import {
   Shuffle,
   Trash2,
   Upload,
-} from "lucide-react";
-import type { AppData, QuestionList } from "../../lib/types";
+} from "lucide-react"
+import type { AppData, QuestionList, TFunc } from "../../lib/types"
 
-type Page = "practice" | "manager" | "llm" | "wrong";
+type Page = "practice" | "manager" | "llm" | "wrong"
 
 export function BottomNav(props: {
-  t: (key: string) => string;
-  page: Page;
-  setPage: (page: Page) => void;
-  data: AppData;
-  activeList: QuestionList;
-  setData: (data: AppData | ((data: AppData) => AppData)) => void;
-  createList: () => void;
-  onQuestionImport: () => void;
-  onBackupImport: (event: ChangeEvent<HTMLInputElement>) => void;
-  onExportList: () => void;
-  onExportBackup: () => void;
-  onResetAll: () => void;
-  onOpenLlmConfig: () => void;
+  t: TFunc
+  page: Page
+  setPage: (page: Page) => void
+  data: AppData
+  activeList: QuestionList
+  setData: (data: AppData | ((data: AppData) => AppData)) => void
+  createList: () => void
+  onQuestionImport: () => void
+  onBackupImport: () => void
+  onExportList: () => void
+  onExportBackup: () => void
+  onResetAll: () => void
+  onOpenLlmConfig: () => void
 }) {
-  const { t } = props;
-  const [panelOpen, setPanelOpen] = useState(false);
+  const { t } = props
+  const [panelOpen, setPanelOpen] = useState(false)
 
-  const close = useCallback(() => setPanelOpen(false), []);
+  const close = useCallback(() => setPanelOpen(false), [])
 
   useEffect(() => {
-    if (!panelOpen) return;
+    if (!panelOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [panelOpen, close]);
+      if (e.key === "Escape") close()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [panelOpen, close])
 
   const navigate = (page: Page) => {
-    props.setPage(page);
-    close();
-  };
+    props.setPage(page)
+    close()
+  }
 
   return (
     <div className="bottom-nav-wrapper">
-      <div
-        className={`bottom-nav-backdrop ${panelOpen ? "is-visible" : ""}`}
-        onClick={close}
-      />
+      <div className={`bottom-nav-backdrop ${panelOpen ? "is-visible" : ""}`} onClick={close} />
 
       <div
         className={`bottom-nav-panel ${panelOpen ? "is-open" : ""}`}
@@ -67,7 +63,14 @@ export function BottomNav(props: {
           <div>
             <div className="panel-section-title">
               <span>题单</span>
-              <button className="icon-button" title={t("addList")} onClick={() => { props.createList(); close(); }}>
+              <button
+                className="icon-button"
+                title={t("addList")}
+                onClick={() => {
+                  props.createList()
+                  close()
+                }}
+              >
                 <Plus size={15} />
               </button>
             </div>
@@ -77,8 +80,8 @@ export function BottomNav(props: {
                   key={list.id}
                   className={`panel-list-item ${list.id === props.activeList.id ? "active" : ""}`}
                   onClick={() => {
-                    props.setData((current) => ({ ...current, activeListId: list.id }));
-                    close();
+                    props.setData((current) => ({ ...current, activeListId: list.id }))
+                    close()
                   }}
                 >
                   <span>{list.name}</span>
@@ -91,23 +94,58 @@ export function BottomNav(props: {
           <div>
             <div className="panel-section-title">功能</div>
             <div className="panel-actions">
-              <button className="panel-action-btn" onClick={() => { props.onOpenLlmConfig(); close(); }}>
+              <button
+                className="panel-action-btn"
+                onClick={() => {
+                  props.onOpenLlmConfig()
+                  close()
+                }}
+              >
                 <Settings2 size={15} /> LLM 配置
               </button>
-              <button className="panel-action-btn" onClick={() => { props.onQuestionImport(); close(); }}>
+              <button
+                className="panel-action-btn"
+                onClick={() => {
+                  props.onQuestionImport()
+                  close()
+                }}
+              >
                 <Upload size={15} /> {t("importQuestions")}
               </button>
-              <label className="panel-action-btn file-action">
+              <button
+                className="panel-action-btn"
+                onClick={() => {
+                  props.onBackupImport()
+                  close()
+                }}
+              >
                 <Upload size={15} /> {t("importBackup")}
-                <input type="file" accept=".json,application/json" onChange={(e) => { props.onBackupImport(e); close(); }} />
-              </label>
-              <button className="panel-action-btn" onClick={() => { props.onExportList(); close(); }}>
+              </button>
+              <button
+                className="panel-action-btn"
+                onClick={() => {
+                  props.onExportList()
+                  close()
+                }}
+              >
                 <Download size={15} /> {t("exportList")}
               </button>
-              <button className="panel-action-btn" onClick={() => { props.onExportBackup(); close(); }}>
+              <button
+                className="panel-action-btn"
+                onClick={() => {
+                  props.onExportBackup()
+                  close()
+                }}
+              >
                 <FileJson size={15} /> {t("exportBackup")}
               </button>
-              <button className="panel-action-btn danger" onClick={() => { props.onResetAll(); close(); }}>
+              <button
+                className="panel-action-btn danger"
+                onClick={() => {
+                  props.onResetAll()
+                  close()
+                }}
+              >
                 <Trash2 size={15} /> 清除所有数据
               </button>
             </div>
@@ -158,5 +196,5 @@ export function BottomNav(props: {
         </button>
       </nav>
     </div>
-  );
+  )
 }

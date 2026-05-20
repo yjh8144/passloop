@@ -9,7 +9,9 @@
   background: var(--surface-2);
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .upload-raw-text:hover {
   background: var(--surface-3);

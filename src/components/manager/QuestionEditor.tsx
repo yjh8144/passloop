@@ -1,22 +1,26 @@
-import { useEffect, useState } from "react";
-import { Check, Plus, Trash2, X } from "lucide-react";
-import type { ChoiceOption, Question, QuestionType } from "../../lib/types";
-import { createEmptyQuestion, createId, normalizeQuestion, typeLabels } from "../../lib/question";
-import { questionTypes } from "../../utils/constants";
+import { useEffect, useState } from "react"
+import { Check, Plus, Trash2, X } from "lucide-react"
+import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
+import { createEmptyQuestion, createId, normalizeQuestion, typeLabels } from "../../lib/question"
+import { questionTypes } from "../../utils/constants"
 
 export function QuestionEditor(props: {
-  question: Question;
-  onSave: (question: Question) => void;
-  onCancel: () => void;
-  showPrompt: (title: string, defaultValue: string, onSubmit: (value: string) => void) => void;
+  question: Question
+  onSave: (question: Question) => void
+  onCancel: () => void
+  showPrompt: (title: string, defaultValue: string, onSubmit: (value: string) => void) => void
 }) {
-  const [draft, setDraft] = useState<Question>(props.question);
-  useEffect(() => setDraft(props.question), [props.question]);
+  const [draft, setDraft] = useState<Question>(props.question)
+  useEffect(() => setDraft(props.question), [props.question])
   const patch = (value: Partial<Question>) =>
-    setDraft((current) => ({ ...current, ...value, updatedAt: new Date().toISOString() }));
+    setDraft((current) => ({ ...current, ...value, updatedAt: new Date().toISOString() }))
   const updateOption = (id: string, patchValue: Partial<ChoiceOption>) => {
-    patch({ options: draft.options.map((option) => (option.id === id ? { ...option, ...patchValue } : option)) });
-  };
+    patch({
+      options: draft.options.map((option) =>
+        option.id === id ? { ...option, ...patchValue } : option,
+      ),
+    })
+  }
   return (
     <div className="question-editor">
       <div className="editor-title">
@@ -27,7 +31,10 @@ export function QuestionEditor(props: {
       </div>
       <label className="field-label">
         题型
-        <select value={draft.type} onChange={(event) => patch({ type: event.target.value as QuestionType })}>
+        <select
+          value={draft.type}
+          onChange={(event) => patch({ type: event.target.value as QuestionType })}
+        >
           {questionTypes.map((type) => (
             <option key={type} value={type}>
               {typeLabels[type]}
@@ -41,7 +48,10 @@ export function QuestionEditor(props: {
       </label>
       <label className="field-label">
         题干
-        <textarea value={draft.prompt} onChange={(event) => patch({ prompt: event.target.value })} />
+        <textarea
+          value={draft.prompt}
+          onChange={(event) => patch({ prompt: event.target.value })}
+        />
       </label>
       {(draft.type === "single" || draft.type === "multiple" || draft.type === "boolean") && (
         <div className="option-editor">
@@ -52,7 +62,14 @@ export function QuestionEditor(props: {
                 className="icon-button"
                 onClick={() =>
                   patch({
-                    options: [...draft.options, { id: createId(), label: String.fromCharCode(65 + draft.options.length), text: "" }],
+                    options: [
+                      ...draft.options,
+                      {
+                        id: createId(),
+                        label: String.fromCharCode(65 + draft.options.length),
+                        text: "",
+                      },
+                    ],
                   })
                 }
               >
@@ -62,10 +79,21 @@ export function QuestionEditor(props: {
           </div>
           {draft.options.map((option) => (
             <div className="option-edit-row" key={option.id}>
-              <input value={option.label} onChange={(event) => updateOption(option.id, { label: event.target.value })} />
-              <input value={option.text} onChange={(event) => updateOption(option.id, { text: event.target.value })} />
+              <input
+                value={option.label}
+                onChange={(event) => updateOption(option.id, { label: event.target.value })}
+              />
+              <input
+                value={option.text}
+                onChange={(event) => updateOption(option.id, { text: event.target.value })}
+              />
               {draft.type !== "boolean" && (
-                <button className="icon-button" onClick={() => patch({ options: draft.options.filter((item) => item.id !== option.id) })}>
+                <button
+                  className="icon-button"
+                  onClick={() =>
+                    patch({ options: draft.options.filter((item) => item.id !== option.id) })
+                  }
+                >
                   <Trash2 size={15} />
                 </button>
               )}
@@ -81,7 +109,10 @@ export function QuestionEditor(props: {
             patch({
               answer:
                 draft.type === "multiple" || draft.type === "blank"
-                  ? event.target.value.split("|").map((item) => item.trim()).filter(Boolean)
+                  ? event.target.value
+                      .split("|")
+                      .map((item) => item.trim())
+                      .filter(Boolean)
                   : event.target.value,
             })
           }
@@ -89,7 +120,10 @@ export function QuestionEditor(props: {
       </label>
       <label className="field-label">
         解析
-        <textarea value={draft.explanation} onChange={(event) => patch({ explanation: event.target.value })} />
+        <textarea
+          value={draft.explanation}
+          onChange={(event) => patch({ explanation: event.target.value })}
+        />
       </label>
       {draft.type === "composite" && (
         <div className="sub-editor">
@@ -97,7 +131,9 @@ export function QuestionEditor(props: {
             <span>子题</span>
             <button
               className="icon-button"
-              onClick={() => patch({ subQuestions: [...draft.subQuestions, createEmptyQuestion("single")] })}
+              onClick={() =>
+                patch({ subQuestions: [...draft.subQuestions, createEmptyQuestion("single")] })
+              }
             >
               <Plus size={16} />
             </button>
@@ -112,8 +148,8 @@ export function QuestionEditor(props: {
                     subQuestions: draft.subQuestions.map((item) =>
                       item.id === subQuestion.id ? { ...item, title } : item,
                     ),
-                  });
-                });
+                  })
+                })
               }}
             >
               {index + 1}. {subQuestion.title}
@@ -128,5 +164,5 @@ export function QuestionEditor(props: {
         </button>
       </div>
     </div>
-  );
+  )
 }

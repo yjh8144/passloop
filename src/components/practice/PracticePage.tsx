@@ -1,99 +1,175 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import type { MutableRefObject } from "react";
-import { BarChart3, Check, ChevronLeft, ChevronRight, Download, Plus, Shuffle, Undo2, X } from "lucide-react";
-import type { AppData, Question, Toast } from "../../lib/types";
-import { getListStats } from "../../lib/question";
-import { EmptyState } from "../ui/EmptyState";
-import { StatsPanel } from "../practice/StatsPanel";
-import { WrongSessionPanel } from "../practice/WrongSessionPanel";
-import type { WrongSession } from "../practice/WrongSessionPanel";
-import { Navigator } from "../practice/Navigator";
-import { QuestionCard } from "../practice/QuestionCard";
+import { useEffect, useRef, useState } from "react"
+import type { MutableRefObject } from "react"
+import {
+  BarChart3,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Plus,
+  Shuffle,
+  Undo2,
+  X,
+} from "lucide-react"
+import type { AppData, Question, TFunc } from "../../lib/types"
+import { getListStats } from "../../lib/question"
+import { EmptyState } from "../ui/EmptyState"
+import { StatsPanel } from "../practice/StatsPanel"
+import { WrongSessionPanel } from "../practice/WrongSessionPanel"
+import type { WrongSession } from "../practice/WrongSessionPanel"
+import { Navigator } from "../practice/Navigator"
+import { QuestionCard } from "../practice/QuestionCard"
 
-type Page = "practice" | "manager" | "llm" | "wrong";
-type AnswerMap = Record<string, string | string[]>;
-type ResultMap = Record<string, boolean>;
+type Page = "practice" | "manager" | "llm" | "wrong"
+type AnswerMap = Record<string, string | string[]>
+type ResultMap = Record<string, boolean>
+
+function InspectorContent(props: {
+  t: TFunc
+  questions: Question[]
+  currentIndex: number
+  setCurrentIndex: (value: number | ((value: number) => number)) => void
+  results: ResultMap
+  stats: ReturnType<typeof getListStats>
+  settings: AppData["settings"]
+  mode: Page
+  wrongSession: WrongSession | null
+  allSubmitted: boolean
+  correctCount: number
+  wrongCount: number
+  navigatorClassName?: string
+  onClearListAttempts: () => void
+  onRedoWrong: () => void
+  onExportWrong: () => void
+  onCreateWrongList: () => void
+}) {
+  const navigator = (
+    <Navigator
+      questions={props.questions}
+      currentIndex={props.currentIndex}
+      results={props.results}
+      setCurrentIndex={props.setCurrentIndex}
+      viewMode={props.settings.viewMode}
+      revealMode={props.settings.revealMode}
+      allSubmitted={props.allSubmitted}
+    />
+  )
+  return (
+    <>
+      {props.allSubmitted && (
+        <section className="inspector-panel completion-actions-panel">
+          <h3>全部完成</h3>
+          <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 10px" }}>
+            共 {props.questions.length} 题，正确 {props.correctCount} 题，错误 {props.wrongCount} 题
+          </p>
+          <div className="completion-buttons">
+            <button className="btn-danger" onClick={props.onClearListAttempts}>
+              <Undo2 size={16} /> 重新刷题
+            </button>
+            <button onClick={props.onRedoWrong}>
+              <Shuffle size={16} /> 重做错题
+            </button>
+            <button onClick={props.onExportWrong}>
+              <Download size={16} /> 导出错题
+            </button>
+            <button onClick={props.onCreateWrongList}>
+              <Plus size={16} /> 错题生成题单
+            </button>
+          </div>
+        </section>
+      )}
+      <StatsPanel t={props.t} stats={props.stats} revealMode={props.settings.revealMode} />
+      {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
+      {props.navigatorClassName ? (
+        <div className={props.navigatorClassName}>{navigator}</div>
+      ) : (
+        navigator
+      )}
+    </>
+  )
+}
 
 export function PracticePage(props: {
-  t: (key: string) => string;
-  mode: Page;
-  questions: Question[];
-  currentIndex: number;
-  setCurrentIndex: (value: number | ((value: number) => number)) => void;
-  answers: AnswerMap;
-  setAnswers: (value: AnswerMap | ((value: AnswerMap) => AnswerMap)) => void;
-  results: ResultMap;
-  submitQuestion: (question: Question) => void;
-  submitAll: () => void;
-  settings: AppData["settings"];
-  updateSettings: (patch: Partial<AppData["settings"]>) => void;
-  stats: ReturnType<typeof getListStats>;
-  wrongSession: WrongSession | null;
-  onRedoWrong: () => void;
-  onExportWrong: () => void;
-  onCreateWrongList: () => void;
-  onClearListAttempts: () => void;
-  startedAtRef: MutableRefObject<Record<string, number>>;
+  t: TFunc
+  mode: Page
+  questions: Question[]
+  currentIndex: number
+  setCurrentIndex: (value: number | ((value: number) => number)) => void
+  answers: AnswerMap
+  setAnswers: (value: AnswerMap | ((value: AnswerMap) => AnswerMap)) => void
+  results: ResultMap
+  submitQuestion: (question: Question) => void
+  submitAll: () => void
+  settings: AppData["settings"]
+  updateSettings: (patch: Partial<AppData["settings"]>) => void
+  stats: ReturnType<typeof getListStats>
+  wrongSession: WrongSession | null
+  onRedoWrong: () => void
+  onExportWrong: () => void
+  onCreateWrongList: () => void
+  onClearListAttempts: () => void
+  startedAtRef: MutableRefObject<Record<string, number>>
 }) {
-  const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
-  const [inspectorFloatOpen, setInspectorFloatOpen] = useState(false);
-  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
-  const activeQuestion = props.questions[props.currentIndex];
+  const [inspectorCollapsed, setInspectorCollapsed] = useState(false)
+  const [inspectorFloatOpen, setInspectorFloatOpen] = useState(false)
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false)
+  const activeQuestion = props.questions[props.currentIndex]
   useEffect(() => {
     if (activeQuestion && !props.startedAtRef.current[activeQuestion.id]) {
-      props.startedAtRef.current[activeQuestion.id] = Date.now();
+      props.startedAtRef.current[activeQuestion.id] = Date.now()
     }
-  }, [activeQuestion, props.startedAtRef]);
+  }, [activeQuestion, props.startedAtRef])
 
-  const allSubmitted = props.questions.length > 0 && props.questions.every((q) => q.id in props.results);
-  const correctCount = props.questions.filter((q) => props.results[q.id] === true).length;
-  const wrongCount = props.questions.filter((q) => props.results[q.id] === false).length;
+  const allSubmitted =
+    props.questions.length > 0 && props.questions.every((q) => q.id in props.results)
+  const correctCount = props.questions.filter((q) => props.results[q.id] === true).length
+  const wrongCount = props.questions.filter((q) => props.results[q.id] === false).length
 
   useEffect(() => {
-    if (!inspectorFloatOpen) return;
+    if (!inspectorFloatOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setInspectorFloatOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [inspectorFloatOpen]);
+      if (e.key === "Escape") setInspectorFloatOpen(false)
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [inspectorFloatOpen])
 
-  const prevAllSubmitted = useRef(false);
+  const prevAllSubmitted = useRef(false)
   useEffect(() => {
     if (allSubmitted && !prevAllSubmitted.current) {
-      setShowCompletionDialog(true);
+      setShowCompletionDialog(true)
     }
-    prevAllSubmitted.current = allSubmitted;
-  }, [allSubmitted]);
+    prevAllSubmitted.current = allSubmitted
+  }, [allSubmitted])
 
-  const paperStackRef = useRef<HTMLDivElement>(null);
+  const paperStackRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (props.settings.viewMode !== "paper" || !props.questions.length) return;
-    const container = paperStackRef.current;
-    if (!container) return;
-    const stage = container.closest(".question-stage");
-    const scrollRoot = stage && stage.scrollHeight > stage.clientHeight ? stage : null;
+    if (props.settings.viewMode !== "paper" || !props.questions.length) return
+    const container = paperStackRef.current
+    if (!container) return
+    const stage = container.closest(".question-stage")
+    const scrollRoot = stage && stage.scrollHeight > stage.clientHeight ? stage : null
     const observer = new IntersectionObserver(
       (entries) => {
-        let best: { idx: number; ratio: number } | null = null;
+        let best: { idx: number; ratio: number } | null = null
         for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          const id = entry.target.id;
-          const idx = Number(id.replace("question-", ""));
-          if (isNaN(idx)) continue;
+          if (!entry.isIntersecting) continue
+          const id = entry.target.id
+          const idx = Number(id.replace("question-", ""))
+          if (isNaN(idx)) continue
           if (!best || entry.intersectionRatio > best.ratio) {
-            best = { idx, ratio: entry.intersectionRatio };
+            best = { idx, ratio: entry.intersectionRatio }
           }
         }
-        if (best) props.setCurrentIndex(best.idx);
+        if (best) props.setCurrentIndex(best.idx)
       },
       { root: scrollRoot, threshold: [0, 0.25, 0.5, 0.75, 1] },
-    );
-    const cards = container.querySelectorAll("[id^='question-']");
-    cards.forEach((card) => observer.observe(card));
-    return () => observer.disconnect();
-  }, [props.settings.viewMode, props.questions.length]);
+    )
+    const cards = container.querySelectorAll("[id^='question-']")
+    cards.forEach((card) => observer.observe(card))
+    return () => observer.disconnect()
+  }, [props.settings.viewMode, props.questions.length])
 
   const content =
     props.questions.length === 0 ? (
@@ -117,11 +193,13 @@ export function PracticePage(props: {
             allSubmitted={allSubmitted}
           />
         ))}
-        {props.settings.practiceMode !== "memorize" && props.settings.submitMode === "paper" && props.questions.some((q) => !(q.id in props.results)) && (
-          <button className="submit-all-button" onClick={props.submitAll}>
-            <Check size={18} /> 提交全部答案
-          </button>
-        )}
+        {props.settings.practiceMode !== "memorize" &&
+          props.settings.submitMode === "paper" &&
+          props.questions.some((q) => !(q.id in props.results)) && (
+            <button className="submit-all-button" onClick={props.submitAll}>
+              <Check size={18} /> 提交全部答案
+            </button>
+          )}
       </div>
     ) : (
       activeQuestion && (
@@ -134,13 +212,17 @@ export function PracticePage(props: {
           submitted={activeQuestion.id in props.results}
           practiceMode={props.settings.practiceMode}
           onSubmit={() => props.submitQuestion(activeQuestion)}
-          onNext={props.currentIndex < props.questions.length - 1 ? () => props.setCurrentIndex((i) => i + 1) : undefined}
+          onNext={
+            props.currentIndex < props.questions.length - 1
+              ? () => props.setCurrentIndex((i) => i + 1)
+              : undefined
+          }
           hideSubmit={props.settings.submitMode === "paper"}
           revealMode={props.settings.revealMode}
           allSubmitted={allSubmitted}
         />
       )
-    );
+    )
 
   return (
     <div className={`practice-layout ${inspectorCollapsed ? "inspector-collapsed" : ""}`}>
@@ -170,7 +252,9 @@ export function PracticePage(props: {
                 <button
                   className="icon-button"
                   onClick={() =>
-                    props.setCurrentIndex((index) => Math.min(index + 1, props.questions.length - 1))
+                    props.setCurrentIndex((index) =>
+                      Math.min(index + 1, props.questions.length - 1),
+                    )
                   }
                   disabled={props.currentIndex >= props.questions.length - 1}
                 >
@@ -199,54 +283,46 @@ export function PracticePage(props: {
           />
         </div>
         {content}
-        {props.settings.viewMode === "single" && props.settings.submitMode === "paper" && props.settings.practiceMode !== "memorize" && props.currentIndex >= props.questions.length - 1 && props.questions.some((q) => !(q.id in props.results)) && (
-          <button className="submit-all-button" onClick={props.submitAll}>
-            <Check size={18} /> 提交全部答案
-          </button>
-        )}
+        {props.settings.viewMode === "single" &&
+          props.settings.submitMode === "paper" &&
+          props.settings.practiceMode !== "memorize" &&
+          props.currentIndex >= props.questions.length - 1 &&
+          props.questions.some((q) => !(q.id in props.results)) && (
+            <button className="submit-all-button" onClick={props.submitAll}>
+              <Check size={18} /> 提交全部答案
+            </button>
+          )}
       </section>
 
       {!inspectorCollapsed && (
         <aside className="inspector">
-          {allSubmitted && (
-            <section className="inspector-panel completion-actions-panel">
-              <h3>全部完成</h3>
-              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 10px" }}>
-                共 {props.questions.length} 题，正确 {correctCount} 题，错误 {wrongCount} 题
-              </p>
-              <div className="completion-buttons">
-                <button className="btn-danger" onClick={props.onClearListAttempts}>
-                  <Undo2 size={16} /> 重新刷题
-                </button>
-                <button onClick={props.onRedoWrong}>
-                  <Shuffle size={16} /> 重做错题
-                </button>
-                <button onClick={props.onExportWrong}>
-                  <Download size={16} /> 导出错题
-                </button>
-                <button onClick={props.onCreateWrongList}>
-                  <Plus size={16} /> 错题生成题单
-                </button>
-              </div>
-            </section>
-          )}
-          <StatsPanel t={props.t} stats={props.stats} />
-          {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
-          <div className="desktop-navigator">
-            <Navigator
-              questions={props.questions}
-              currentIndex={props.currentIndex}
-              results={props.results}
-              setCurrentIndex={props.setCurrentIndex}
-              viewMode={props.settings.viewMode}
-              revealMode={props.settings.revealMode}
-              allSubmitted={allSubmitted}
-            />
-          </div>
+          <InspectorContent
+            t={props.t}
+            questions={props.questions}
+            currentIndex={props.currentIndex}
+            setCurrentIndex={props.setCurrentIndex}
+            results={props.results}
+            stats={props.stats}
+            settings={props.settings}
+            mode={props.mode}
+            wrongSession={props.wrongSession}
+            allSubmitted={allSubmitted}
+            correctCount={correctCount}
+            wrongCount={wrongCount}
+            navigatorClassName="desktop-navigator"
+            onClearListAttempts={props.onClearListAttempts}
+            onRedoWrong={props.onRedoWrong}
+            onExportWrong={props.onExportWrong}
+            onCreateWrongList={props.onCreateWrongList}
+          />
         </aside>
       )}
 
-      <button className="inspector-fab" onClick={() => setInspectorFloatOpen(true)} title="统计与导航">
+      <button
+        className="inspector-fab"
+        onClick={() => setInspectorFloatOpen(true)}
+        title="统计与导航"
+      >
         <BarChart3 size={22} />
       </button>
       <div
@@ -255,39 +331,27 @@ export function PracticePage(props: {
       />
       <div className={`inspector-float ${inspectorFloatOpen ? "is-open" : ""}`}>
         <div className="inspector-float-inner">
-        {allSubmitted && (
-          <section className="inspector-panel completion-actions-panel">
-            <h3>全部完成</h3>
-            <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 10px" }}>
-              共 {props.questions.length} 题，正确 {correctCount} 题，错误 {wrongCount} 题
-            </p>
-            <div className="completion-buttons">
-              <button className="btn-danger" onClick={props.onClearListAttempts}>
-                <Undo2 size={16} /> 重新刷题
-              </button>
-              <button onClick={props.onRedoWrong}>
-                <Shuffle size={16} /> 重做错题
-              </button>
-              <button onClick={props.onExportWrong}>
-                <Download size={16} /> 导出错题
-              </button>
-              <button onClick={props.onCreateWrongList}>
-                <Plus size={16} /> 错题生成题单
-              </button>
-            </div>
-          </section>
-        )}
-        <StatsPanel t={props.t} stats={props.stats} />
-        {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
-        <Navigator
-          questions={props.questions}
-          currentIndex={props.currentIndex}
-          results={props.results}
-          setCurrentIndex={(idx) => { props.setCurrentIndex(idx); setInspectorFloatOpen(false); }}
-          viewMode={props.settings.viewMode}
-          revealMode={props.settings.revealMode}
-          allSubmitted={allSubmitted}
-        />
+          <InspectorContent
+            t={props.t}
+            questions={props.questions}
+            currentIndex={props.currentIndex}
+            setCurrentIndex={(idx) => {
+              props.setCurrentIndex(idx)
+              setInspectorFloatOpen(false)
+            }}
+            results={props.results}
+            stats={props.stats}
+            settings={props.settings}
+            mode={props.mode}
+            wrongSession={props.wrongSession}
+            allSubmitted={allSubmitted}
+            correctCount={correctCount}
+            wrongCount={wrongCount}
+            onClearListAttempts={props.onClearListAttempts}
+            onRedoWrong={props.onRedoWrong}
+            onExportWrong={props.onExportWrong}
+            onCreateWrongList={props.onCreateWrongList}
+          />
         </div>
       </div>
 
@@ -302,29 +366,59 @@ export function PracticePage(props: {
             </div>
             <div className="completion-stats">
               <div className="completion-stat-row">
-                <span>总题数</span><strong>{props.questions.length}</strong>
+                <span>总题数</span>
+                <strong>{props.questions.length}</strong>
               </div>
               <div className="completion-stat-row">
-                <span>正确</span><strong className="text-correct">{correctCount}</strong>
+                <span>正确</span>
+                <strong className="text-correct">{correctCount}</strong>
               </div>
               <div className="completion-stat-row">
-                <span>错误</span><strong className="text-wrong">{wrongCount}</strong>
+                <span>错误</span>
+                <strong className="text-wrong">{wrongCount}</strong>
               </div>
               <div className="completion-stat-row">
-                <span>正确率</span><strong>{props.questions.length ? Math.round((correctCount / props.questions.length) * 100) : 0}%</strong>
+                <span>正确率</span>
+                <strong>
+                  {props.questions.length
+                    ? Math.round((correctCount / props.questions.length) * 100)
+                    : 0}
+                  %
+                </strong>
               </div>
             </div>
             <div className="completion-buttons">
-              <button className="btn-danger" onClick={() => { setShowCompletionDialog(false); props.onClearListAttempts(); }}>
+              <button
+                className="btn-danger"
+                onClick={() => {
+                  setShowCompletionDialog(false)
+                  props.onClearListAttempts()
+                }}
+              >
                 <Undo2 size={16} /> 重新刷题
               </button>
-              <button onClick={() => { setShowCompletionDialog(false); props.onRedoWrong(); }}>
+              <button
+                onClick={() => {
+                  setShowCompletionDialog(false)
+                  props.onRedoWrong()
+                }}
+              >
                 <Shuffle size={16} /> 重做错题
               </button>
-              <button onClick={() => { setShowCompletionDialog(false); props.onExportWrong(); }}>
+              <button
+                onClick={() => {
+                  setShowCompletionDialog(false)
+                  props.onExportWrong()
+                }}
+              >
                 <Download size={16} /> 导出错题
               </button>
-              <button onClick={() => { setShowCompletionDialog(false); props.onCreateWrongList(); }}>
+              <button
+                onClick={() => {
+                  setShowCompletionDialog(false)
+                  props.onCreateWrongList()
+                }}
+              >
                 <Plus size={16} /> 错题生成题单
               </button>
             </div>
@@ -332,5 +426,5 @@ export function PracticePage(props: {
         </div>
       )}
     </div>
-  );
+  )
 }

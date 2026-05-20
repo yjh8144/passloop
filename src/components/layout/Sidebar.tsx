@@ -1,5 +1,4 @@
-import { useCallback, useRef, useState } from "react";
-import type { ChangeEvent } from "react";
+import { useCallback, useRef, useState } from "react"
 import {
   BookOpen,
   BrainCircuit,
@@ -17,58 +16,62 @@ import {
   Trash2,
   Upload,
   X,
-} from "lucide-react";
-import type { AppData, QuestionList } from "../../lib/types";
-import { isDebugEnabled, setDebugEnabled, debugLog } from "../../lib/debug";
+} from "lucide-react"
+import type { AppData, QuestionList, TFunc } from "../../lib/types"
+import { isDebugEnabled, setDebugEnabled, debugLog } from "../../lib/debug"
 
-type Page = "practice" | "manager" | "llm" | "wrong";
+type Page = "practice" | "manager" | "llm" | "wrong"
 
 export function Sidebar(props: {
-  t: (key: string) => string;
-  page: Page;
-  setPage: (page: Page) => void;
-  data: AppData;
-  activeList: QuestionList;
-  setData: (data: AppData | ((data: AppData) => AppData)) => void;
-  createList: () => void;
-  onQuestionImport: () => void;
-  onBackupImport: (event: ChangeEvent<HTMLInputElement>) => void;
-  onExportList: () => void;
-  onExportBackup: () => void;
-  onResetAll: () => void;
-  onOpenLlmConfig: () => void;
-  collapsed: boolean;
-  onToggleCollapsed: () => void;
-  desktopCollapsed: boolean;
-  onToggleDesktopCollapsed: () => void;
+  t: TFunc
+  page: Page
+  setPage: (page: Page) => void
+  data: AppData
+  activeList: QuestionList
+  setData: (data: AppData | ((data: AppData) => AppData)) => void
+  createList: () => void
+  onQuestionImport: () => void
+  onBackupImport: () => void
+  onExportList: () => void
+  onExportBackup: () => void
+  onResetAll: () => void
+  onOpenLlmConfig: () => void
+  collapsed: boolean
+  onToggleCollapsed: () => void
+  desktopCollapsed: boolean
+  onToggleDesktopCollapsed: () => void
 }) {
-  const { t } = props;
-  const clickTimesRef = useRef<number[]>([]);
-  const [showDebugDialog, setShowDebugDialog] = useState(false);
-  const [debugEnabled, setDebugState] = useState(() => isDebugEnabled());
+  const { t } = props
+  const clickTimesRef = useRef<number[]>([])
+  const [showDebugDialog, setShowDebugDialog] = useState(false)
+  const [debugEnabled, setDebugState] = useState(() => isDebugEnabled())
 
   const handleBrandClick = useCallback(() => {
-    const now = Date.now();
-    clickTimesRef.current.push(now);
-    clickTimesRef.current = clickTimesRef.current.filter((ts) => now - ts < 3000);
+    const now = Date.now()
+    clickTimesRef.current.push(now)
+    clickTimesRef.current = clickTimesRef.current.filter((ts) => now - ts < 3000)
     if (clickTimesRef.current.length >= 7) {
-      clickTimesRef.current = [];
-      setShowDebugDialog(true);
+      clickTimesRef.current = []
+      setShowDebugDialog(true)
     }
-  }, []);
+  }, [])
 
   const toggleDebug = useCallback(() => {
-    const next = !debugEnabled;
-    setDebugEnabled(next);
-    setDebugState(next);
-    debugLog(next ? "Debug mode enabled" : "Debug mode disabled");
-    setShowDebugDialog(false);
-  }, [debugEnabled]);
+    const next = !debugEnabled
+    setDebugEnabled(next)
+    setDebugState(next)
+    debugLog(next ? "Debug mode enabled" : "Debug mode disabled")
+    setShowDebugDialog(false)
+  }, [debugEnabled])
 
   return (
-    <aside className={`sidebar ${props.collapsed ? "is-collapsed" : ""} ${props.desktopCollapsed ? "desktop-collapsed" : ""}`}>
+    <aside
+      className={`sidebar ${props.collapsed ? "is-collapsed" : ""} ${props.desktopCollapsed ? "desktop-collapsed" : ""}`}
+    >
       <div className="brand">
-        <div className="brand-mark" onClick={handleBrandClick}>P</div>
+        <div className="brand-mark" onClick={handleBrandClick}>
+          P
+        </div>
         <div className="brand-text">
           <strong>PassLoop</strong>
           <span>本地轻量化刷题平台</span>
@@ -100,16 +103,28 @@ export function Sidebar(props: {
 
       <div className="sidebar-body">
         <nav className="nav-stack" aria-label="主导航">
-          <button className={props.page === "practice" ? "active" : ""} onClick={() => props.setPage("practice")}>
+          <button
+            className={props.page === "practice" ? "active" : ""}
+            onClick={() => props.setPage("practice")}
+          >
             <BookOpen size={17} /> {t("dashboard")}
           </button>
-          <button className={props.page === "manager" ? "active" : ""} onClick={() => props.setPage("manager")}>
+          <button
+            className={props.page === "manager" ? "active" : ""}
+            onClick={() => props.setPage("manager")}
+          >
             <Edit3 size={17} /> {t("manager")}
           </button>
-          <button className={props.page === "llm" ? "active" : ""} onClick={() => props.setPage("llm")}>
+          <button
+            className={props.page === "llm" ? "active" : ""}
+            onClick={() => props.setPage("llm")}
+          >
             <BrainCircuit size={17} /> {t("llm")}
           </button>
-          <button className={props.page === "wrong" ? "active" : ""} onClick={() => props.setPage("wrong")}>
+          <button
+            className={props.page === "wrong" ? "active" : ""}
+            onClick={() => props.setPage("wrong")}
+          >
             <Shuffle size={17} /> {t("wrong")}
           </button>
         </nav>
@@ -126,9 +141,7 @@ export function Sidebar(props: {
               <button
                 key={list.id}
                 className={`list-item ${list.id === props.activeList.id ? "active" : ""}`}
-                onClick={() =>
-                  props.setData((current) => ({ ...current, activeListId: list.id }))
-                }
+                onClick={() => props.setData((current) => ({ ...current, activeListId: list.id }))}
               >
                 <span className="list-item-name">{list.name}</span>
                 <small className="list-item-count">{list.questions.length} 题</small>
@@ -144,10 +157,9 @@ export function Sidebar(props: {
           <button onClick={props.onQuestionImport}>
             <Upload size={16} /> {t("importQuestions")}
           </button>
-          <label className="file-action">
+          <button onClick={props.onBackupImport}>
             <Upload size={16} /> {t("importBackup")}
-            <input type="file" accept=".json,application/json" onChange={props.onBackupImport} />
-          </label>
+          </button>
           <button onClick={props.onExportList}>
             <Download size={16} /> {t("exportList")}
           </button>
@@ -175,7 +187,11 @@ export function Sidebar(props: {
             <div className="modal-actions">
               <button onClick={() => setShowDebugDialog(false)}>取消</button>
               <button
-                style={{ background: debugEnabled ? "var(--danger)" : "var(--accent)", color: "#fff", borderColor: debugEnabled ? "var(--danger)" : "var(--accent)" }}
+                style={{
+                  background: debugEnabled ? "var(--danger)" : "var(--accent)",
+                  color: "#fff",
+                  borderColor: debugEnabled ? "var(--danger)" : "var(--accent)",
+                }}
                 onClick={toggleDebug}
               >
                 {debugEnabled ? "关闭 Debug" : "开启 Debug"}
@@ -185,5 +201,5 @@ export function Sidebar(props: {
         </div>
       )}
     </aside>
-  );
+  )
 }

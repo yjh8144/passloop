@@ -1,25 +1,26 @@
-import { useState } from "react";
-import { Check, Copy, Download, X } from "lucide-react";
-import { Segmented } from "../ui/Segmented";
+import { useState } from "react"
+import { Check, Copy, Download, X } from "lucide-react"
+import { Segmented } from "../ui/Segmented"
 
 export function SelfGenerateDialog(props: {
-  open: boolean;
-  mode: "answer" | "explanation" | "both" | "none";
-  setMode: (mode: "answer" | "explanation" | "both" | "none") => void;
-  rawText?: string;
-  onClose: () => void;
+  open: boolean
+  mode: "answer" | "explanation" | "both" | "none"
+  setMode: (mode: "answer" | "explanation" | "both" | "none") => void
+  rawText?: string
+  onClose: () => void
 }) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
 
-  if (!props.open) return null;
+  if (!props.open) return null
 
-  const fillInstruction = props.mode === "answer"
-    ? "请为每道题补充答案。"
-    : props.mode === "explanation"
-      ? "请为每道题补充解析。"
-      : props.mode === "none"
-        ? "不需要补充答案和解析，answer 和 explanation 留空即可。"
-        : "请为每道题同时补充答案和解析。";
+  const fillInstruction =
+    props.mode === "answer"
+      ? "请为每道题补充答案。"
+      : props.mode === "explanation"
+        ? "请为每道题补充解析。"
+        : props.mode === "none"
+          ? "不需要补充答案和解析，answer 和 explanation 留空即可。"
+          : "请为每道题同时补充答案和解析。"
 
   const jsonFormat = `{
   "name": "题单名称",
@@ -36,11 +37,9 @@ export function SelfGenerateDialog(props: {
       "subQuestions": []
     }
   ]
-}`;
+}`
 
-  const rawTextSection = props.rawText?.trim()
-    ? `\n\n原始题目：\n${props.rawText.trim()}`
-    : "";
+  const rawTextSection = props.rawText?.trim() ? `\n\n原始题目：\n${props.rawText.trim()}` : ""
 
   const prompt = `你是题库整理助手。请把我提供的题目转换为以下 JSON 格式。${fillInstruction}
 只返回 JSON，不要使用 Markdown 代码块包裹。
@@ -50,33 +49,35 @@ options 格式：[{"label":"A","text":"选项内容"}]，判断题用 [{"label":
 多选题/填空题 answer 用数组，如 ["A","B"]。判断题 answer 用 "T" 或 "F"。
 
 输出 JSON 格式：
-${jsonFormat}${rawTextSection}`;
+${jsonFormat}${rawTextSection}`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   const handleDownload = () => {
-    const blob = new Blob([prompt], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "passloop-prompt.txt";
-    anchor.click();
-    URL.revokeObjectURL(url);
-  };
+    const blob = new Blob([prompt], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = "passloop-prompt.txt"
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
 
-  const hasRawText = !!props.rawText?.trim();
+  const hasRawText = !!props.rawText?.trim()
 
   return (
     <div className="modal-overlay" onClick={props.onClose}>
       <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>自助 AI 生成题目 JSON</h2>
-          <button className="icon-button" onClick={props.onClose}><X size={18} /></button>
+          <button className="icon-button" onClick={props.onClose}>
+            <X size={18} />
+          </button>
         </div>
         <p className="modal-desc">
           {hasRawText
@@ -98,10 +99,23 @@ ${jsonFormat}${rawTextSection}`;
         </div>
         <div className="self-gen-prompt-box">
           <div className="self-gen-prompt-header">
-            <strong>Prompt{hasRawText ? `（已包含题目文本，${prompt.length.toLocaleString()} 字）` : `（${prompt.length.toLocaleString()} 字）`}</strong>
+            <strong>
+              Prompt
+              {hasRawText
+                ? `（已包含题目文本，${prompt.length.toLocaleString()} 字）`
+                : `（${prompt.length.toLocaleString()} 字）`}
+            </strong>
             <div className="self-gen-prompt-actions">
               <button onClick={handleCopy}>
-                {copied ? <><Check size={15} /> 已复制</> : <><Copy size={15} /> 复制</>}
+                {copied ? (
+                  <>
+                    <Check size={15} /> 已复制
+                  </>
+                ) : (
+                  <>
+                    <Copy size={15} /> 复制
+                  </>
+                )}
               </button>
               <button onClick={handleDownload}>
                 <Download size={15} /> 下载 TXT
@@ -109,7 +123,9 @@ ${jsonFormat}${rawTextSection}`;
             </div>
           </div>
           {prompt.length > 10000 && (
-            <p className="prompt-length-warning">内容较长（超过 1 万字），建议下载 TXT 文件后以附件形式发送给 AI。</p>
+            <p className="prompt-length-warning">
+              内容较长（超过 1 万字），建议下载 TXT 文件后以附件形式发送给 AI。
+            </p>
           )}
           <pre className="self-gen-prompt-text">{prompt}</pre>
         </div>
@@ -127,5 +143,5 @@ ${jsonFormat}${rawTextSection}`;
         </div>
       </div>
     </div>
-  );
+  )
 }

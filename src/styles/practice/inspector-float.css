@@ -21,7 +21,9 @@
     color: white;
     box-shadow: 0 4px 14px var(--shadow);
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .inspector-fab:hover {

@@ -1,31 +1,32 @@
-import { Check, ChevronRight } from "lucide-react";
-import type { PracticeMode, Question } from "../../lib/types";
-import { formatAnswer, isAnswerCorrect, typeLabels } from "../../lib/question";
-import { AnswerInput } from "./AnswerInput";
+import { Check, ChevronRight } from "lucide-react"
+import type { PracticeMode, Question } from "../../lib/types"
+import { formatAnswer, isAnswerCorrect, typeLabels } from "../../lib/question"
+import { AnswerInput } from "./AnswerInput"
 
-type AnswerMap = Record<string, string | string[]>;
+type AnswerMap = Record<string, string | string[]>
 
 export function QuestionCard(props: {
-  id?: string;
-  index: number;
-  question: Question;
-  answers: AnswerMap;
-  setAnswers: (value: AnswerMap | ((value: AnswerMap) => AnswerMap)) => void;
-  result?: boolean;
-  submitted: boolean;
-  practiceMode: PracticeMode;
-  onSubmit: () => void;
-  onNext?: () => void;
-  compact?: boolean;
-  hideSubmit?: boolean;
-  revealMode?: "immediate" | "end";
-  allSubmitted?: boolean;
+  id?: string
+  index: number
+  question: Question
+  answers: AnswerMap
+  setAnswers: (value: AnswerMap | ((value: AnswerMap) => AnswerMap)) => void
+  result?: boolean
+  submitted: boolean
+  practiceMode: PracticeMode
+  onSubmit: () => void
+  onNext?: () => void
+  compact?: boolean
+  hideSubmit?: boolean
+  revealMode?: "immediate" | "end"
+  allSubmitted?: boolean
 }) {
-  const showAnswer = props.practiceMode === "memorize"
-    || (props.submitted && (props.revealMode !== "end" || !!props.allSubmitted));
+  const showAnswer =
+    props.practiceMode === "memorize" ||
+    (props.submitted && (props.revealMode !== "end" || !!props.allSubmitted))
   const updateAnswer = (id: string, value: string | string[]) => {
-    props.setAnswers((current) => ({ ...current, [id]: value }));
-  };
+    props.setAnswers((current) => ({ ...current, [id]: value }))
+  }
   return (
     <article id={props.id} className={`question-card ${props.compact ? "compact" : ""}`}>
       <div className="question-heading">
@@ -41,7 +42,9 @@ export function QuestionCard(props: {
           </span>
         )}
       </div>
-      {props.question.prompt && props.question.prompt !== props.question.title && <p className="prompt-text">{props.question.prompt}</p>}
+      {props.question.prompt && props.question.prompt !== props.question.title && (
+        <p className="prompt-text">{props.question.prompt}</p>
+      )}
       {props.question.hint && <div className="hint-box">提示：{props.question.hint}</div>}
 
       {props.question.type === "composite" ? (
@@ -70,7 +73,12 @@ export function QuestionCard(props: {
           )}
         </div>
       ) : (
-        <AnswerInput question={props.question} value={props.answers[props.question.id]} onChange={updateAnswer} practiceMode={props.practiceMode} />
+        <AnswerInput
+          question={props.question}
+          value={props.answers[props.question.id]}
+          onChange={updateAnswer}
+          practiceMode={props.practiceMode}
+        />
       )}
 
       {!props.compact && !props.hideSubmit && props.practiceMode !== "memorize" && (
@@ -107,5 +115,5 @@ export function QuestionCard(props: {
         </div>
       )}
     </article>
-  );
+  )
 }

@@ -1,15 +1,15 @@
-import { Eraser, Plus } from "lucide-react";
-import type { AppData, PracticeMode, SubmitMode, ViewMode, RevealMode } from "../../lib/types";
-import { Segmented } from "../ui/Segmented";
+import { Eraser, Plus } from "lucide-react"
+import type { AppData, PracticeMode, SubmitMode, ViewMode, RevealMode, TFunc } from "../../lib/types"
+import { Segmented } from "../ui/Segmented"
 
 export function ControlPanel(props: {
-  t: (key: string) => string;
-  settings: AppData["settings"];
-  updateSettings: (patch: Partial<AppData["settings"]>) => void;
-  onRedoWrong: () => void;
-  onExportWrong: () => void;
-  onCreateWrongList: () => void;
-  onClearListAttempts: () => void;
+  t: TFunc
+  settings: AppData["settings"]
+  updateSettings: (patch: Partial<AppData["settings"]>) => void
+  onRedoWrong: () => void
+  onExportWrong: () => void
+  onCreateWrongList: () => void
+  onClearListAttempts: () => void
 }) {
   return (
     <section className="inspector-panel">
@@ -64,7 +64,11 @@ export function ControlPanel(props: {
         {props.t("sort")}
         <select
           value={props.settings.sortMode}
-          onChange={(event) => props.updateSettings({ sortMode: event.target.value as AppData["settings"]["sortMode"] })}
+          onChange={(event) =>
+            props.updateSettings({
+              sortMode: event.target.value as AppData["settings"]["sortMode"],
+            })
+          }
         >
           <option value="manual">{props.t("manual")}</option>
           <option value="random">{props.t("random")}</option>
@@ -87,5 +91,5 @@ export function ControlPanel(props: {
         </button>
       </div>
     </section>
-  );
+  )
 }

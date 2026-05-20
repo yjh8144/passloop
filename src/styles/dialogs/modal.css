@@ -65,7 +65,9 @@
   border: 1px solid var(--border);
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .import-choice-buttons button:hover {
   background: var(--accent-light, var(--surface-3));
@@ -82,7 +84,9 @@
   border: 1px solid var(--border);
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .import-choice-file-btn:hover {
   background: var(--accent-light, var(--surface-3));
@@ -97,6 +101,10 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
