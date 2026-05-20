@@ -324,23 +324,6 @@ export function App() {
     }
   };
 
-  const handleUrlImport = async (url: string) => {
-    const makeRequest = (u: string) => fetch("/api/proxy", { headers: { "X-Proxy-Url": u } });
-    try {
-      debugLog("URL import started", { url });
-      const response = await makeRequest(url);
-      if (!response.ok) throw new Error(`请求失败：${response.status}`);
-      const text = await response.text();
-      const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }));
-      debugLog("URL import success", { url, listCount: lists.length, totalQuestions: lists.reduce((sum, l) => sum + l.questions.length, 0) });
-      setPendingImportLists(lists);
-      setShowImportDialog(false);
-    } catch (error) {
-      debugLog("URL import failed", error);
-      pushToast("error", error instanceof Error ? error.message : "URL 导入失败。");
-    }
-  };
-
   const commitImport = (mode: "current" | "new") => {
     if (!pendingImportLists) return;
     const questions = pendingImportLists.flatMap((l) => l.questions).map((q) => ({ ...q, id: createId() }));
@@ -740,7 +723,6 @@ export function App() {
         open={showImportDialog}
         onClose={() => setShowImportDialog(false)}
         onFileSelect={handleQuestionImport}
-        onUrlImport={handleUrlImport}
       />
       <ImportChoiceDialog
         lists={pendingImportLists}
@@ -3123,62 +3105,12 @@ function PromptDialog({ state, onClose }: { state: PromptDialogState; onClose: (
   );
 }
 
-function ImportSourceDialog({ open, onClose, onFileSelect, onUrlImport }: {
+function ImportSourceDialog({ open, onClose, onFileSelect }: {
   open: boolean;
   onClose: () => void;
   onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
-  onUrlImport: (url: string) => void;
 }) {
-  const [mode, setMode] = useState<"choose" | "url">("choose");
-  const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (open) { setMode("choose"); setUrl(""); setLoading(false); }
-  }, [open]);
-
-  useEffect(() => {
-    if (mode === "url") setTimeout(() => inputRef.current?.focus(), 0);
-  }, [mode]);
-
   if (!open) return null;
-
-  if (mode === "url") {
-    return (
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h2>输入 JSON URL</h2>
-            <button className="icon-button" onClick={onClose}><X size={18} /></button>
-          </div>
-          <input
-            ref={inputRef}
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://example.com/questions.json"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && url.trim()) {
-                setLoading(true);
-                onUrlImport(url.trim());
-              }
-            }}
-            style={{ marginTop: 8 }}
-          />
-          <div className="modal-actions">
-            <button onClick={() => setMode("choose")}>返回</button>
-            <button
-              className="primary-button"
-              disabled={!url.trim() || loading}
-              onClick={() => { setLoading(true); onUrlImport(url.trim()); }}
-            >
-              {loading ? "导入中…" : "导入"}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -3193,9 +3125,6 @@ function ImportSourceDialog({ open, onClose, onFileSelect, onUrlImport }: {
             <Upload size={16} /> 上传本地 JSON 文件
             <input type="file" accept=".json,application/json" onChange={onFileSelect} />
           </label>
-          <button onClick={() => setMode("url")}>
-            <FileJson size={16} /> 输入 JSON URL
-          </button>
         </div>
         <div className="modal-actions">
           <button onClick={onClose}>取消</button>
