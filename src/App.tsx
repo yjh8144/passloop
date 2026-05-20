@@ -325,11 +325,22 @@ export function App() {
   };
 
   const handleUrlImport = async (url: string) => {
+    const proxies = [
+      (u: string) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+      (u: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    ];
     try {
       debugLog("URL import started", { url });
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error(`请求失败：${response.status}`);
+      let response: Response | null = null;
+      for (const proxy of proxies) {
+        try {
+          response = await fetch(proxy(url));
+          if (response.ok) break;
+        } catch {
+          continue;
+        }
+      }
+      if (!response || !response.ok) throw new Error("所有代理均请求失败，请稍后重试");
       const text = await response.text();
       const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }));
       debugLog("URL import success", { url, listCount: lists.length, totalQuestions: lists.reduce((sum, l) => sum + l.questions.length, 0) });
