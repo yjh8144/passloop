@@ -1,6 +1,12 @@
 import type { LlmConfig, Question } from "./types";
 import { parseQuestionJson } from "./question";
 
+function assertConfigValid(apiKey: string, model: string, endpoint: string): void {
+  if (!apiKey) throw new Error("请填写 API Key。");
+  if (!model) throw new Error("请填写模型名称。");
+  if (!endpoint) throw new Error("请填写 API 地址。");
+}
+
 const SYSTEM_PROMPT = `你是题库整理助手。请把用户提供的未整理题目转换为 PassLoop 标准 JSON。
 只返回 JSON，不要 Markdown。
 输出结构为：{"name":"题单名称","description":"","questions":[...]}。
@@ -39,6 +45,7 @@ async function streamOpenAiCompatible(prompt: string, config: LlmConfig, onChunk
     config.endpoint.trim() || "https://api.openai.com/v1/chat/completions",
   );
   const model = config.model.trim() || "gpt-4.1-mini";
+  assertConfigValid(config.apiKey, model, endpoint);
   const body: Record<string, unknown> = {
     model,
     messages: [
@@ -72,6 +79,7 @@ async function streamOpenAiCompatible(prompt: string, config: LlmConfig, onChunk
 async function streamAnthropic(prompt: string, config: LlmConfig, onChunk: (accumulated: string) => void) {
   const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages";
   const model = config.model.trim() || "claude-3-5-sonnet-latest";
+  assertConfigValid(config.apiKey, model, endpoint);
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -108,6 +116,7 @@ async function streamGemini(prompt: string, config: LlmConfig, onChunk: (accumul
   const baseEndpoint =
     config.endpoint.trim() ||
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${config.apiKey}`;
+  assertConfigValid(config.apiKey, model, baseEndpoint);
   const endpoint = baseEndpoint.includes("streamGenerateContent")
     ? baseEndpoint
     : baseEndpoint.replace(":generateContent", ":streamGenerateContent").replace(/\?/, "?alt=sse&");
@@ -213,7 +222,7 @@ ${JSON.stringify(questions.map(q => ({ id: q.id, type: q.type, title: q.title, p
 export async function fetchModelList(config: LlmConfig): Promise<string[]> {
   if (!config.apiKey.trim()) throw new Error("请先填写 API Key。");
   if (config.provider === "anthropic") {
-    throw new Error("Anthropic 暂不支持获取模型列表。");
+    throw new Error("Anthropic 暂不支持获取模型列表，请手动输入模型名称。");
   }
   if (config.provider === "gemini") {
     const baseUrl = config.endpoint.trim()
@@ -270,10 +279,10 @@ function normalizeModelsEndpoint(endpoint: string) {
 }
 
 export async function testLlmConnection(config: LlmConfig): Promise<string> {
-  if (!config.apiKey.trim()) throw new Error("请填写 API Key。");
   if (config.provider === "anthropic") {
     const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages";
     const model = config.model.trim() || "claude-3-5-sonnet-latest";
+    assertConfigValid(config.apiKey, model, endpoint);
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -298,6 +307,7 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
     const endpoint =
       config.endpoint.trim() ||
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey}`;
+    assertConfigValid(config.apiKey, model, endpoint);
     const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -316,6 +326,7 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
     config.endpoint.trim() || "https://api.openai.com/v1/chat/completions",
   );
   const model = config.model.trim() || "gpt-4.1-mini";
+  assertConfigValid(config.apiKey, model, endpoint);
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {

@@ -102,7 +102,7 @@ export function normalizeAppData(value: unknown): AppData {
   const lists = Array.isArray(source.lists)
     ? source.lists.map(normalizeList).filter(Boolean)
     : fallback.lists;
-  const safeLists = lists.length ? (lists as QuestionList[]) : fallback.lists;
+  const safeLists = deduplicateListIds(lists.length ? (lists as QuestionList[]) : fallback.lists);
   const activeListId =
     typeof source.activeListId === "string" &&
     safeLists.some((list) => list.id === source.activeListId)
@@ -115,6 +115,17 @@ export function normalizeAppData(value: unknown): AppData {
     attempts: Array.isArray(source.attempts) ? source.attempts : [],
     settings: { ...defaultSettings, ...(source.settings ?? {}) },
   };
+}
+
+function deduplicateListIds(lists: QuestionList[]): QuestionList[] {
+  const seen = new Set<string>();
+  return lists.map((list) => {
+    if (seen.has(list.id)) {
+      return { ...list, id: createId() };
+    }
+    seen.add(list.id);
+    return list;
+  });
 }
 
 export function normalizeList(value: unknown): QuestionList | null {

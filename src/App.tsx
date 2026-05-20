@@ -11,6 +11,8 @@ import {
   Copy,
   Download,
   Edit3,
+  Eye,
+  EyeOff,
   FileJson,
   Github,
   Languages,
@@ -24,6 +26,7 @@ import {
   Shuffle,
   Sparkles,
   Trash2,
+  Undo2,
   Upload,
   X,
 } from "lucide-react";
@@ -39,7 +42,7 @@ import type {
   Toast,
   ViewMode,
 } from "./lib/types";
-import { getTranslator } from "./lib/i18n";
+import { getTranslator } from "./lib/i18n/index";
 import {
   clearLlmConfig,
   createDefaultData,
@@ -149,6 +152,44 @@ function ResetConfirmDialog({ open, onClose, onConfirm }: { open: boolean; onClo
   );
 }
 
+const ONBOARDING_KEY = "passloop.onboarding.shown";
+
+function OnboardingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>欢迎使用 PassLoop</h2>
+          <button className="icon-button" onClick={onClose}><X size={18} /></button>
+        </div>
+        <div style={{ lineHeight: 1.8, fontSize: "0.95rem" }}>
+          <p style={{ marginBottom: 12 }}>PassLoop 是一个纯前端的刷题系统，所有数据保存在浏览器缓存中。以下是快速上手指南：</p>
+          <ol style={{ paddingLeft: 20, margin: "0 0 12px" }}>
+            <li><strong>选择或新建题单</strong> — 左侧边栏的「题单」列表可切换不同题单，点击 <strong>+</strong> 按钮可新建题单。</li>
+            <li><strong>导入题目</strong> — 点击左侧「导入题目」上传 JSON 文件，或在「题库管理」页面手动添加题目。</li>
+            <li><strong>LLM 解析</strong> — 粘贴未整理的题目文本，配置 LLM 后一键转换为标准题库格式。</li>
+            <li><strong>刷题练习</strong> — 在「刷题台」中答题，系统会记录正确率、用时和错题。右上角有设置按钮，可切换排序、模式等选项。</li>
+            <li><strong>错题重练</strong> — 点击「错题临时页」可集中练习做错的题目。</li>
+          </ol>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>
+            提示：数据存储在浏览器本地，清除浏览器缓存会丢失数据。建议定期使用「导出配置」备份。
+          </p>
+        </div>
+        <div className="modal-actions">
+          <button
+            className="primary-button"
+            style={{ marginLeft: "auto" }}
+            onClick={onClose}
+          >
+            开始使用
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function App() {
   const [data, setData] = useState<AppData>(() => loadData());
   const [page, setPage] = useState<Page>("practice");
@@ -164,6 +205,11 @@ export function App() {
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>(null);
   const [promptDialog, setPromptDialog] = useState<PromptDialogState>(null);
   const [resetConfirmDialog, setResetConfirmDialog] = useState(false);
+  const [pendingImportLists, setPendingImportLists] = useState<QuestionList[] | null>(null);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem(ONBOARDING_KEY);
+  });
   const startedAtRef = useRef<Record<string, number>>({});
   const llmUnsavedRef = useRef(false);
   const t = getTranslator(data.settings.language);
@@ -268,33 +314,98 @@ export function App() {
     event.target.value = "";
     if (!file) return;
     try {
-      const lists = parseQuestionJson(await readFileAsText(file));
+      const lists = parseQuestionJson(await readFileAsText(file)).map((l) => ({ ...l, id: createId() }));
       debugLog("Question import", { fileName: file.name, listCount: lists.length, totalQuestions: lists.reduce((sum, l) => sum + l.questions.length, 0) });
-      updateData((current) => ({
-        ...current,
-        lists: [...current.lists, ...lists],
-        activeListId: lists[0]?.id ?? current.activeListId,
-      }));
-      pushToast("success", `已导入 ${lists.length} 个题单。`);
+      setPendingImportLists(lists);
+      setShowImportDialog(false);
     } catch (error) {
       debugLog("Question import failed", error);
       pushToast("error", error instanceof Error ? error.message : "导入失败。");
     }
   };
 
+  const handleUrlImport = async (url: string) => {
+    try {
+      debugLog("URL import started", { url });
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`请求失败：${response.status}`);
+      const text = await response.text();
+      const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }));
+      debugLog("URL import success", { url, listCount: lists.length, totalQuestions: lists.reduce((sum, l) => sum + l.questions.length, 0) });
+      setPendingImportLists(lists);
+      setShowImportDialog(false);
+    } catch (error) {
+      debugLog("URL import failed", error);
+      pushToast("error", error instanceof Error ? error.message : "URL 导入失败。");
+    }
+  };
+
+  const commitImport = (mode: "current" | "new") => {
+    if (!pendingImportLists) return;
+    const questions = pendingImportLists.flatMap((l) => l.questions).map((q) => ({ ...q, id: createId() }));
+    if (mode === "current") {
+      debugLog("Import to current list", { questionCount: questions.length });
+      updateActiveList((list) => ({
+        ...list,
+        questions: [...list.questions, ...questions],
+        updatedAt: new Date().toISOString(),
+      }));
+      pushToast("success", `已添加 ${questions.length} 道题到当前题单。`);
+    } else {
+      const name = pendingImportLists.length === 1 ? pendingImportLists[0].name : `导入题单`;
+      debugLog("Import as new list", { name, questionCount: questions.length });
+      updateData((current) => {
+        const newList: QuestionList = {
+          id: createId(),
+          name,
+          description: "",
+          questions,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        return { ...current, lists: [...current.lists, newList], activeListId: newList.id };
+      });
+      pushToast("success", `已创建新题单「${name}」，共 ${questions.length} 道题。`);
+    }
+    setPendingImportLists(null);
+  };
+
+  const [pendingBackup, setPendingBackup] = useState<AppData | null>(null);
+
   const handleBackupImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    showConfirm("导入缓存备份会覆盖当前浏览器中的题单、记录和配置。确定继续吗？", async () => {
-      try {
-        const imported = normalizeAppData(JSON.parse(await readFileAsText(file)));
-        setData(imported);
-        pushToast("success", "缓存备份已恢复。");
-      } catch {
-        pushToast("error", "缓存备份不是有效的 PassLoop 数据。");
-      }
-    });
+    try {
+      const imported = normalizeAppData(JSON.parse(await readFileAsText(file)));
+      debugLog("Backup import parsed", { listCount: imported.lists.length, attemptCount: imported.attempts.length });
+      setPendingBackup(imported);
+    } catch {
+      pushToast("error", "文件不是有效的 PassLoop 配置数据。");
+    }
+  };
+
+  const commitBackupImport = (mode: "overwrite" | "merge") => {
+    if (!pendingBackup) return;
+    if (mode === "overwrite") {
+      debugLog("Backup import: overwrite");
+      setData(pendingBackup);
+      pushToast("success", "配置已覆盖恢复。");
+    } else {
+      debugLog("Backup import: merge", { existingLists: data.lists.length, importedLists: pendingBackup.lists.length });
+      const existingIds = new Set(data.lists.map((l) => l.id));
+      const newLists = pendingBackup.lists
+        .map((l) => existingIds.has(l.id) ? { ...l, id: createId() } : l);
+      const existingAttemptKeys = new Set(data.attempts.map((a) => `${a.questionId}-${a.submittedAt}`));
+      const newAttempts = pendingBackup.attempts.filter((a) => !existingAttemptKeys.has(`${a.questionId}-${a.submittedAt}`));
+      updateData((current) => ({
+        ...current,
+        lists: [...current.lists, ...newLists],
+        attempts: [...current.attempts, ...newAttempts],
+      }));
+      pushToast("success", `已合并 ${newLists.length} 个题单。`);
+    }
+    setPendingBackup(null);
   };
 
   const createList = () => {
@@ -554,10 +665,10 @@ export function App() {
         activeList={activeList}
         setData={setData}
         createList={createList}
-        onQuestionImport={handleQuestionImport}
+        onQuestionImport={() => setShowImportDialog(true)}
         onBackupImport={handleBackupImport}
         onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-        onExportBackup={() => downloadJson("passloop-cache-backup.json", data)}
+        onExportBackup={() => downloadJson("passloop-config.json", data)}
         onResetAll={resetAll}
         collapsed={mobileSidebarCollapsed}
         onToggleCollapsed={() => setMobileSidebarCollapsed((collapsed) => !collapsed)}
@@ -576,6 +687,7 @@ export function App() {
           activeList={activeList}
           onRedoWrong={resetWrongPractice}
           onExportWrong={exportWrongList}
+          onClearListAttempts={clearActiveListAttempts}
         />
 
         {page === "manager" ? (
@@ -588,7 +700,6 @@ export function App() {
             pushToast={pushToast}
             showConfirm={showConfirm}
             showPrompt={showPrompt}
-            onClearListAttempts={clearActiveListAttempts}
             onDeleteList={() => deleteList(activeList.id)}
           />
         ) : page === "llm" ? (
@@ -624,6 +735,23 @@ export function App() {
       <ToastStack toasts={toasts} />
       <ConfirmDialog state={confirmDialog} onClose={() => setConfirmDialog(null)} />
       <PromptDialog state={promptDialog} onClose={() => setPromptDialog(null)} />
+      <ImportSourceDialog
+        open={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        onFileSelect={handleQuestionImport}
+        onUrlImport={handleUrlImport}
+      />
+      <ImportChoiceDialog
+        lists={pendingImportLists}
+        activeListName={activeList.name}
+        onClose={() => setPendingImportLists(null)}
+        onChoose={commitImport}
+      />
+      <BackupImportDialog
+        data={pendingBackup}
+        onClose={() => setPendingBackup(null)}
+        onChoose={commitBackupImport}
+      />
       <ResetConfirmDialog
         open={resetConfirmDialog}
         onClose={() => setResetConfirmDialog(false)}
@@ -634,6 +762,13 @@ export function App() {
           setAnswers({});
           setResults({});
           setResetConfirmDialog(false);
+        }}
+      />
+      <OnboardingDialog
+        open={showOnboarding}
+        onClose={() => {
+          localStorage.setItem(ONBOARDING_KEY, "1");
+          setShowOnboarding(false);
         }}
       />
     </div>
@@ -648,7 +783,7 @@ function Sidebar(props: {
   activeList: QuestionList;
   setData: (data: AppData | ((data: AppData) => AppData)) => void;
   createList: () => void;
-  onQuestionImport: (event: ChangeEvent<HTMLInputElement>) => void;
+  onQuestionImport: () => void;
   onBackupImport: (event: ChangeEvent<HTMLInputElement>) => void;
   onExportList: () => void;
   onExportBackup: () => void;
@@ -746,18 +881,17 @@ function Sidebar(props: {
                   props.setData((current) => ({ ...current, activeListId: list.id }))
                 }
               >
-                <span>{list.name}</span>
-                <small>{list.questions.length} 题</small>
+                <span className="list-item-name">{list.name}</span>
+                <small className="list-item-count">{list.questions.length} 题</small>
               </button>
             ))}
           </div>
         </div>
 
         <div className="sidebar-actions">
-          <label className="file-action">
+          <button onClick={props.onQuestionImport}>
             <Upload size={16} /> {t("importQuestions")}
-            <input type="file" accept=".json,application/json" onChange={props.onQuestionImport} />
-          </label>
+          </button>
           <label className="file-action">
             <Upload size={16} /> {t("importBackup")}
             <input type="file" accept=".json,application/json" onChange={props.onBackupImport} />
@@ -812,6 +946,7 @@ function Topbar(props: {
   activeList: QuestionList;
   onRedoWrong: () => void;
   onExportWrong: () => void;
+  onClearListAttempts: () => void;
 }) {
   const [showSettings, setShowSettings] = useState(false);
   const showSearch = props.page === "practice" || props.page === "wrong";
@@ -874,6 +1009,7 @@ function Topbar(props: {
                   updateSettings={props.updateSettings}
                   onRedoWrong={props.onRedoWrong}
                   onExportWrong={props.onExportWrong}
+                  onClearListAttempts={props.onClearListAttempts}
                 />
               </div>
             )}
@@ -1272,6 +1408,7 @@ function ControlPanel(props: {
   updateSettings: (patch: Partial<AppData["settings"]>) => void;
   onRedoWrong: () => void;
   onExportWrong: () => void;
+  onClearListAttempts: () => void;
 }) {
   return (
     <section className="inspector-panel">
@@ -1326,6 +1463,11 @@ function ControlPanel(props: {
         <button onClick={props.onRedoWrong}>{props.t("redoWrong")}</button>
         <button onClick={props.onExportWrong}>{props.t("exportWrong")}</button>
       </div>
+      <div className="two-col-actions">
+        <button className="danger-outline" onClick={props.onClearListAttempts}>
+          <Eraser size={16} /> 清空刷题数据
+        </button>
+      </div>
     </section>
   );
 }
@@ -1374,12 +1516,13 @@ function ManagerPage(props: {
   pushToast: (tone: Toast["tone"], message: string) => void;
   showConfirm: (message: string, onConfirm: () => void) => void;
   showPrompt: (title: string, defaultValue: string, onSubmit: (value: string) => void) => void;
-  onClearListAttempts: () => void;
   onDeleteList: () => void;
 }) {
   const [localListName, setLocalListName] = useState(props.list.name);
   const [showLlmConfig, setShowLlmConfig] = useState(false);
   const [showFillChoice, setShowFillChoice] = useState(false);
+  const [showSelfFill, setShowSelfFill] = useState(false);
+  const [selfFillMode, setSelfFillMode] = useState<"answer" | "explanation" | "both">("both");
   const [llmConfig, setLlmConfig] = useState<LlmConfig>(() => loadLlmConfig(defaultLlmConfig));
   const [filling, setFilling] = useState(false);
   const [fillStreamText, setFillStreamText] = useState("");
@@ -1473,6 +1616,9 @@ function ManagerPage(props: {
             <p>新增、删除、修改、查询题目，并维护当前题单信息。</p>
           </div>
           <div className="stage-tools">
+            <button onClick={() => setShowSelfFill(true)}>
+              <Sparkles size={17} /> 自助 AI 补充
+            </button>
             <button onClick={handleFillAnswers} disabled={filling}>
               <BrainCircuit size={17} /> {filling ? "补充中…" : "LLM 补充答案/解析"}
             </button>
@@ -1482,9 +1628,6 @@ function ManagerPage(props: {
           </div>
         </div>
         <div className="manager-danger-actions">
-          <button onClick={props.onClearListAttempts}>
-            <Eraser size={16} /> 清空当前题单刷题数据
-          </button>
           <button className="danger-outline" onClick={props.onDeleteList}>
             <Trash2 size={16} /> 删除当前题单
           </button>
@@ -1621,9 +1764,362 @@ function ManagerPage(props: {
                 <Sparkles size={17} /> 同时补充
               </button>
             </div>
+            <div className="fill-choice-divider">
+              <span>或者</span>
+            </div>
+            <button className="self-fill-button" onClick={() => { setShowFillChoice(false); setShowSelfFill(true); }}>
+              <Copy size={17} /> 自助补充（用你自己的 AI）
+            </button>
           </div>
         </div>
       )}
+
+      {showSelfFill && (
+        <SelfFillDialog
+          open={showSelfFill}
+          questions={props.list.questions}
+          mode={selfFillMode}
+          setMode={setSelfFillMode}
+          onClose={() => setShowSelfFill(false)}
+          onApply={(updated) => {
+            props.updateList((list) => ({
+              ...list,
+              questions: updated,
+              updatedAt: new Date().toISOString(),
+            }));
+            if (props.editing) {
+              const refreshed = updated.find((q) => q.id === props.editing!.id);
+              if (refreshed) props.setEditing(refreshed);
+            }
+            setShowSelfFill(false);
+            props.pushToast("success", "已应用补充结果。");
+          }}
+          pushToast={props.pushToast}
+        />
+      )}
+    </div>
+  );
+}
+
+function SelfFillDialog(props: {
+  open: boolean;
+  questions: Question[];
+  mode: "answer" | "explanation" | "both";
+  setMode: (mode: "answer" | "explanation" | "both") => void;
+  onClose: () => void;
+  onApply: (updated: Question[]) => void;
+  pushToast: (tone: Toast["tone"], message: string) => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const [jsonInput, setJsonInput] = useState("");
+  const [validationError, setValidationError] = useState("");
+
+  if (!props.open) return null;
+
+  const modeInstruction = props.mode === "answer"
+    ? "只补充答案，不需要补充解析。每题返回：{\"id\":\"原题id\",\"answer\":\"答案\"}。"
+    : props.mode === "explanation"
+      ? "只补充解析，不需要补充答案。每题返回：{\"id\":\"原题id\",\"explanation\":\"解析\"}。"
+      : "同时补充答案和解析。每题返回：{\"id\":\"原题id\",\"answer\":\"答案\",\"explanation\":\"解析\"}。";
+
+  const questionsData = JSON.stringify(
+    props.questions.map((q) => ({
+      id: q.id,
+      type: q.type,
+      title: q.title,
+      prompt: q.prompt,
+      options: q.options.map((o) => ({ label: o.label, text: o.text })),
+    })),
+    null,
+    2,
+  );
+
+  const prompt = `你是题库整理助手。请为以下题目${props.mode === "answer" ? "补充答案" : props.mode === "explanation" ? "补充解析" : "补充答案和解析"}。
+只返回 JSON 数组，不要 Markdown。
+${modeInstruction}
+多选题/填空题的答案用数组，如 ["A","B"]。
+判断题答案用 "T" 或 "F"。
+
+题目列表：
+${questionsData}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(prompt).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([prompt], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "passloop-fill-prompt.txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleApply = () => {
+    setValidationError("");
+    const trimmed = jsonInput.trim();
+    if (!trimmed) {
+      setValidationError("请粘贴 AI 返回的 JSON。");
+      return;
+    }
+    let jsonText = trimmed;
+    if (jsonText.startsWith("```")) {
+      jsonText = jsonText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch {
+      debugLog("SelfFill JSON parse error", { textLength: jsonText.length });
+      setValidationError("JSON 格式错误，请检查是否完整复制了 AI 的输出。");
+      return;
+    }
+    const results: Array<{ id?: string; answer?: unknown; explanation?: string }> = Array.isArray(parsed) ? parsed : [];
+    if (!results.length) {
+      debugLog("SelfFill JSON empty array");
+      setValidationError("JSON 应为数组格式，如 [{\"id\":\"...\",\"answer\":\"...\"}]。");
+      return;
+    }
+    const questionIds = new Set(props.questions.map((q) => q.id));
+    const matched = results.filter((r) => r.id && questionIds.has(r.id));
+    if (!matched.length) {
+      debugLog("SelfFill JSON no match", { resultCount: results.length, questionCount: props.questions.length });
+      setValidationError(`未匹配到任何题目。请确认 JSON 中的 id 字段与题目 id 一致（共 ${props.questions.length} 题）。`);
+      return;
+    }
+    debugLog("SelfFill JSON validated", { matched: matched.length, total: results.length, mode: props.mode });
+    const resultMap = new Map(results.map((r) => [r.id, r]));
+    const updated = props.questions.map((q, index) => {
+      const fill = resultMap.get(q.id) ?? results[index];
+      if (!fill) return q;
+      let answer = q.answer;
+      let explanation = q.explanation;
+      if (props.mode !== "explanation" && fill.answer !== undefined) {
+        answer = (q.type === "multiple" || q.type === "blank")
+          ? Array.isArray(fill.answer) ? fill.answer.map(String) : String(fill.answer).split("|").map((s) => s.trim())
+          : String(fill.answer);
+      }
+      if (props.mode !== "answer" && typeof fill.explanation === "string" && fill.explanation) {
+        explanation = fill.explanation;
+      }
+      return { ...q, answer, explanation, updatedAt: new Date().toISOString() };
+    });
+    props.onApply(updated);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={props.onClose}>
+      <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>自助补充答案/解析</h2>
+          <button className="icon-button" onClick={props.onClose}><X size={18} /></button>
+        </div>
+        <p className="modal-desc">
+          复制 Prompt 发给你的 AI，将返回的 JSON 粘贴到下方，校验通过后会自动应用到当前题单。
+        </p>
+        <div className="self-gen-options">
+          <span>补充内容：</span>
+          <Segmented
+            value={props.mode}
+            options={[
+              ["both", "答案 + 解析"],
+              ["answer", "仅答案"],
+              ["explanation", "仅解析"],
+            ]}
+            onChange={(v) => props.setMode(v as "answer" | "explanation" | "both")}
+          />
+        </div>
+        <div className="self-gen-prompt-box">
+          <div className="self-gen-prompt-header">
+            <strong>Prompt（含当前题单 {props.questions.length} 题，{prompt.length.toLocaleString()} 字）</strong>
+            <div className="self-gen-prompt-actions">
+              <button onClick={handleCopy}>
+                {copied ? <><Check size={15} /> 已复制</> : <><Copy size={15} /> 复制</>}
+              </button>
+              <button onClick={handleDownload}>
+                <Download size={15} /> 下载 TXT
+              </button>
+            </div>
+          </div>
+          {prompt.length > 10000 && (
+            <p className="prompt-length-warning">内容较长（超过 1 万字），建议下载 TXT 文件后以附件形式发送给 AI。</p>
+          )}
+          <pre className="self-gen-prompt-text">{prompt}</pre>
+        </div>
+        <div className="field-label">
+          <div className="json-input-header">
+            <span>粘贴或上传 AI 返回的 JSON</span>
+            <label className="upload-json-button">
+              <Upload size={14} /> 上传 JSON
+              <input
+                type="file"
+                accept=".json,.txt,text/plain,application/json"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    const text = String(reader.result ?? "");
+                    debugLog("SelfFill upload JSON", { fileName: file.name, length: text.length });
+                    setJsonInput(text);
+                    setValidationError("");
+                  };
+                  reader.readAsText(file);
+                }}
+              />
+            </label>
+          </div>
+          <textarea
+            value={jsonInput}
+            onChange={(e) => { setJsonInput(e.target.value); setValidationError(""); }}
+            placeholder={'[\n  {"id": "题目id", "answer": "A", "explanation": "..."}\n]'}
+            style={{ minHeight: 120 }}
+          />
+        </div>
+        {validationError && (
+          <p style={{ color: "var(--danger)", fontSize: 13, margin: "6px 0 0" }}>{validationError}</p>
+        )}
+        <div className="modal-actions">
+          <button onClick={props.onClose}>取消</button>
+          <button className="primary-button" onClick={handleApply}>
+            <Check size={17} /> 校验并应用
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SelfGenerateDialog(props: {
+  open: boolean;
+  mode: "answer" | "explanation" | "both" | "none";
+  setMode: (mode: "answer" | "explanation" | "both" | "none") => void;
+  rawText?: string;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  if (!props.open) return null;
+
+  const fillInstruction = props.mode === "answer"
+    ? "请为每道题补充答案。"
+    : props.mode === "explanation"
+      ? "请为每道题补充解析。"
+      : props.mode === "none"
+        ? "不需要补充答案和解析，answer 和 explanation 留空即可。"
+        : "请为每道题同时补充答案和解析。";
+
+  const jsonFormat = `{
+  "name": "题单名称",
+  "description": "",
+  "questions": [
+    {
+      "type": "single|multiple|boolean|blank|short|composite",
+      "title": "题目标题",
+      "prompt": "题干内容",
+      "options": [{"label": "A", "text": "选项内容"}],
+      "answer": ${props.mode === "explanation" || props.mode === "none" ? '""' : '"A"'},
+      "explanation": ${props.mode === "answer" || props.mode === "none" ? '""' : '"详细解析内容"'},
+      "hint": "",
+      "subQuestions": []
+    }
+  ]
+}`;
+
+  const rawTextSection = props.rawText?.trim()
+    ? `\n\n原始题目：\n${props.rawText.trim()}`
+    : "";
+
+  const prompt = `你是题库整理助手。请把我提供的题目转换为以下 JSON 格式。${fillInstruction}
+只返回 JSON，不要使用 Markdown 代码块包裹。
+
+type 可选值：single（单选）、multiple（多选）、boolean（判断）、blank（填空）、short（简答）、composite（综合题）。
+options 格式：[{"label":"A","text":"选项内容"}]，判断题用 [{"label":"T","text":"正确"},{"label":"F","text":"错误"}]。
+多选题/填空题 answer 用数组，如 ["A","B"]。判断题 answer 用 "T" 或 "F"。
+
+输出 JSON 格式：
+${jsonFormat}${rawTextSection}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(prompt).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([prompt], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "passloop-prompt.txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const hasRawText = !!props.rawText?.trim();
+
+  return (
+    <div className="modal-overlay" onClick={props.onClose}>
+      <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>自助 AI 生成题目 JSON</h2>
+          <button className="icon-button" onClick={props.onClose}><X size={18} /></button>
+        </div>
+        <p className="modal-desc">
+          {hasRawText
+            ? "Prompt 已包含你输入的题目文本。复制或下载后直接发给你的 AI，将返回的 JSON 粘贴到右侧解析结果区域。"
+            : "选择生成内容，复制下方 Prompt 发送给你的 AI（ChatGPT、Claude、Gemini 等），将题目文本一并发送，然后把生成的 JSON 粘贴到解析结果区域导入。"}
+        </p>
+        <div className="self-gen-options">
+          <span>生成内容：</span>
+          <Segmented
+            value={props.mode}
+            options={[
+              ["both", "答案 + 解析 + 题目"],
+              ["answer", "答案 + 题目"],
+              ["explanation", "解析 + 题目"],
+              ["none", "仅题目"],
+            ]}
+            onChange={(v) => props.setMode(v as "answer" | "explanation" | "both" | "none")}
+          />
+        </div>
+        <div className="self-gen-prompt-box">
+          <div className="self-gen-prompt-header">
+            <strong>Prompt{hasRawText ? `（已包含题目文本，${prompt.length.toLocaleString()} 字）` : `（${prompt.length.toLocaleString()} 字）`}</strong>
+            <div className="self-gen-prompt-actions">
+              <button onClick={handleCopy}>
+                {copied ? <><Check size={15} /> 已复制</> : <><Copy size={15} /> 复制</>}
+              </button>
+              <button onClick={handleDownload}>
+                <Download size={15} /> 下载 TXT
+              </button>
+            </div>
+          </div>
+          {prompt.length > 10000 && (
+            <p className="prompt-length-warning">内容较长（超过 1 万字），建议下载 TXT 文件后以附件形式发送给 AI。</p>
+          )}
+          <pre className="self-gen-prompt-text">{prompt}</pre>
+        </div>
+        <div className="self-gen-tip">
+          <strong>使用步骤：</strong>
+          <ol>
+            <li>复制或下载上方 Prompt{!hasRawText && "，并附上需要整理的题目文本"}</li>
+            <li>在你的 AI 对话中粘贴完整 Prompt</li>
+            <li>AI 返回 JSON 后，将 JSON 粘贴到右侧解析结果区域</li>
+            <li>点击「校验并保存」后即可导入题单</li>
+          </ol>
+        </div>
+        <div className="modal-actions">
+          <button onClick={props.onClose}>关闭</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1765,6 +2261,10 @@ function LlmPage(props: {
 }) {
   const [config, setConfig] = useState<LlmConfig>(() => loadLlmConfig(defaultLlmConfig));
   const [rawText, setRawText] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [clearedFields, setClearedFields] = useState<{ model?: string; endpoint?: string; apiKey?: string }>({});
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
   const [parsedList, setParsedList] = useState<QuestionList | null>(null);
   const [parsedJsonText, setParsedJsonText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1772,8 +2272,14 @@ function LlmPage(props: {
   const [modelList, setModelList] = useState<string[]>([]);
   const [fetchingModels, setFetchingModels] = useState(false);
   const [streamingText, setStreamingText] = useState("");
+  const [showConfigModal, setShowConfigModal] = useState(false);
   const [outputTab, setOutputTab] = useState<"json" | "preview">("json");
   const [saved, setSaved] = useState(false);
+  const [showSelfParse, setShowSelfParse] = useState(false);
+  const [selfParseMode, setSelfParseMode] = useState<"answer" | "explanation" | "both" | "none">("both");
+  const [manualInput, setManualInput] = useState(false);
+  const [manualJsonText, setManualJsonText] = useState("");
+  const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
 
   useEffect(() => {
     props.unsavedRef.current = parsedList !== null;
@@ -1783,16 +2289,38 @@ function LlmPage(props: {
     saveLlmConfig(config);
   }, [config.provider, config.model, config.endpoint, config.apiKey]);
 
+  useEffect(() => {
+    if (!modelDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (modelDropdownRef.current && !modelDropdownRef.current.contains(e.target as Node)) {
+        setModelDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [modelDropdownOpen]);
+
   const runParser = async () => {
     if (!rawText.trim()) {
       props.pushToast("error", "请先粘贴未整理题目文本。");
       return;
     }
+    if ((manualJsonText.trim() || parsedList) && !showOverwriteConfirm) {
+      setShowOverwriteConfirm(true);
+      return;
+    }
+    setShowOverwriteConfirm(false);
+    doRunParser();
+  };
+
+  const doRunParser = async () => {
     debugLog("LLM parse started", { provider: config.provider, model: config.model, textLength: rawText.length });
     setLoading(true);
     setStreamingText("");
     setParsedList(null);
     setParsedJsonText("");
+    setManualInput(false);
+    setManualJsonText("");
     try {
       const fullText = await streamParseLlm(rawText, config, (accumulated) => {
         setStreamingText(accumulated);
@@ -1899,76 +2427,154 @@ function LlmPage(props: {
             <h1>{props.t("llm")}</h1>
             <p>把未整理题目转换为标准题库 JSON，可补答案、解析并直接导入。</p>
           </div>
-          <button className="primary-button" onClick={runParser} disabled={loading}>
-            <Sparkles size={17} /> {loading ? "解析中" : props.t("parse")}
-          </button>
-        </div>
-        <div className="config-grid">
-          <label className="field-label">
-            提供商
-            <select value={config.provider} onChange={(event) => updateProvider(event.target.value as LlmConfig["provider"])}>
-              <option value="openai">OpenAI 兼容</option>
-              <option value="anthropic">Anthropic</option>
-              <option value="gemini">Gemini</option>
-              <option value="custom">自定义</option>
-            </select>
-          </label>
-          <label className="field-label">
-            模型
-            <div className="model-input-row">
-              <input
-                list="model-list"
-                value={config.model}
-                placeholder={providerPlaceholders[config.provider].model}
-                onChange={(event) => setConfig({ ...config, model: event.target.value })}
-              />
-              <button
-                className="test-button"
-                onClick={runFetchModels}
-                disabled={fetchingModels || !config.apiKey.trim()}
-                title="获取可用模型列表"
-              >
-                {fetchingModels ? "获取中…" : "获取列表"}
-              </button>
-            </div>
-            {modelList.length > 0 && (
-              <datalist id="model-list">
-                {modelList.map((m) => (
-                  <option key={m} value={m} />
-                ))}
-              </datalist>
-            )}
-          </label>
-          <label className="field-label wide">
-            API 地址
-            <input
-              value={config.endpoint}
-              placeholder={providerPlaceholders[config.provider].endpoint}
-              onChange={(event) => setConfig({ ...config, endpoint: event.target.value })}
-            />
-          </label>
-          <label className="field-label wide">
-            API Key
-            <input type="password" placeholder="sk-" value={config.apiKey} onChange={(event) => setConfig({ ...config, apiKey: event.target.value })} />
-          </label>
-          <div className="field-label">
-            <button className="test-button" onClick={runTest} disabled={testing}>
-              {testing ? "测试中…" : "测试连接"}
+          <div className="stage-tools">
+            <button onClick={() => {
+              if (!rawText.trim()) {
+                props.pushToast("error", "请先在下方输入框中粘贴题目文本。");
+                return;
+              }
+              setShowSelfParse(true);
+              setManualInput(true);
+            }}>
+              <Copy size={17} /> 自助解析
+            </button>
+            <button className="primary-button" onClick={runParser} disabled={loading}>
+              <Sparkles size={17} /> {loading ? "解析中" : props.t("parse")}
             </button>
           </div>
-          <label className="toggle-row">
-            <input type="checkbox" checked={config.fillAnswer} onChange={(event) => setConfig({ ...config, fillAnswer: event.target.checked })} />
-            让 LLM 补充答案
-          </label>
-          <label className="toggle-row">
-            <input
-              type="checkbox"
-              checked={config.fillExplanation}
-              onChange={(event) => setConfig({ ...config, fillExplanation: event.target.checked })}
-            />
-            让 LLM 补充解析
-          </label>
         </div>
+        <button className="llm-config-trigger" onClick={() => setShowConfigModal(true)}>
+          <Settings2 size={16} />
+          <span>{config.provider === "openai" ? "OpenAI 兼容" : config.provider === "anthropic" ? "Anthropic" : config.provider === "gemini" ? "Gemini" : "自定义"} / {config.model || "未设置模型"}</span>
+          <ChevronRight size={14} />
+        </button>
+        {showConfigModal && (
+          <div className="modal-overlay" onClick={() => setShowConfigModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>LLM 配置</h2>
+                <button className="icon-button" onClick={() => setShowConfigModal(false)}><X size={18} /></button>
+              </div>
+              <div className="config-grid">
+                <label className="field-label">
+                  提供商
+                  <select value={config.provider} onChange={(event) => updateProvider(event.target.value as LlmConfig["provider"])}>
+                    <option value="openai">OpenAI 兼容</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="custom">自定义</option>
+                  </select>
+                </label>
+                <label className="field-label">
+                  模型
+                  <div className="model-input-row" ref={modelDropdownRef}>
+                    <button
+                      className={`model-dropdown-toggle ${modelDropdownOpen ? "open" : ""}`}
+                      onClick={() => { if (modelList.length > 0) setModelDropdownOpen((v) => !v); }}
+                      disabled={modelList.length === 0}
+                      title={modelList.length > 0 ? "选择模型" : "请先获取模型列表"}
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                    <div className="input-with-actions">
+                      <input
+                        value={config.model}
+                        placeholder={providerPlaceholders[config.provider].model}
+                        onChange={(event) => setConfig({ ...config, model: event.target.value })}
+                      />
+                      {config.model
+                        ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, model: config.model })); setConfig({ ...config, model: "" }); }} title="清空"><X size={14} /></button>
+                        : clearedFields.model && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, model: clearedFields.model! }); setClearedFields((f) => ({ ...f, model: undefined })); }} title="恢复"><Undo2 size={14} /></button>
+                      }
+                    </div>
+                    <button
+                      className="test-button"
+                      onClick={runFetchModels}
+                      disabled={fetchingModels || !config.apiKey.trim()}
+                      title="获取可用模型列表"
+                    >
+                      {fetchingModels ? "获取中…" : "获取列表"}
+                    </button>
+                    {modelDropdownOpen && modelList.length > 0 && (
+                      <div className="model-dropdown-list">
+                        {modelList.map((m) => (
+                          <button key={m} className={m === config.model ? "active" : ""} onClick={() => { setConfig({ ...config, model: m }); setModelDropdownOpen(false); }}>{m}</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </label>
+                <label className="field-label wide">
+                  API 地址
+                  <div className="input-with-actions">
+                    <input
+                      value={config.endpoint}
+                      placeholder={providerPlaceholders[config.provider].endpoint}
+                      onChange={(event) => setConfig({ ...config, endpoint: event.target.value })}
+                    />
+                    {config.endpoint
+                      ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, endpoint: config.endpoint })); setConfig({ ...config, endpoint: "" }); }} title="清空"><X size={14} /></button>
+                      : clearedFields.endpoint && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, endpoint: clearedFields.endpoint! }); setClearedFields((f) => ({ ...f, endpoint: undefined })); }} title="恢复"><Undo2 size={14} /></button>
+                    }
+                  </div>
+                </label>
+                <label className="field-label wide">
+                  API Key
+                  <div className="input-with-actions">
+                    <input type={showApiKey ? "text" : "password"} placeholder="sk-" value={config.apiKey} onChange={(event) => setConfig({ ...config, apiKey: event.target.value })} />
+                    {config.apiKey
+                      ? <button className="input-clear-btn" onClick={() => { setClearedFields((f) => ({ ...f, apiKey: config.apiKey })); setConfig({ ...config, apiKey: "" }); }} title="清空"><X size={14} /></button>
+                      : clearedFields.apiKey && <button className="input-clear-btn" onClick={() => { setConfig({ ...config, apiKey: clearedFields.apiKey! }); setClearedFields((f) => ({ ...f, apiKey: undefined })); }} title="恢复"><Undo2 size={14} /></button>
+                    }
+                    <button className="input-clear-btn" onClick={() => setShowApiKey((v) => !v)} title={showApiKey ? "隐藏" : "显示"}>
+                      {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                </label>
+                <div className="field-label">
+                  <button className="test-button" onClick={runTest} disabled={testing}>
+                    {testing ? "测试中…" : "测试连接"}
+                  </button>
+                </div>
+                <div className="field-label wide">
+                  <span style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: "block" }}>生成内容</span>
+                  <Segmented
+                    value={config.fillAnswer && config.fillExplanation ? "both" : config.fillAnswer ? "answer" : config.fillExplanation ? "explanation" : "none"}
+                    options={[
+                      ["both", "答案 + 解析"],
+                      ["answer", "仅答案"],
+                      ["explanation", "仅解析"],
+                      ["none", "仅题目"],
+                    ]}
+                    onChange={(v) => setConfig({
+                      ...config,
+                      fillAnswer: v === "both" || v === "answer",
+                      fillExplanation: v === "both" || v === "explanation",
+                    })}
+                  />
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button className="primary-button" onClick={() => setShowConfigModal(false)}>完成</button>
+              </div>
+            </div>
+          </div>
+        )}
+        <label className="upload-raw-text">
+          <Upload size={16} /> 上传文本文件
+          <input type="file" accept=".txt,.md,text/plain" onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+              const text = String(reader.result ?? "");
+              debugLog("Upload raw text file", { fileName: file.name, length: text.length });
+              setRawText(text);
+            };
+            reader.readAsText(file);
+          }} />
+        </label>
         <textarea
           className="raw-question-input"
           value={rawText}
@@ -2068,10 +2674,99 @@ function LlmPage(props: {
           )
         ) : loading ? (
           <pre className="streaming-preview">{streamingText || "等待 AI 响应…\n\n有推理功能的模型需要等待推理完成后，才能在此处显示解析结果。"}</pre>
+        ) : manualInput ? (
+          <div className="manual-json-input">
+            <p className="manual-json-hint">将 AI 返回的 JSON 粘贴到下方，或上传 JSON 文件，然后点击「校验并保存」。你也可以继续使用左侧内置解析。</p>
+            <div className="json-input-header">
+              <span>{manualJsonText.length.toLocaleString()} 字</span>
+              <label className="upload-json-button">
+                <Upload size={14} /> 上传 JSON
+                <input
+                  type="file"
+                  accept=".json,.txt,text/plain,application/json"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const text = String(reader.result ?? "");
+                      debugLog("Upload manual JSON file", { fileName: file.name, length: text.length });
+                      setManualJsonText(text);
+                    };
+                    reader.readAsText(file);
+                  }}
+                />
+              </label>
+            </div>
+            <textarea
+              className="json-preview"
+              value={manualJsonText}
+              onChange={(e) => setManualJsonText(e.target.value)}
+              placeholder={'粘贴 AI 返回的 JSON...\n\n{\n  "name": "题单名称",\n  "questions": [...]\n}'}
+            />
+            <button
+              className="primary-button"
+              style={{ marginTop: 10 }}
+              onClick={() => {
+                if (!manualJsonText.trim()) {
+                  props.pushToast("error", "请先粘贴 JSON 内容。");
+                  return;
+                }
+                try {
+                  const lists = parseQuestionJson(extractJsonText(manualJsonText));
+                  debugLog("Manual JSON validated", { questionCount: lists[0]?.questions.length ?? 0, textLength: manualJsonText.length });
+                  setParsedList(lists[0]);
+                  setParsedJsonText(JSON.stringify(lists[0], null, 2));
+                  setSaved(false);
+                  setManualInput(false);
+                  props.pushToast("success", "JSON 解析成功。");
+                } catch (error) {
+                  debugLog("Manual JSON validation failed", error);
+                  props.pushToast("error", error instanceof Error ? error.message : "JSON 格式错误，请检查内容。");
+                }
+              }}
+            >
+              <Check size={16} /> 校验并保存
+            </button>
+          </div>
         ) : (
-          <EmptyState title="等待解析" description="右侧会展示标准 JSON，用户可以直接编辑后导出或导入题单。" />
+          <EmptyState title="等待解析" description="使用左侧内置解析，或点击「自助解析」手动粘贴 JSON。" />
         )}
       </section>
+
+      {showSelfParse && (
+        <SelfGenerateDialog
+          open={showSelfParse}
+          mode={selfParseMode}
+          setMode={setSelfParseMode}
+          rawText={rawText}
+          onClose={() => setShowSelfParse(false)}
+        />
+      )}
+
+      {showOverwriteConfirm && (
+        <div className="modal-overlay" onClick={() => setShowOverwriteConfirm(false)}>
+          <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>覆盖确认</h2>
+              <button className="icon-button" onClick={() => setShowOverwriteConfirm(false)}><X size={18} /></button>
+            </div>
+            <p style={{ margin: "8px 0 0", lineHeight: 1.6 }}>
+              右侧已有解析内容，使用内置 LLM 解析会覆盖当前内容。确定继续吗？
+            </p>
+            <div className="modal-actions">
+              <button onClick={() => setShowOverwriteConfirm(false)}>取消</button>
+              <button
+                style={{ background: "var(--accent)", color: "#fff", borderColor: "var(--accent)" }}
+                onClick={() => { setShowOverwriteConfirm(false); doRunParser(); }}
+              >
+                确定覆盖
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2419,6 +3114,203 @@ function PromptDialog({ state, onClose }: { state: PromptDialogState; onClose: (
         <div className="modal-actions">
           <button onClick={onClose}>取消</button>
           <button style={{ background: "var(--accent)", color: "#fff", borderColor: "var(--accent)" }} onClick={handleSubmit}>确定</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImportSourceDialog({ open, onClose, onFileSelect, onUrlImport }: {
+  open: boolean;
+  onClose: () => void;
+  onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
+  onUrlImport: (url: string) => void;
+}) {
+  const [mode, setMode] = useState<"choose" | "url">("choose");
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) { setMode("choose"); setUrl(""); setLoading(false); }
+  }, [open]);
+
+  useEffect(() => {
+    if (mode === "url") setTimeout(() => inputRef.current?.focus(), 0);
+  }, [mode]);
+
+  if (!open) return null;
+
+  if (mode === "url") {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>输入 JSON URL</h2>
+            <button className="icon-button" onClick={onClose}><X size={18} /></button>
+          </div>
+          <input
+            ref={inputRef}
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://example.com/questions.json"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && url.trim()) {
+                setLoading(true);
+                onUrlImport(url.trim());
+              }
+            }}
+            style={{ marginTop: 8 }}
+          />
+          <div className="modal-actions">
+            <button onClick={() => setMode("choose")}>返回</button>
+            <button
+              className="primary-button"
+              disabled={!url.trim() || loading}
+              onClick={() => { setLoading(true); onUrlImport(url.trim()); }}
+            >
+              {loading ? "导入中…" : "导入"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>导入题目</h2>
+          <button className="icon-button" onClick={onClose}><X size={18} /></button>
+        </div>
+        <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>选择题目来源：</p>
+        <div className="import-choice-buttons">
+          <label className="import-choice-file-btn">
+            <Upload size={16} /> 上传本地 JSON 文件
+            <input type="file" accept=".json,application/json" onChange={onFileSelect} />
+          </label>
+          <button onClick={() => setMode("url")}>
+            <FileJson size={16} /> 输入 JSON URL
+          </button>
+        </div>
+        <div className="modal-actions">
+          <button onClick={onClose}>取消</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImportChoiceDialog({ lists, activeListName, onClose, onChoose }: {
+  lists: QuestionList[] | null;
+  activeListName: string;
+  onClose: () => void;
+  onChoose: (mode: "current" | "new") => void;
+}) {
+  if (!lists) return null;
+  const totalQuestions = lists.reduce((sum, l) => sum + l.questions.length, 0);
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>导入题目</h2>
+          <button className="icon-button" onClick={onClose}><X size={18} /></button>
+        </div>
+        <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>
+          共 {totalQuestions} 道题，要添加到哪里？
+        </p>
+        <div className="import-choice-buttons">
+          <button onClick={() => onChoose("current")}>
+            添加到当前题单「{activeListName}」
+          </button>
+          <button onClick={() => onChoose("new")}>
+            创建新题单
+          </button>
+        </div>
+        <div className="modal-actions">
+          <button onClick={onClose}>取消</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BackupImportDialog({ data, onClose, onChoose }: {
+  data: AppData | null;
+  onClose: () => void;
+  onChoose: (mode: "overwrite" | "merge") => void;
+}) {
+  const [step, setStep] = useState<"choose" | "confirm">("choose");
+  const [confirmText, setConfirmText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (data) { setStep("choose"); setConfirmText(""); }
+  }, [data]);
+
+  useEffect(() => {
+    if (step === "confirm") setTimeout(() => inputRef.current?.focus(), 0);
+  }, [step]);
+
+  if (!data) return null;
+
+  if (step === "confirm") {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>确认覆盖</h2>
+            <button className="icon-button" onClick={onClose}><X size={18} /></button>
+          </div>
+          <p style={{ margin: "8px 0 12px", lineHeight: 1.6, color: "var(--danger)" }}>
+            覆盖将删除当前所有题单、刷题记录和设置，替换为导入文件中的内容。此操作不可撤销。
+          </p>
+          <p style={{ margin: "0 0 8px", fontSize: "0.88rem" }}>
+            请输入「确认覆盖」以继续：
+          </p>
+          <input
+            ref={inputRef}
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="确认覆盖"
+            onKeyDown={(e) => { if (e.key === "Enter" && confirmText === "确认覆盖") { onChoose("overwrite"); } }}
+          />
+          <div className="modal-actions">
+            <button onClick={() => setStep("choose")}>返回</button>
+            <button
+              style={{ background: "var(--danger)", color: "#fff", borderColor: "var(--danger)" }}
+              disabled={confirmText !== "确认覆盖"}
+              onClick={() => onChoose("overwrite")}
+            >
+              覆盖
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>导入配置</h2>
+          <button className="icon-button" onClick={onClose}><X size={18} /></button>
+        </div>
+        <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>
+          检测到 {data.lists.length} 个题单，{data.attempts.length} 条刷题记录。选择导入方式：
+        </p>
+        <div className="import-choice-buttons">
+          <button onClick={() => onChoose("merge")}>
+            合并到现有数据
+          </button>
+          <button onClick={() => setStep("confirm")}>
+            覆盖当前配置
+          </button>
+        </div>
+        <div className="modal-actions">
+          <button onClick={onClose}>取消</button>
         </div>
       </div>
     </div>
