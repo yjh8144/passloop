@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, BrainCircuit, Check, Copy, Edit3, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { BookOpen, BrainCircuit, Check, Copy, Edit3, FileEdit, Plus, Sparkles, Trash2, X } from "lucide-react";
 import type { LlmConfig, Question, QuestionList, Toast } from "../../lib/types";
 import { createEmptyQuestion, typeLabels } from "../../lib/question";
 import { fillAnswersWithLlm } from "../../lib/llm";
@@ -27,6 +27,7 @@ export function ManagerPage(props: {
   const [selfFillMode, setSelfFillMode] = useState<"answer" | "explanation" | "both">("both");
   const [filling, setFilling] = useState(false);
   const [fillStreamText, setFillStreamText] = useState("");
+  const [editorFloatOpen, setEditorFloatOpen] = useState(false);
   const editorRef = useRef<HTMLElement>(null);
 
   useEffect(() => setLocalListName(props.list.name), [props.list.id, props.list.name]);
@@ -35,7 +36,10 @@ export function ManagerPage(props: {
     if (props.editing && editorRef.current) {
       editorRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [props.editing]);
+    if (props.editing || filling) {
+      setEditorFloatOpen(true);
+    }
+  }, [props.editing, filling]);
 
   const handleFillAnswers = () => {
     if (!props.llmConfig.apiKey.trim()) {
@@ -184,6 +188,43 @@ export function ManagerPage(props: {
           <EmptyState title="选择题目编辑" description="点击题目行或新增题目开始编辑。" />
         )}
       </aside>
+
+      <button className="editor-fab" onClick={() => setEditorFloatOpen(true)} title="编辑器">
+        <FileEdit size={22} />
+      </button>
+      <div
+        className={`editor-float-backdrop ${editorFloatOpen ? "is-visible" : ""}`}
+        onClick={() => {
+          if (props.editing) {
+            props.showConfirm("编辑内容尚未保存，确认退出吗？", () => {
+              props.setEditing(null);
+              setEditorFloatOpen(false);
+            });
+          } else {
+            setEditorFloatOpen(false);
+          }
+        }}
+      />
+      <div className={`editor-float ${editorFloatOpen ? "is-open" : ""}`}>
+        <div className="editor-float-inner">
+          <div className="editor-float-header">
+            <span>编辑器</span>
+            <button className="icon-button" onClick={() => setEditorFloatOpen(false)}>
+              <X size={16} />
+            </button>
+          </div>
+          {filling ? (
+            <div className="fill-stream-panel">
+              <h2>LLM 补充中…</h2>
+              <pre className="streaming-preview">{fillStreamText || "等待 AI 响应…\n\n有推理功能的模型需要等待推理完成后，才能在此处显示解析结果。"}</pre>
+            </div>
+          ) : props.editing ? (
+            <QuestionEditor question={props.editing} onCancel={() => { props.setEditing(null); setEditorFloatOpen(false); }} onSave={(q) => { saveQuestion(q); setEditorFloatOpen(false); }} showPrompt={props.showPrompt} />
+          ) : (
+            <EmptyState title="选择题目编辑" description="点击题目行或新增题目开始编辑。" />
+          )}
+        </div>
+      </div>
 
       {showFillChoice && (
         <div className="modal-overlay" onClick={() => setShowFillChoice(false)}>
