@@ -15,7 +15,7 @@ export const zh: Record<string, string> = {
   questionList: "题单",
   questionCount: "题",
   clearAllData: "清除所有数据",
-  brandTagline: "纯前端题库",
+  brandTagline: "本地轻量化刷题平台",
 
   // Practice
   submit: "提交答案",

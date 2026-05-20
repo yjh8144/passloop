@@ -71,7 +71,7 @@ export function Sidebar(props: {
         <div className="brand-mark" onClick={handleBrandClick}>P</div>
         <div className="brand-text">
           <strong>PassLoop</strong>
-          <span>纯前端题库</span>
+          <span>本地轻量化刷题平台</span>
         </div>
         <a
           href="https://github.com/yjh8144/passloop"
