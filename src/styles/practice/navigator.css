@@ -32,11 +32,11 @@
   display: none;
 }
 
-@media (max-width: 820px) {
-  .mobile-navigator {
-    display: block;
-  }
+.desktop-navigator {
+  display: block;
+}
 
+@media (max-width: 1180px) {
   .desktop-navigator {
     display: none;
   }

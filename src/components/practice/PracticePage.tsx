@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { MutableRefObject } from "react";
-import { Check, ChevronLeft, ChevronRight, Download, Plus, Shuffle, Undo2, X } from "lucide-react";
+import { BarChart3, Check, ChevronLeft, ChevronRight, Download, Plus, Shuffle, Undo2, X } from "lucide-react";
 import type { AppData, Question, Toast } from "../../lib/types";
 import { getListStats } from "../../lib/question";
 import { EmptyState } from "../ui/EmptyState";
@@ -36,6 +36,7 @@ export function PracticePage(props: {
   startedAtRef: MutableRefObject<Record<string, number>>;
 }) {
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
+  const [inspectorFloatOpen, setInspectorFloatOpen] = useState(false);
   const [showCompletionDialog, setShowCompletionDialog] = useState(false);
   const activeQuestion = props.questions[props.currentIndex];
   useEffect(() => {
@@ -47,6 +48,15 @@ export function PracticePage(props: {
   const allSubmitted = props.questions.length > 0 && props.questions.every((q) => q.id in props.results);
   const correctCount = props.questions.filter((q) => props.results[q.id] === true).length;
   const wrongCount = props.questions.filter((q) => props.results[q.id] === false).length;
+
+  useEffect(() => {
+    if (!inspectorFloatOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setInspectorFloatOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [inspectorFloatOpen]);
 
   const prevAllSubmitted = useRef(false);
   useEffect(() => {
@@ -62,17 +72,23 @@ export function PracticePage(props: {
     if (props.settings.viewMode !== "paper" || !props.questions.length) return;
     const container = paperStackRef.current;
     if (!container) return;
+    const stage = container.closest(".question-stage");
+    const scrollRoot = stage && stage.scrollHeight > stage.clientHeight ? stage : null;
     const observer = new IntersectionObserver(
       (entries) => {
+        let best: { idx: number; ratio: number } | null = null;
         for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            const idx = Number(id.replace("question-", ""));
-            if (!isNaN(idx)) props.setCurrentIndex(idx);
+          if (!entry.isIntersecting) continue;
+          const id = entry.target.id;
+          const idx = Number(id.replace("question-", ""));
+          if (isNaN(idx)) continue;
+          if (!best || entry.intersectionRatio > best.ratio) {
+            best = { idx, ratio: entry.intersectionRatio };
           }
         }
+        if (best) props.setCurrentIndex(best.idx);
       },
-      { root: container.closest(".question-stage"), threshold: 0.5 },
+      { root: scrollRoot, threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
     const cards = container.querySelectorAll("[id^='question-']");
     cards.forEach((card) => observer.observe(card));
@@ -229,6 +245,51 @@ export function PracticePage(props: {
           </div>
         </aside>
       )}
+
+      <button className="inspector-fab" onClick={() => setInspectorFloatOpen(true)} title="统计与导航">
+        <BarChart3 size={22} />
+      </button>
+      <div
+        className={`inspector-float-backdrop ${inspectorFloatOpen ? "is-visible" : ""}`}
+        onClick={() => setInspectorFloatOpen(false)}
+      />
+      <div className={`inspector-float ${inspectorFloatOpen ? "is-open" : ""}`}>
+        <div className="inspector-float-inner">
+        {allSubmitted && (
+          <section className="inspector-panel completion-actions-panel">
+            <h3>全部完成</h3>
+            <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 10px" }}>
+              共 {props.questions.length} 题，正确 {correctCount} 题，错误 {wrongCount} 题
+            </p>
+            <div className="completion-buttons">
+              <button className="btn-danger" onClick={props.onClearListAttempts}>
+                <Undo2 size={16} /> 重新刷题
+              </button>
+              <button onClick={props.onRedoWrong}>
+                <Shuffle size={16} /> 重做错题
+              </button>
+              <button onClick={props.onExportWrong}>
+                <Download size={16} /> 导出错题
+              </button>
+              <button onClick={props.onCreateWrongList}>
+                <Plus size={16} /> 错题生成题单
+              </button>
+            </div>
+          </section>
+        )}
+        <StatsPanel t={props.t} stats={props.stats} />
+        {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
+        <Navigator
+          questions={props.questions}
+          currentIndex={props.currentIndex}
+          results={props.results}
+          setCurrentIndex={(idx) => { props.setCurrentIndex(idx); setInspectorFloatOpen(false); }}
+          viewMode={props.settings.viewMode}
+          revealMode={props.settings.revealMode}
+          allSubmitted={allSubmitted}
+        />
+        </div>
+      </div>
 
       {showCompletionDialog && (
         <div className="modal-overlay" onClick={() => setShowCompletionDialog(false)}>
