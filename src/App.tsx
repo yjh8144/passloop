@@ -327,7 +327,8 @@ export function App() {
   const handleUrlImport = async (url: string) => {
     try {
       debugLog("URL import started", { url });
-      const response = await fetch(url);
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
       if (!response.ok) throw new Error(`请求失败：${response.status}`);
       const text = await response.text();
       const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }));
