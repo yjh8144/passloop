@@ -32,7 +32,7 @@ export function LlmPage(props: {
   llmConfig: LlmConfig
   onOpenLlmConfig: () => void
 }) {
-  const { t } = props
+  const { t, unsavedRef, updateActiveList, addImportedList, pushToast, onOpenLlmConfig } = props
   const config = props.llmConfig
   const [rawText, setRawText] = useState("")
   const [parsedList, setParsedList] = useState<QuestionList | null>(null)
@@ -50,12 +50,12 @@ export function LlmPage(props: {
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false)
 
   useEffect(() => {
-    props.unsavedRef.current = parsedList !== null
-  }, [parsedList])
+    unsavedRef.current = parsedList !== null
+  }, [parsedList, unsavedRef])
 
   const runParser = async () => {
     if (!rawText.trim()) {
-      props.pushToast("error", t("pleaseInputRawText"))
+      pushToast("error", t("pleaseInputRawText"))
       return
     }
     if ((manualJsonText.trim() || parsedList) && !showOverwriteConfirm) {
@@ -91,10 +91,10 @@ export function LlmPage(props: {
       setParsedJsonText(JSON.stringify(lists[0], null, 2))
       setStreamingText("")
       setSaved(false)
-      props.pushToast("success", t("llmParseComplete"))
+      pushToast("success", t("llmParseComplete"))
     } catch (error) {
       debugLog("LLM parse failed", error)
-      props.pushToast("error", error instanceof Error ? error.message : t("llmParseFailed"))
+      pushToast("error", error instanceof Error ? error.message : t("llmParseFailed"))
     } finally {
       setLoading(false)
     }
@@ -104,7 +104,7 @@ export function LlmPage(props: {
     try {
       return normalizeImportedList(JSON.parse(parsedJsonText))
     } catch {
-      props.pushToast("error", t("jsonFormatError"))
+      pushToast("error", t("jsonFormatError"))
       return null
     }
   }
@@ -114,14 +114,14 @@ export function LlmPage(props: {
     if (!list) return
     if (!list.questions.length) {
       debugLog("Validation failed: no questions")
-      props.pushToast("error", t("validateNoQuestions"))
+      pushToast("error", t("validateNoQuestions"))
       return
     }
     for (let i = 0; i < list.questions.length; i++) {
       const q = list.questions[i]
       if (!q.title.trim()) {
         debugLog("Validation failed: missing title", { index: i })
-        props.pushToast("error", t("validateNoTitle", i + 1))
+        pushToast("error", t("validateNoTitle", i + 1))
         return
       }
       if ((q.type === "single" || q.type === "multiple") && q.options.length < 2) {
@@ -129,7 +129,7 @@ export function LlmPage(props: {
           index: i,
           optionCount: q.options.length,
         })
-        props.pushToast("error", t("validateFewOptions", i + 1))
+        pushToast("error", t("validateFewOptions", i + 1))
         return
       }
     }
@@ -137,7 +137,7 @@ export function LlmPage(props: {
     setParsedList(list)
     setParsedJsonText(JSON.stringify(list, null, 2))
     setSaved(true)
-    props.pushToast("success", t("validatePassed"))
+    pushToast("success", t("validatePassed"))
   }
 
   const enterEdit = () => {
@@ -156,7 +156,7 @@ export function LlmPage(props: {
             <button
               onClick={() => {
                 if (!rawText.trim()) {
-                  props.pushToast("error", t("pleaseInputRawTextFirst"))
+                  pushToast("error", t("pleaseInputRawTextFirst"))
                   return
                 }
                 setShowSelfParse(true)
@@ -170,7 +170,7 @@ export function LlmPage(props: {
             </button>
           </div>
         </div>
-        <button className="llm-config-trigger" onClick={props.onOpenLlmConfig}>
+        <button className="llm-config-trigger" onClick={onOpenLlmConfig}>
           <Settings2 size={16} />
           <span>
             {config.provider === "openai"
@@ -235,7 +235,7 @@ export function LlmPage(props: {
                           questionCount: list.questions.length,
                         })
                         downloadJson(`${list.name}.json`, list)
-                        props.unsavedRef.current = false
+                        unsavedRef.current = false
                       }
                     }}
                   >
@@ -247,12 +247,12 @@ export function LlmPage(props: {
                       const edited = getEditedList()
                       if (!edited) return
                       debugLog("Import to current list", { questionCount: edited.questions.length })
-                      props.updateActiveList((currentList) => ({
+                      updateActiveList((currentList) => ({
                         ...currentList,
                         questions: [...currentList.questions, ...edited.questions],
                         updatedAt: new Date().toISOString(),
                       }))
-                      props.unsavedRef.current = false
+                      unsavedRef.current = false
                     }}
                   >
                     <Plus size={16} /> {t("importCurrentList")}
@@ -265,8 +265,8 @@ export function LlmPage(props: {
                           name: list.name,
                           questionCount: list.questions.length,
                         })
-                        props.addImportedList(list)
-                        props.unsavedRef.current = false
+                        addImportedList(list)
+                        unsavedRef.current = false
                       }
                     }}
                   >
@@ -349,7 +349,7 @@ export function LlmPage(props: {
               style={{ marginTop: 10 }}
               onClick={() => {
                 if (!manualJsonText.trim()) {
-                  props.pushToast("error", t("pleaseInputJson"))
+                  pushToast("error", t("pleaseInputJson"))
                   return
                 }
                 try {
@@ -362,10 +362,10 @@ export function LlmPage(props: {
                   setParsedJsonText(JSON.stringify(lists[0], null, 2))
                   setSaved(false)
                   setManualInput(false)
-                  props.pushToast("success", t("jsonParseSuccess"))
+                  pushToast("success", t("jsonParseSuccess"))
                 } catch (error) {
                   debugLog("Manual JSON validation failed", error)
-                  props.pushToast(
+                  pushToast(
                     "error",
                     error instanceof Error ? error.message : t("jsonFormatErrorCheck"),
                   )

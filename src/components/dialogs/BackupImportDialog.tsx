@@ -16,13 +16,13 @@ export function BackupImportDialog({
   const [step, setStep] = useState<"choose" | "confirm">("choose")
   const [confirmText, setConfirmText] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
+  const [prevData, setPrevData] = useState(data)
 
-  useEffect(() => {
-    if (data) {
-      setStep("choose")
-      setConfirmText("")
-    }
-  }, [data])
+  if (data && data !== prevData) {
+    setStep("choose")
+    setConfirmText("")
+  }
+  if (data !== prevData) setPrevData(data)
 
   useEffect(() => {
     if (step === "confirm") setTimeout(() => inputRef.current?.focus(), 0)

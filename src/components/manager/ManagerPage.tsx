@@ -43,16 +43,25 @@ export function ManagerPage(props: {
   const [editorFloatOpen, setEditorFloatOpen] = useState(false)
   const editorRef = useRef<HTMLElement>(null)
 
-  useEffect(() => setLocalListName(props.list.name), [props.list.id, props.list.name])
+  const [prevListId, setPrevListId] = useState(props.list.id)
+  if (props.list.id !== prevListId) {
+    setLocalListName(props.list.name)
+    setPrevListId(props.list.id)
+  }
+
+  const [prevEditing, setPrevEditing] = useState(props.editing)
+  const [prevFilling, setPrevFilling] = useState(filling)
+  if ((props.editing && !prevEditing) || (filling && !prevFilling)) {
+    setEditorFloatOpen(true)
+  }
+  if (props.editing !== prevEditing) setPrevEditing(props.editing)
+  if (filling !== prevFilling) setPrevFilling(filling)
 
   useEffect(() => {
     if (props.editing && editorRef.current) {
       editorRef.current.scrollIntoView({ behavior: "smooth", block: "start" })
     }
-    if (props.editing || filling) {
-      setEditorFloatOpen(true)
-    }
-  }, [props.editing, filling])
+  }, [props.editing])
 
   const handleFillAnswers = () => {
     if (!props.llmConfig.apiKey.trim()) {

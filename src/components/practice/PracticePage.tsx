@@ -108,16 +108,16 @@ export function PracticePage(props: {
   onClearListAttempts: () => void
   startedAtRef: MutableRefObject<Record<string, number>>
 }) {
-  const { t } = props
+  const { t, startedAtRef, setCurrentIndex, questions, settings } = props
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false)
   const [inspectorFloatOpen, setInspectorFloatOpen] = useState(false)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
-  const activeQuestion = props.questions[props.currentIndex]
+  const activeQuestion = questions[props.currentIndex]
   useEffect(() => {
-    if (activeQuestion && !props.startedAtRef.current[activeQuestion.id]) {
-      props.startedAtRef.current[activeQuestion.id] = Date.now()
+    if (activeQuestion && !startedAtRef.current[activeQuestion.id]) {
+      startedAtRef.current[activeQuestion.id] = Date.now()
     }
-  }, [activeQuestion, props.startedAtRef])
+  }, [activeQuestion, startedAtRef])
 
   const allSubmitted =
     props.questions.length > 0 && props.questions.every((q) => q.id in props.results)
@@ -144,7 +144,7 @@ export function PracticePage(props: {
   const paperStackRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (props.settings.viewMode !== "paper" || !props.questions.length) return
+    if (settings.viewMode !== "paper" || !questions.length) return
     const container = paperStackRef.current
     if (!container) return
     const stage = container.closest(".question-stage")
@@ -161,14 +161,14 @@ export function PracticePage(props: {
             best = { idx, ratio: entry.intersectionRatio }
           }
         }
-        if (best) props.setCurrentIndex(best.idx)
+        if (best) setCurrentIndex(best.idx)
       },
       { root: scrollRoot, threshold: [0, 0.25, 0.5, 0.75, 1] },
     )
     const cards = container.querySelectorAll("[id^='question-']")
     cards.forEach((card) => observer.observe(card))
     return () => observer.disconnect()
-  }, [props.settings.viewMode, props.questions.length])
+  }, [settings.viewMode, questions.length, setCurrentIndex])
 
   const content =
     props.questions.length === 0 ? (

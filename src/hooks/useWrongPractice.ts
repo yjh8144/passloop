@@ -30,13 +30,14 @@ export function useWrongPractice({
   setCurrentIndex,
 }: UseWrongPracticeParams) {
   const [wrongSession, setWrongSession] = useState<WrongSession | null>(null)
+  const wrongSessionId = wrongSession?.id
   const pageRef = useRef(page)
   useEffect(() => {
     pageRef.current = page
   })
 
   useEffect(() => {
-    if (page !== "wrong" || !wrongSession) return
+    if (page !== "wrong" || !wrongSessionId) return
     const intervalId = window.setInterval(() => {
       setWrongSession((session) =>
         session
@@ -48,7 +49,7 @@ export function useWrongPractice({
       )
     }, 1000)
     return () => window.clearInterval(intervalId)
-  }, [page, wrongSession?.id])
+  }, [page, wrongSessionId])
 
   const startWrongPractice = () => {
     if (!wrongQuestions.length) {

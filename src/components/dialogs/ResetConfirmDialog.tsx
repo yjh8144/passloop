@@ -15,10 +15,15 @@ export function ResetConfirmDialog({
 }) {
   const [value, setValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
+  const [prevOpen, setPrevOpen] = useState(open)
+
+  if (open && !prevOpen) {
+    setValue("")
+  }
+  if (open !== prevOpen) setPrevOpen(open)
 
   useEffect(() => {
     if (open) {
-      setValue("")
       setTimeout(() => inputRef.current?.focus(), 0)
     }
   }, [open])

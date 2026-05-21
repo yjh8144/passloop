@@ -11,7 +11,7 @@ import {
   saveLlmConfig,
   saveData,
 } from "./lib/storage"
-import { createId, getListStats, getTypeLabels, sortQuestions } from "./lib/question"
+import { getListStats, getTypeLabels, sortQuestions } from "./lib/question"
 import { debugLog, isDebugEnabled, setDebugEnabled } from "./lib/debug"
 import { X } from "lucide-react"
 import { defaultLlmConfig, ONBOARDING_KEY } from "./utils/constants"
@@ -112,7 +112,7 @@ export function App() {
         .toLowerCase()
         .includes(trimmed),
     )
-  }, [activeList.questions, data.settings.sortMode, query, data.settings.language])
+  }, [activeList.questions, data.settings.sortMode, query, data.settings.language, t])
 
   const wrongQuestions = useMemo(
     () => activeList.questions.filter((question) => stats.wrongQuestionIds.has(question.id)),

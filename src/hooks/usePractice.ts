@@ -45,9 +45,12 @@ export function usePractice({
   useEffect(() => saveSessionAnswers(answers), [answers])
   useEffect(() => saveSessionIndex(currentIndex), [currentIndex])
 
-  useEffect(() => {
-    setCurrentIndex((index) => Math.min(index, Math.max(displayedQuestions.length - 1, 0)))
-  }, [displayedQuestions.length])
+  const [prevLength, setPrevLength] = useState(displayedQuestions.length)
+  if (displayedQuestions.length !== prevLength) {
+    setPrevLength(displayedQuestions.length)
+    const clamped = Math.min(currentIndex, Math.max(displayedQuestions.length - 1, 0))
+    if (clamped !== currentIndex) setCurrentIndex(clamped)
+  }
 
   const resetPracticeState = (questions: Question[]) => {
     setCurrentIndex(0)

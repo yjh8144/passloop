@@ -40,6 +40,7 @@ export function Sidebar(props: {
   onToggleDesktopCollapsed: () => void
 }) {
   const { t } = props
+  const { onOpenDebugDialog } = props
   const clickTimesRef = useRef<number[]>([])
 
   const handleBrandClick = useCallback(() => {
@@ -48,9 +49,9 @@ export function Sidebar(props: {
     clickTimesRef.current = clickTimesRef.current.filter((ts) => now - ts < 3000)
     if (clickTimesRef.current.length >= 7) {
       clickTimesRef.current = []
-      props.onOpenDebugDialog()
+      onOpenDebugDialog()
     }
-  }, [props.onOpenDebugDialog])
+  }, [onOpenDebugDialog])
 
   return (
     <aside

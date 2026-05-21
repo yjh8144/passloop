@@ -61,10 +61,15 @@ export function PromptDialog({
 }) {
   const [value, setValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
+  const [prevState, setPrevState] = useState(state)
+
+  if (state && state !== prevState) {
+    setValue(state.defaultValue)
+  }
+  if (state !== prevState) setPrevState(state)
 
   useEffect(() => {
     if (state) {
-      setValue(state.defaultValue)
       setTimeout(() => inputRef.current?.focus(), 0)
     }
   }, [state])

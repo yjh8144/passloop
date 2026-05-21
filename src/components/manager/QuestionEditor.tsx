@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Check, Plus, Trash2, X } from "lucide-react"
 import type { ChoiceOption, Question, QuestionType, TFunc } from "../../lib/types"
 import { createEmptyQuestion, createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
@@ -14,7 +14,11 @@ export function QuestionEditor(props: {
   const { t } = props
   const labels = getTypeLabels(t)
   const [draft, setDraft] = useState<Question>(props.question)
-  useEffect(() => setDraft(props.question), [props.question])
+  const [prevQuestion, setPrevQuestion] = useState(props.question)
+  if (props.question !== prevQuestion) {
+    setPrevQuestion(props.question)
+    setDraft(props.question)
+  }
   const patch = (value: Partial<Question>) =>
     setDraft((current) => ({ ...current, ...value, updatedAt: new Date().toISOString() }))
   const updateOption = (id: string, patchValue: Partial<ChoiceOption>) => {

@@ -3,11 +3,9 @@ import type { ChangeEvent } from "react"
 import type { AppData, LlmConfig, QuestionList, TFunc } from "../lib/types"
 import {
   createId,
-  normalizeImportedList,
   parseQuestionJson,
 } from "../lib/question"
 import {
-  downloadJson,
   normalizeAppData,
   readFileAsText,
 } from "../lib/storage"
