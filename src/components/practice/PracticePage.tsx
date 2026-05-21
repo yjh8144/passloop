@@ -11,7 +11,7 @@ import {
   Undo2,
   X,
 } from "lucide-react"
-import type { AppData, Question, TFunc } from "../../lib/types"
+import type { AppData, Question } from "../../lib/types"
 import { getListStats } from "../../lib/question"
 import { EmptyState } from "../ui/EmptyState"
 import { StatsPanel } from "../practice/StatsPanel"
@@ -20,9 +20,9 @@ import type { WrongSession } from "../practice/WrongSessionPanel"
 import { Navigator } from "../practice/Navigator"
 import { QuestionCard } from "../practice/QuestionCard"
 import type { AnswerMap, Page, ResultMap } from "../../hooks/types"
+import { useT } from "../../contexts"
 
 function InspectorContent(props: {
-  t: TFunc
   questions: Question[]
   currentIndex: number
   setCurrentIndex: (value: number | ((value: number) => number)) => void
@@ -40,7 +40,7 @@ function InspectorContent(props: {
   onExportWrong: () => void
   onCreateWrongList: () => void
 }) {
-  const { t } = props
+  const t = useT()
   const navigator = (
     <Navigator
       questions={props.questions}
@@ -76,8 +76,8 @@ function InspectorContent(props: {
           </div>
         </section>
       )}
-      <StatsPanel t={props.t} stats={props.stats} revealMode={props.settings.revealMode} />
-      {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} t={t} />}
+      <StatsPanel stats={props.stats} revealMode={props.settings.revealMode} />
+      {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
       {props.navigatorClassName ? (
         <div className={props.navigatorClassName}>{navigator}</div>
       ) : (
@@ -88,7 +88,6 @@ function InspectorContent(props: {
 }
 
 export function PracticePage(props: {
-  t: TFunc
   mode: Page
   questions: Question[]
   currentIndex: number
@@ -108,7 +107,8 @@ export function PracticePage(props: {
   onClearListAttempts: () => void
   startedAtRef: MutableRefObject<Record<string, number>>
 }) {
-  const { t, startedAtRef, setCurrentIndex, questions, settings } = props
+  const t = useT()
+  const { startedAtRef, setCurrentIndex, questions, settings } = props
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false)
   const [inspectorFloatOpen, setInspectorFloatOpen] = useState(false)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
@@ -190,7 +190,7 @@ export function PracticePage(props: {
             hideSubmit={props.settings.submitMode === "paper"}
             revealMode={props.settings.revealMode}
             allSubmitted={allSubmitted}
-            t={t}
+
           />
         ))}
         {props.settings.practiceMode !== "memorize" &&
@@ -220,7 +220,6 @@ export function PracticePage(props: {
           hideSubmit={props.settings.submitMode === "paper"}
           revealMode={props.settings.revealMode}
           allSubmitted={allSubmitted}
-          t={t}
         />
       )
     )
@@ -296,7 +295,6 @@ export function PracticePage(props: {
       {!inspectorCollapsed && (
         <aside className="inspector">
           <InspectorContent
-            t={t}
             questions={props.questions}
             currentIndex={props.currentIndex}
             setCurrentIndex={props.setCurrentIndex}
@@ -331,7 +329,6 @@ export function PracticePage(props: {
       <div className={`inspector-float ${inspectorFloatOpen ? "is-open" : ""}`}>
         <div className="inspector-float-inner">
           <InspectorContent
-            t={t}
             questions={props.questions}
             currentIndex={props.currentIndex}
             setCurrentIndex={(idx) => {

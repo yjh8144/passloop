@@ -1,19 +1,19 @@
 import { X } from "lucide-react"
-import type { QuestionList, TFunc } from "../../lib/types"
+import type { QuestionList } from "../../lib/types"
+import { useT } from "../../contexts"
 
 export function ImportChoiceDialog({
   lists,
   activeListName,
   onClose,
   onChoose,
-  t,
 }: {
   lists: QuestionList[] | null
   activeListName: string
   onClose: () => void
   onChoose: (mode: "current" | "new") => void
-  t: TFunc
 }) {
+  const t = useT()
   if (!lists) return null
   const totalQuestions = lists.reduce((sum, l) => sum + l.questions.length, 0)
   return (

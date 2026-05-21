@@ -1,26 +1,27 @@
 import type { getListStats } from "../../lib/question"
-import type { Settings, TFunc } from "../../lib/types"
+import type { Settings } from "../../lib/types"
+import { useT } from "../../contexts"
 
 export function StatsPanel(props: {
-  t: TFunc
   stats: ReturnType<typeof getListStats>
   revealMode: Settings["revealMode"]
 }) {
+  const t = useT()
   const hideCorrectness = props.revealMode === "end"
   const items = hideCorrectness
     ? [
-        [props.t("avgTime"), `${props.stats.avgTime}s`],
-        [props.t("finished"), `${props.stats.submitted}`],
+        [t("avgTime"), `${props.stats.avgTime}s`],
+        [t("finished"), `${props.stats.submitted}`],
       ]
     : [
-        [props.t("correctRate"), `${props.stats.accuracy}%`],
-        [props.t("avgTime"), `${props.stats.avgTime}s`],
-        [props.t("finished"), `${props.stats.submitted}`],
-        [props.t("wrongCount"), `${props.stats.wrong}`],
+        [t("correctRate"), `${props.stats.accuracy}%`],
+        [t("avgTime"), `${props.stats.avgTime}s`],
+        [t("finished"), `${props.stats.submitted}`],
+        [t("wrongCount"), `${props.stats.wrong}`],
       ]
   return (
     <section className="inspector-panel">
-      <h3>{props.t("stats")}</h3>
+      <h3>{t("stats")}</h3>
       <div className="stats-grid">
         {items.map(([label, value]) => (
           <div key={label}>
@@ -37,7 +38,7 @@ export function StatsPanel(props: {
         />
       </div>
       <small>
-        {props.t("progress")} {props.stats.attempted}/{props.stats.total}
+        {t("progress")} {props.stats.attempted}/{props.stats.total}
       </small>
     </section>
   )

@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { Check, Copy, Download, Upload, X } from "lucide-react"
-import type { Question, TFunc, Toast } from "../../lib/types"
+import type { Question } from "../../lib/types"
 import { debugLog } from "../../lib/debug"
 import { Segmented } from "../ui/Segmented"
+import { useT } from "../../contexts"
 
 export function SelfFillDialog(props: {
   open: boolean
@@ -11,10 +12,8 @@ export function SelfFillDialog(props: {
   setMode: (mode: "answer" | "explanation" | "both") => void
   onClose: () => void
   onApply: (updated: Question[]) => void
-  pushToast: (tone: Toast["tone"], message: string) => void
-  t: TFunc
 }) {
-  const { t } = props
+  const t = useT()
   const [copied, setCopied] = useState(false)
   const [jsonInput, setJsonInput] = useState("")
   const [validationError, setValidationError] = useState("")

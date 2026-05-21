@@ -1,13 +1,14 @@
-import type { PracticeMode, Question, TFunc } from "../../lib/types"
+import type { PracticeMode, Question } from "../../lib/types"
 import { toArray } from "../../lib/question"
+import { useT } from "../../contexts"
 
 export function AnswerInput(props: {
   question: Question
   value?: string | string[]
   onChange: (id: string, value: string | string[]) => void
   practiceMode: PracticeMode
-  t?: TFunc
 }) {
+  const t = useT()
   const { question } = props
   const isMemorize = props.practiceMode === "memorize"
   if (question.type === "single" || question.type === "boolean") {
@@ -74,7 +75,7 @@ export function AnswerInput(props: {
           <input
             key={index}
             value={values[index] ?? ""}
-            placeholder={props.t ? props.t("blankPlaceholder", index + 1) : `blank ${index + 1}`}
+            placeholder={t("blankPlaceholder", index + 1)}
             onChange={(event) => {
               const next = [...values]
               next[index] = event.target.value
@@ -89,7 +90,7 @@ export function AnswerInput(props: {
     <textarea
       value={String(props.value ?? "")}
       onChange={(event) => props.onChange(question.id, event.target.value)}
-      placeholder={props.t ? props.t("inputAnswer") : "input answer"}
+      placeholder={t("inputAnswer")}
     />
   )
 }

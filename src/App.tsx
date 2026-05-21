@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { AppData, LlmConfig, Question, QuestionList } from "./lib/types"
 import { getTranslator } from "./lib/i18n/index"
+import { I18nProvider, ToastProvider, DialogProvider } from "./contexts"
 import {
   clearLlmConfig,
   createDefaultData,
@@ -56,7 +57,7 @@ export function App() {
   const [showDebugDialog, setShowDebugDialog] = useState(false)
   const [debugEnabled, setDebugState] = useState(() => isDebugEnabled())
   const llmUnsavedRef = useRef(false)
-  const t = getTranslator(data.settings.language)
+  const t = useMemo(() => getTranslator(data.settings.language), [data.settings.language])
 
   const toggleDebug = useCallback(() => {
     const next = !debugEnabled
@@ -66,13 +67,16 @@ export function App() {
     setShowDebugDialog(false)
   }, [debugEnabled])
 
-  const showConfirm = (message: string, onConfirm: () => void) => {
+  const showConfirm = useCallback((message: string, onConfirm: () => void) => {
     setConfirmDialog({ message, onConfirm })
-  }
+  }, [])
 
-  const showPrompt = (title: string, defaultValue: string, onSubmit: (value: string) => void) => {
-    setPromptDialog({ title, defaultValue, onSubmit })
-  }
+  const showPrompt = useCallback(
+    (title: string, defaultValue: string, onSubmit: (value: string) => void) => {
+      setPromptDialog({ title, defaultValue, onSubmit })
+    },
+    [],
+  )
 
   const updateData = (recipe: (draft: AppData) => AppData) => {
     setData((current) => recipe(current))
@@ -249,9 +253,11 @@ export function App() {
   const practiceQuestions = page === "wrong" ? wrongQuestions : displayedQuestions
 
   return (
-    <div className={`app-shell ${desktopSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+    <I18nProvider t={t}>
+      <ToastProvider pushToast={pushToast}>
+        <DialogProvider showConfirm={showConfirm} showPrompt={showPrompt}>
+          <div className={`app-shell ${desktopSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
       <Sidebar
-        t={t}
         page={page}
         setPage={changePage}
         data={data}
@@ -273,7 +279,6 @@ export function App() {
 
       <main className="workspace">
         <Topbar
-          t={t}
           page={page}
           query={query}
           setQuery={setQuery}
@@ -288,32 +293,25 @@ export function App() {
 
         {page === "manager" ? (
           <ManagerPage
-            t={t}
             list={activeList}
             updateList={updateActiveList}
             editing={editing}
             setEditing={setEditing}
-            pushToast={pushToast}
-            showConfirm={showConfirm}
-            showPrompt={showPrompt}
             onDeleteList={() => deleteList(activeList.id)}
             llmConfig={llmConfig}
             onOpenLlmConfig={() => setShowGlobalLlmConfig(true)}
           />
         ) : page === "llm" ? (
           <LlmPage
-            t={t}
             activeList={activeList}
             updateActiveList={updateActiveList}
             addImportedList={addImportedList}
-            pushToast={pushToast}
             unsavedRef={llmUnsavedRef}
             llmConfig={llmConfig}
             onOpenLlmConfig={() => setShowGlobalLlmConfig(true)}
           />
         ) : (
           <PracticePage
-            t={t}
             mode={page}
             questions={practiceQuestions}
             currentIndex={practice.currentIndex}
@@ -337,7 +335,6 @@ export function App() {
       </main>
 
       <BottomNav
-        t={t}
         page={page}
         setPage={changePage}
         data={data}
@@ -353,34 +350,30 @@ export function App() {
       />
 
       <ToastStack toasts={toasts} />
-      <ConfirmDialog state={confirmDialog} onClose={() => setConfirmDialog(null)} t={t} />
-      <PromptDialog state={promptDialog} onClose={() => setPromptDialog(null)} t={t} />
+      <ConfirmDialog state={confirmDialog} onClose={() => setConfirmDialog(null)} />
+      <PromptDialog state={promptDialog} onClose={() => setPromptDialog(null)} />
       <ImportSourceDialog
         open={importExport.showImportDialog}
         onClose={() => importExport.setShowImportDialog(false)}
         onFileSelect={importExport.handleQuestionImport}
         onUrlImport={importExport.handleUrlImport}
-        t={t}
       />
       <ImportSourceDialog
         open={importExport.showBackupImportDialog}
         onClose={() => importExport.setShowBackupImportDialog(false)}
         onFileSelect={importExport.handleBackupImport}
         onUrlImport={importExport.handleBackupUrlImport}
-        t={t}
       />
       <ImportChoiceDialog
         lists={importExport.pendingImportLists}
         activeListName={activeList.name}
         onClose={() => importExport.setPendingImportLists(null)}
         onChoose={importExport.commitImport}
-        t={t}
       />
       <BackupImportDialog
         data={importExport.pendingBackup}
         onClose={() => importExport.setPendingBackup(null)}
         onChoose={importExport.commitBackupImport}
-        t={t}
       />
       <ResetConfirmDialog
         open={resetConfirmDialog}
@@ -393,7 +386,6 @@ export function App() {
           practice.setResults({})
           setResetConfirmDialog(false)
         }}
-        t={t}
       />
       <OnboardingDialog
         open={showOnboarding}
@@ -401,15 +393,12 @@ export function App() {
           localStorage.setItem(ONBOARDING_KEY, "1")
           setShowOnboarding(false)
         }}
-        t={t}
       />
       <LlmConfigModal
         open={showGlobalLlmConfig}
         onClose={() => setShowGlobalLlmConfig(false)}
         config={llmConfig}
         setConfig={setLlmConfig}
-        pushToast={pushToast}
-        t={t}
       />
       {showDebugDialog && (
         <div className="modal-overlay" onClick={() => setShowDebugDialog(false)}>
@@ -439,6 +428,9 @@ export function App() {
           </div>
         </div>
       )}
-    </div>
+          </div>
+        </DialogProvider>
+      </ToastProvider>
+    </I18nProvider>
   )
 }

@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Check, Copy, Download, X } from "lucide-react"
-import type { TFunc } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
+import { useT } from "../../contexts"
 
 export function SelfGenerateDialog(props: {
   open: boolean
@@ -9,9 +9,8 @@ export function SelfGenerateDialog(props: {
   setMode: (mode: "answer" | "explanation" | "both" | "none") => void
   rawText?: string
   onClose: () => void
-  t: TFunc
 }) {
-  const { t } = props
+  const t = useT()
   const [copied, setCopied] = useState(false)
 
   if (!props.open) return null

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import type { Toast } from "../lib/types"
 import { createId } from "../lib/question"
 
@@ -6,7 +6,7 @@ export function useToast() {
   const [toasts, setToasts] = useState<Toast[]>([])
   const timerMap = useRef(new Map<string, number>())
 
-  const pushToast = (tone: Toast["tone"], message: string) => {
+  const pushToast = useCallback((tone: Toast["tone"], message: string) => {
     setToasts((items) => {
       const last = items[items.length - 1]
       if (last && last.message === message) {
@@ -32,7 +32,7 @@ export function useToast() {
       timerMap.current.set(id, handle)
       return [...items, { id, tone, message, repeatCount: 1 }]
     })
-  }
+  }, [])
 
   return { toasts, pushToast }
 }

@@ -12,7 +12,7 @@ import {
   Upload,
   X,
 } from "lucide-react"
-import type { LlmConfig, QuestionList, TFunc, Toast } from "../../lib/types"
+import type { LlmConfig, QuestionList } from "../../lib/types"
 import { normalizeImportedList, parseQuestionJson } from "../../lib/question"
 import { streamParseLlm, extractJsonText } from "../../lib/llm"
 import { downloadJson } from "../../lib/storage"
@@ -21,18 +21,19 @@ import { Segmented } from "../ui/Segmented"
 import { EmptyState } from "../ui/EmptyState"
 import { SelfGenerateDialog } from "./SelfGenerateDialog"
 import { ParsedQuestionsEditor } from "./ParsedQuestionsEditor"
+import { useT, usePushToast } from "../../contexts"
 
 export function LlmPage(props: {
-  t: TFunc
   activeList: QuestionList
   updateActiveList: (recipe: (list: QuestionList) => QuestionList) => void
   addImportedList: (list: QuestionList) => void
-  pushToast: (tone: Toast["tone"], message: string) => void
   unsavedRef: MutableRefObject<boolean>
   llmConfig: LlmConfig
   onOpenLlmConfig: () => void
 }) {
-  const { t, unsavedRef, updateActiveList, addImportedList, pushToast, onOpenLlmConfig } = props
+  const t = useT()
+  const pushToast = usePushToast()
+  const { unsavedRef, updateActiveList, addImportedList, onOpenLlmConfig } = props
   const config = props.llmConfig
   const [rawText, setRawText] = useState("")
   const [parsedList, setParsedList] = useState<QuestionList | null>(null)
@@ -305,7 +306,6 @@ export function LlmPage(props: {
                 setParsedList(updated)
                 setParsedJsonText(JSON.stringify(updated, null, 2))
               }}
-              t={t}
             />
           )
         ) : loading ? (
@@ -387,7 +387,6 @@ export function LlmPage(props: {
           setMode={setSelfParseMode}
           rawText={rawText}
           onClose={() => setShowSelfParse(false)}
-          t={t}
         />
       )}
 

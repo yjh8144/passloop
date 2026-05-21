@@ -16,11 +16,11 @@ import {
   Trash2,
   Upload,
 } from "lucide-react"
-import type { AppData, QuestionList, TFunc } from "../../lib/types"
+import type { AppData, QuestionList } from "../../lib/types"
 import type { Page } from "../../hooks/types"
+import { useT } from "../../contexts"
 
 export function Sidebar(props: {
-  t: TFunc
   page: Page
   setPage: (page: Page) => void
   data: AppData
@@ -39,7 +39,7 @@ export function Sidebar(props: {
   desktopCollapsed: boolean
   onToggleDesktopCollapsed: () => void
 }) {
-  const { t } = props
+  const t = useT()
   const { onOpenDebugDialog } = props
   const clickTimesRef = useRef<number[]>([])
 

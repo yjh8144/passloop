@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from "react"
 import { X } from "lucide-react"
-import type { TFunc } from "../../lib/types"
+import { useT } from "../../contexts"
 
 export function ResetConfirmDialog({
   open,
   onClose,
   onConfirm,
-  t,
 }: {
   open: boolean
   onClose: () => void
   onConfirm: () => void
-  t: TFunc
 }) {
+  const t = useT()
   const [value, setValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   const [prevOpen, setPrevOpen] = useState(open)

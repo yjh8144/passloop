@@ -1,15 +1,14 @@
 import { Github, X } from "lucide-react"
-import type { TFunc } from "../../lib/types"
+import { useT } from "../../contexts"
 
 export function OnboardingDialog({
   open,
   onClose,
-  t,
 }: {
   open: boolean
   onClose: () => void
-  t: TFunc
 }) {
+  const t = useT()
   if (!open) return null
   return (
     <div className="modal-overlay" onClick={onClose}>

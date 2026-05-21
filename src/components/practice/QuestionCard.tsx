@@ -1,8 +1,9 @@
 import { Check, ChevronRight } from "lucide-react"
-import type { PracticeMode, Question, TFunc } from "../../lib/types"
+import type { PracticeMode, Question } from "../../lib/types"
 import { formatAnswer, getTypeLabels, isAnswerCorrect } from "../../lib/question"
 import { AnswerInput } from "./AnswerInput"
 import type { AnswerMap } from "../../hooks/types"
+import { useT } from "../../contexts"
 
 export function QuestionCard(props: {
   id?: string
@@ -19,9 +20,8 @@ export function QuestionCard(props: {
   hideSubmit?: boolean
   revealMode?: "immediate" | "end"
   allSubmitted?: boolean
-  t?: TFunc
 }) {
-  const t = props.t ?? ((key: string) => key)
+  const t = useT()
   const labels = getTypeLabels(t)
   const showAnswer =
     props.practiceMode === "memorize" ||
@@ -68,7 +68,6 @@ export function QuestionCard(props: {
                 practiceMode={props.practiceMode}
                 onSubmit={() => undefined}
                 compact
-                t={props.t}
               />
             ))
           ) : (
@@ -85,7 +84,6 @@ export function QuestionCard(props: {
           value={props.answers[props.question.id]}
           onChange={updateAnswer}
           practiceMode={props.practiceMode}
-          t={props.t}
         />
       )}
 

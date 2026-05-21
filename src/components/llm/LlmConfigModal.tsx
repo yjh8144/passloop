@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from "react"
 import { ChevronRight, Eye, EyeOff, HelpCircle, Undo2, X } from "lucide-react"
-import type { LlmConfig, TFunc, Toast } from "../../lib/types"
+import type { LlmConfig } from "../../lib/types"
 import { testLlmConnection, fetchModelList } from "../../lib/llm"
 import { providerPlaceholders, defaultLlmConfig } from "../../utils/constants"
 import { Segmented } from "../ui/Segmented"
+import { useT, usePushToast } from "../../contexts"
 
 export function LlmConfigModal(props: {
   open: boolean
   onClose: () => void
   config: LlmConfig
   setConfig: (config: LlmConfig) => void
-  pushToast: (tone: Toast["tone"], message: string) => void
-  t: TFunc
 }) {
-  const { t } = props
+  const t = useT()
+  const pushToast = usePushToast()
   const [showApiKey, setShowApiKey] = useState(false)
   const [showProxyKey, setShowProxyKey] = useState(false)
   const [showProxyHelp, setShowProxyHelp] = useState(false)
@@ -49,9 +49,9 @@ export function LlmConfigModal(props: {
     setTesting(true)
     try {
       const model = await testLlmConnection(props.config)
-      props.pushToast("success", t("connectionSuccess", model))
+      pushToast("success", t("connectionSuccess", model))
     } catch (error) {
-      props.pushToast("error", error instanceof Error ? error.message : t("connectionFailed"))
+      pushToast("error", error instanceof Error ? error.message : t("connectionFailed"))
     } finally {
       setTesting(false)
     }
@@ -63,12 +63,12 @@ export function LlmConfigModal(props: {
       const models = await fetchModelList(props.config)
       setModelList(models)
       if (!models.length) {
-        props.pushToast("info", t("noModelsFound"))
+        pushToast("info", t("noModelsFound"))
       } else {
-        props.pushToast("success", t("modelsFound", models.length))
+        pushToast("success", t("modelsFound", models.length))
       }
     } catch (error) {
-      props.pushToast("error", error instanceof Error ? error.message : t("fetchModelsFailed"))
+      pushToast("error", error instanceof Error ? error.message : t("fetchModelsFailed"))
     } finally {
       setFetchingModels(false)
     }

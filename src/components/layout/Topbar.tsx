@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { Languages, Moon, Search, Settings2 } from "lucide-react"
-import type { AppData, QuestionList, TFunc } from "../../lib/types"
+import type { AppData, QuestionList } from "../../lib/types"
 import { ControlPanel } from "../practice/ControlPanel"
 import type { Page } from "../../hooks/types"
+import { useT } from "../../contexts"
 
 export function Topbar(props: {
-  t: TFunc
   page: Page
   query: string
   setQuery: (value: string) => void
@@ -17,7 +17,7 @@ export function Topbar(props: {
   onCreateWrongList: () => void
   onClearListAttempts: () => void
 }) {
-  const { t } = props
+  const t = useT()
   const [showSettings, setShowSettings] = useState(false)
   const showSearch = props.page === "practice" || props.page === "wrong"
   const showSettingsButton = props.page === "practice" || props.page === "wrong"
@@ -84,7 +84,6 @@ export function Topbar(props: {
             {showSettings && (
               <div className="topbar-settings-dropdown">
                 <ControlPanel
-                  t={t}
                   settings={props.data.settings}
                   updateSettings={props.updateSettings}
                   onRedoWrong={props.onRedoWrong}

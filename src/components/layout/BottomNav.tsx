@@ -11,11 +11,11 @@ import {
   Trash2,
   Upload,
 } from "lucide-react"
-import type { AppData, QuestionList, TFunc } from "../../lib/types"
+import type { AppData, QuestionList } from "../../lib/types"
 import type { Page } from "../../hooks/types"
+import { useT } from "../../contexts"
 
 export function BottomNav(props: {
-  t: TFunc
   page: Page
   setPage: (page: Page) => void
   data: AppData
@@ -29,7 +29,7 @@ export function BottomNav(props: {
   onResetAll: () => void
   onOpenLlmConfig: () => void
 }) {
-  const { t } = props
+  const t = useT()
   const [panelOpen, setPanelOpen] = useState(false)
 
   const close = useCallback(() => setPanelOpen(false), [])

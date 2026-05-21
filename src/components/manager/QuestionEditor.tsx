@@ -1,17 +1,17 @@
 import { useState } from "react"
 import { Check, Plus, Trash2, X } from "lucide-react"
-import type { ChoiceOption, Question, QuestionType, TFunc } from "../../lib/types"
+import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
 import { createEmptyQuestion, createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
+import { useT, useDialog } from "../../contexts"
 
 export function QuestionEditor(props: {
   question: Question
   onSave: (question: Question) => void
   onCancel: () => void
-  showPrompt: (title: string, defaultValue: string, onSubmit: (value: string) => void) => void
-  t: TFunc
 }) {
-  const { t } = props
+  const t = useT()
+  const { showPrompt } = useDialog()
   const labels = getTypeLabels(t)
   const [draft, setDraft] = useState<Question>(props.question)
   const [prevQuestion, setPrevQuestion] = useState(props.question)
@@ -150,7 +150,7 @@ export function QuestionEditor(props: {
               key={subQuestion.id}
               className="sub-row"
               onClick={() => {
-                props.showPrompt(t("subQuestionTitle"), subQuestion.title, (title) => {
+                showPrompt(t("subQuestionTitle"), subQuestion.title, (title) => {
                   patch({
                     subQuestions: draft.subQuestions.map((item) =>
                       item.id === subQuestion.id ? { ...item, title } : item,

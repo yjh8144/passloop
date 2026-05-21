@@ -1,4 +1,4 @@
-import type { TFunc } from "../../lib/types"
+import { useT } from "../../contexts"
 import { formatDuration } from "../../utils/evaluate"
 
 export type WrongSession = {
@@ -9,8 +9,8 @@ export type WrongSession = {
   correct: number
 }
 
-export function WrongSessionPanel(props: { session: WrongSession | null; t: TFunc }) {
-  const { t } = props
+export function WrongSessionPanel(props: { session: WrongSession | null }) {
+  const t = useT()
   const submitted = props.session?.submitted ?? 0
   const correct = props.session?.correct ?? 0
   const accuracy = submitted ? Math.round((correct / submitted) * 100) : 0

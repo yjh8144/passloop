@@ -1,15 +1,15 @@
 import { Plus, Trash2, X } from "lucide-react"
-import type { ChoiceOption, Question, QuestionList, QuestionType, TFunc } from "../../lib/types"
+import type { ChoiceOption, Question, QuestionList, QuestionType } from "../../lib/types"
 import { createEmptyQuestion, createId, getTypeLabels } from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
+import { useT } from "../../contexts"
 
 export function ParsedQuestionsEditor(props: {
   list: QuestionList
   readOnly?: boolean
   onChange: (list: QuestionList) => void
-  t: TFunc
 }) {
-  const { t } = props
+  const t = useT()
   const labels = getTypeLabels(t)
 
   const updateQuestion = (index: number, patch: Partial<Question>) => {

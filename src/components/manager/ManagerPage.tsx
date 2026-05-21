@@ -11,28 +11,27 @@ import {
   Trash2,
   X,
 } from "lucide-react"
-import type { LlmConfig, Question, QuestionList, TFunc, Toast } from "../../lib/types"
+import type { LlmConfig, Question, QuestionList } from "../../lib/types"
 import { createEmptyQuestion, getTypeLabels } from "../../lib/question"
 import { fillAnswersWithLlm } from "../../lib/llm"
 import { debugLog } from "../../lib/debug"
 import { EmptyState } from "../ui/EmptyState"
 import { QuestionEditor } from "./QuestionEditor"
 import { SelfFillDialog } from "./SelfFillDialog"
+import { useT, usePushToast, useDialog } from "../../contexts"
 
 export function ManagerPage(props: {
-  t: TFunc
   list: QuestionList
   updateList: (recipe: (list: QuestionList) => QuestionList) => void
   editing: Question | null
   setEditing: (question: Question | null) => void
-  pushToast: (tone: Toast["tone"], message: string) => void
-  showConfirm: (message: string, onConfirm: () => void) => void
-  showPrompt: (title: string, defaultValue: string, onSubmit: (value: string) => void) => void
   onDeleteList: () => void
   llmConfig: LlmConfig
   onOpenLlmConfig: () => void
 }) {
-  const { t } = props
+  const t = useT()
+  const pushToast = usePushToast()
+  const { showConfirm } = useDialog()
   const typeLabelsMap = getTypeLabels(t)
   const [localListName, setLocalListName] = useState(props.list.name)
   const [showFillChoice, setShowFillChoice] = useState(false)
@@ -73,7 +72,7 @@ export function ManagerPage(props: {
 
   const runFill = async (mode: "answer" | "explanation" | "both") => {
     if (!props.list.questions.length) {
-      props.pushToast("info", t("noQuestionsInList"))
+      pushToast("info", t("noQuestionsInList"))
       return
     }
     debugLog("LLM fill started", {
@@ -110,10 +109,10 @@ export function ManagerPage(props: {
           : mode === "explanation"
             ? t("fillLabelExplanation")
             : t("fillLabelBoth")
-      props.pushToast("success", t("llmFillDone", label))
+      pushToast("success", t("llmFillDone", label))
     } catch (error) {
       debugLog("LLM fill failed", error)
-      props.pushToast("error", error instanceof Error ? error.message : t("llmFillFailed"))
+      pushToast("error", error instanceof Error ? error.message : t("llmFillFailed"))
     } finally {
       setFilling(false)
     }
@@ -132,11 +131,11 @@ export function ManagerPage(props: {
       }
     })
     props.setEditing(null)
-    props.pushToast("success", t("questionSaved"))
+    pushToast("success", t("questionSaved"))
   }
 
   const deleteQuestion = (id: string) => {
-    props.showConfirm(t("confirmDeleteQuestion"), () => {
+    showConfirm(t("confirmDeleteQuestion"), () => {
       debugLog("Question deleted", { id })
       props.updateList((list) => ({
         ...list,
@@ -229,8 +228,6 @@ export function ManagerPage(props: {
             question={props.editing}
             onCancel={() => props.setEditing(null)}
             onSave={saveQuestion}
-            showPrompt={props.showPrompt}
-            t={t}
           />
         ) : (
           <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />
@@ -244,7 +241,7 @@ export function ManagerPage(props: {
         className={`editor-float-backdrop ${editorFloatOpen ? "is-visible" : ""}`}
         onClick={() => {
           if (props.editing) {
-            props.showConfirm(t("unsavedConfirm"), () => {
+            showConfirm(t("unsavedConfirm"), () => {
               props.setEditing(null)
               setEditorFloatOpen(false)
             })
@@ -279,8 +276,6 @@ export function ManagerPage(props: {
                 saveQuestion(q)
                 setEditorFloatOpen(false)
               }}
-              showPrompt={props.showPrompt}
-              t={t}
             />
           ) : (
             <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />
@@ -343,10 +338,8 @@ export function ManagerPage(props: {
               if (refreshed) props.setEditing(refreshed)
             }
             setShowSelfFill(false)
-            props.pushToast("success", t("selfFillApplied"))
+            pushToast("success", t("selfFillApplied"))
           }}
-          pushToast={props.pushToast}
-          t={t}
         />
       )}
     </div>

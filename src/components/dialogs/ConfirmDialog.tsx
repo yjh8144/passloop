@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { X } from "lucide-react"
-import type { TFunc } from "../../lib/types"
+import { useT } from "../../contexts"
 
 export type ConfirmDialogState = {
   message: string
@@ -10,12 +10,11 @@ export type ConfirmDialogState = {
 export function ConfirmDialog({
   state,
   onClose,
-  t,
 }: {
   state: ConfirmDialogState
   onClose: () => void
-  t: TFunc
 }) {
+  const t = useT()
   if (!state) return null
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -53,12 +52,11 @@ export type PromptDialogState = {
 export function PromptDialog({
   state,
   onClose,
-  t,
 }: {
   state: PromptDialogState
   onClose: () => void
-  t: TFunc
 }) {
+  const t = useT()
   const [value, setValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   const [prevState, setPrevState] = useState(state)

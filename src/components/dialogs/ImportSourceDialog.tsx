@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from "react"
 import type { ChangeEvent } from "react"
 import { Download, Loader2, Upload, X } from "lucide-react"
-import type { TFunc } from "../../lib/types"
+import { useT } from "../../contexts"
 
 export function ImportSourceDialog({
   open,
   onClose,
   onFileSelect,
   onUrlImport,
-  t,
 }: {
   open: boolean
   onClose: () => void
   onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void
   onUrlImport: (url: string) => Promise<void>
-  t: TFunc
 }) {
+  const t = useT()
   const [urlMode, setUrlMode] = useState(false)
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)

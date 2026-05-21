@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from "react"
 import { X } from "lucide-react"
-import type { AppData, TFunc } from "../../lib/types"
+import type { AppData } from "../../lib/types"
+import { useT } from "../../contexts"
 
 export function BackupImportDialog({
   data,
   onClose,
   onChoose,
-  t,
 }: {
   data: AppData | null
   onClose: () => void
   onChoose: (mode: "overwrite" | "merge") => void
-  t: TFunc
 }) {
+  const t = useT()
   const [step, setStep] = useState<"choose" | "confirm">("choose")
   const [confirmText, setConfirmText] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
