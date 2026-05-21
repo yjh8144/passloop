@@ -1,13 +1,17 @@
 import { Plus, Trash2, X } from "lucide-react"
-import type { ChoiceOption, Question, QuestionList, QuestionType } from "../../lib/types"
-import { createEmptyQuestion, createId, typeLabels } from "../../lib/question"
+import type { ChoiceOption, Question, QuestionList, QuestionType, TFunc } from "../../lib/types"
+import { createEmptyQuestion, createId, getTypeLabels } from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
 
 export function ParsedQuestionsEditor(props: {
   list: QuestionList
   readOnly?: boolean
   onChange: (list: QuestionList) => void
+  t: TFunc
 }) {
+  const { t } = props
+  const labels = getTypeLabels(t)
+
   const updateQuestion = (index: number, patch: Partial<Question>) => {
     if (props.readOnly) return
     const questions = props.list.questions.map((q, i) =>
@@ -70,16 +74,16 @@ export function ParsedQuestionsEditor(props: {
               disabled={props.readOnly}
               onChange={(e) => updateQuestion(qIndex, { type: e.target.value as QuestionType })}
             >
-              {questionTypes.map((t) => (
-                <option key={t} value={t}>
-                  {typeLabels[t]}
+              {questionTypes.map((tp) => (
+                <option key={tp} value={tp}>
+                  {labels[tp]}
                 </option>
               ))}
             </select>
             {!props.readOnly && (
               <button
                 className="icon-button danger-icon"
-                title="删除题目"
+                title={t("deleteQuestionTitle")}
                 onClick={() => deleteQuestion(qIndex)}
               >
                 <Trash2 size={15} />
@@ -87,7 +91,7 @@ export function ParsedQuestionsEditor(props: {
             )}
           </div>
           <label className="field-label">
-            标题
+            {t("titleLabel")}
             <input
               value={question.title}
               disabled={props.readOnly}
@@ -95,7 +99,7 @@ export function ParsedQuestionsEditor(props: {
             />
           </label>
           <label className="field-label">
-            题干
+            {t("promptLabel")}
             <textarea
               value={question.prompt}
               disabled={props.readOnly}
@@ -105,11 +109,11 @@ export function ParsedQuestionsEditor(props: {
           {(question.type === "single" || question.type === "multiple") && (
             <div className="parsed-options">
               <div className="parsed-options-header">
-                <span className="parsed-options-label">选项</span>
+                <span className="parsed-options-label">{t("optionsLabel")}</span>
                 {!props.readOnly && (
                   <button
                     className="icon-button"
-                    title="添加选项"
+                    title={t("addOptionTitle")}
                     onClick={() => addOption(qIndex)}
                   >
                     <Plus size={14} />
@@ -132,7 +136,7 @@ export function ParsedQuestionsEditor(props: {
                   {!props.readOnly && (
                     <button
                       className="icon-button danger-icon"
-                      title="删除选项"
+                      title={t("deleteOptionTitle")}
                       onClick={() => deleteOption(qIndex, oIndex)}
                     >
                       <X size={14} />
@@ -144,19 +148,21 @@ export function ParsedQuestionsEditor(props: {
           )}
           {question.type === "boolean" && (
             <div className="parsed-options">
-              <span className="parsed-options-label">选项（判断题固定 T/F）</span>
+              <span className="parsed-options-label">{t("booleanOptionsLabel")}</span>
               <div className="parsed-option-row">
                 <input className="option-label-input" value="T" disabled />
-                <input value="正确" disabled />
+                <input value={t("correct")} disabled />
               </div>
               <div className="parsed-option-row">
                 <input className="option-label-input" value="F" disabled />
-                <input value="错误" disabled />
+                <input value={t("incorrect")} disabled />
               </div>
             </div>
           )}
           <label className="field-label">
-            答案{(question.type === "multiple" || question.type === "blank") && "（用 | 分隔）"}
+            {question.type === "multiple" || question.type === "blank"
+              ? t("answerSepLabel")
+              : t("answerLabel")}
             <input
               value={Array.isArray(question.answer) ? question.answer.join("|") : question.answer}
               disabled={props.readOnly}
@@ -174,7 +180,7 @@ export function ParsedQuestionsEditor(props: {
             />
           </label>
           <label className="field-label">
-            解析
+            {t("explanationLabel")}
             <textarea
               value={question.explanation}
               disabled={props.readOnly}
@@ -183,7 +189,7 @@ export function ParsedQuestionsEditor(props: {
           </label>
           {question.type === "composite" && question.subQuestions.length > 0 && (
             <div className="parsed-subquestions">
-              <span className="parsed-options-label">子题</span>
+              <span className="parsed-options-label">{t("subQuestionsLabel")}</span>
               {question.subQuestions.map((sub, sIndex) => (
                 <div className="parsed-subquestion-card" key={sub.id}>
                   <div className="parsed-card-header">
@@ -197,15 +203,15 @@ export function ParsedQuestionsEditor(props: {
                         updateSubQuestion(qIndex, sIndex, { type: e.target.value as QuestionType })
                       }
                     >
-                      {questionTypes.map((t) => (
-                        <option key={t} value={t}>
-                          {typeLabels[t]}
+                      {questionTypes.map((tp) => (
+                        <option key={tp} value={tp}>
+                          {labels[tp]}
                         </option>
                       ))}
                     </select>
                   </div>
                   <label className="field-label">
-                    标题
+                    {t("titleLabel")}
                     <input
                       value={sub.title}
                       disabled={props.readOnly}
@@ -213,7 +219,7 @@ export function ParsedQuestionsEditor(props: {
                     />
                   </label>
                   <label className="field-label">
-                    答案
+                    {t("answerLabel")}
                     <input
                       value={Array.isArray(sub.answer) ? sub.answer.join("|") : sub.answer}
                       disabled={props.readOnly}
@@ -231,7 +237,7 @@ export function ParsedQuestionsEditor(props: {
                     />
                   </label>
                   <label className="field-label">
-                    解析
+                    {t("explanationLabel")}
                     <textarea
                       value={sub.explanation}
                       disabled={props.readOnly}
@@ -248,7 +254,7 @@ export function ParsedQuestionsEditor(props: {
       ))}
       {!props.readOnly && (
         <button className="add-question-button" onClick={addQuestion}>
-          <Plus size={16} /> 添加题目
+          <Plus size={16} /> {t("addQuestionBtnText")}
         </button>
       )}
     </div>

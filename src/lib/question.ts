@@ -5,6 +5,7 @@ import type {
   QuestionList,
   QuestionType,
   SortMode,
+  TFunc,
 } from "./types"
 
 export function createId() {
@@ -22,12 +23,23 @@ export const typeLabels: Record<QuestionType, string> = {
   composite: "综合",
 }
 
+export function getTypeLabels(t: TFunc): Record<QuestionType, string> {
+  return {
+    single: t("typeSingle"),
+    multiple: t("typeMultiple"),
+    boolean: t("typeBoolean"),
+    blank: t("typeBlank"),
+    short: t("typeShort"),
+    composite: t("typeComposite"),
+  }
+}
+
 export function createEmptyQuestion(type: QuestionType = "single"): Question {
   const timestamp = now()
   return {
     id: createId(),
     type,
-    title: "新题目",
+    title: "New Question",
     prompt: "",
     options:
       type === "single" || type === "multiple"
@@ -44,11 +56,11 @@ export function createEmptyQuestion(type: QuestionType = "single"): Question {
 export function normalizeQuestion(value: unknown, index = 0): Question {
   const timestamp = now()
   if (!value || typeof value !== "object") {
-    return { ...createEmptyQuestion(), title: `题目 ${index + 1}`, updatedAt: timestamp }
+    return { ...createEmptyQuestion(), title: `Question ${index + 1}`, updatedAt: timestamp }
   }
   const source = value as Record<string, unknown>
   const type = normalizeType(source.type ?? source.questionType ?? source.kind, source)
-  const title = asString(source.title ?? source.name ?? source.no, `题目 ${index + 1}`)
+  const title = asString(source.title ?? source.name ?? source.no, `Question ${index + 1}`)
   const prompt = asString(
     source.prompt ?? source.question ?? source.stem ?? source.content ?? source.text,
     "",
@@ -93,8 +105,8 @@ function normalizeType(value: unknown, source: Record<string, unknown>): Questio
 function normalizeOptions(value: unknown, type: QuestionType): ChoiceOption[] {
   if (type === "boolean") {
     return [
-      { id: createId(), label: "T", text: "正确" },
-      { id: createId(), label: "F", text: "错误" },
+      { id: createId(), label: "T", text: "True" },
+      { id: createId(), label: "F", text: "False" },
     ]
   }
   if (!Array.isArray(value)) return []
@@ -134,15 +146,15 @@ export function parseQuestionJson(text: string): QuestionList[] {
     return parsed.lists.map((item: unknown) => normalizeImportedList(item))
   }
   if (Array.isArray(parsed)) {
-    return [normalizeImportedList({ name: "导入题单", questions: parsed })]
+    return [normalizeImportedList({ name: "Imported List", questions: parsed })]
   }
   if (Array.isArray(parsed.questions)) {
     return [normalizeImportedList(parsed)]
   }
   if (parsed.question || parsed.prompt || parsed.stem) {
-    return [normalizeImportedList({ name: "导入题单", questions: [parsed] })]
+    return [normalizeImportedList({ name: "Imported List", questions: [parsed] })]
   }
-  throw new Error("JSON 中没有找到题目数组。")
+  throw new Error("No question array found in JSON.")
 }
 
 export function normalizeImportedList(value: unknown): QuestionList {
@@ -150,7 +162,7 @@ export function normalizeImportedList(value: unknown): QuestionList {
   const timestamp = now()
   return {
     id: asString(source.id, createId()),
-    name: asString(source.name ?? source.title, "导入题单"),
+    name: asString(source.name ?? source.title, "Imported List"),
     description: asString(source.description ?? source.desc, ""),
     questions: Array.isArray(source.questions)
       ? source.questions.map((item, index) => normalizeQuestion(item, index))

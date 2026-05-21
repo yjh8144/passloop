@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Check, Plus, Trash2, X } from "lucide-react"
-import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
-import { createEmptyQuestion, createId, normalizeQuestion, typeLabels } from "../../lib/question"
+import type { ChoiceOption, Question, QuestionType, TFunc } from "../../lib/types"
+import { createEmptyQuestion, createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
 
 export function QuestionEditor(props: {
@@ -9,7 +9,10 @@ export function QuestionEditor(props: {
   onSave: (question: Question) => void
   onCancel: () => void
   showPrompt: (title: string, defaultValue: string, onSubmit: (value: string) => void) => void
+  t: TFunc
 }) {
+  const { t } = props
+  const labels = getTypeLabels(t)
   const [draft, setDraft] = useState<Question>(props.question)
   useEffect(() => setDraft(props.question), [props.question])
   const patch = (value: Partial<Question>) =>
@@ -24,30 +27,30 @@ export function QuestionEditor(props: {
   return (
     <div className="question-editor">
       <div className="editor-title">
-        <h2>编辑题目</h2>
+        <h2>{t("editQuestionTitle")}</h2>
         <button className="icon-button" onClick={props.onCancel}>
           <X size={18} />
         </button>
       </div>
       <label className="field-label">
-        题型
+        {t("questionTypeLabel")}
         <select
           value={draft.type}
           onChange={(event) => patch({ type: event.target.value as QuestionType })}
         >
           {questionTypes.map((type) => (
             <option key={type} value={type}>
-              {typeLabels[type]}
+              {labels[type]}
             </option>
           ))}
         </select>
       </label>
       <label className="field-label">
-        标题
+        {t("titleLabel")}
         <input value={draft.title} onChange={(event) => patch({ title: event.target.value })} />
       </label>
       <label className="field-label">
-        题干
+        {t("promptLabel")}
         <textarea
           value={draft.prompt}
           onChange={(event) => patch({ prompt: event.target.value })}
@@ -56,7 +59,7 @@ export function QuestionEditor(props: {
       {(draft.type === "single" || draft.type === "multiple" || draft.type === "boolean") && (
         <div className="option-editor">
           <div className="section-title">
-            <span>选项</span>
+            <span>{t("optionsLabel")}</span>
             {draft.type !== "boolean" && (
               <button
                 className="icon-button"
@@ -102,7 +105,7 @@ export function QuestionEditor(props: {
         </div>
       )}
       <label className="field-label">
-        答案（多选/填空用 | 分隔）
+        {t("answerSepHint")}
         <input
           value={Array.isArray(draft.answer) ? draft.answer.join("|") : draft.answer}
           onChange={(event) =>
@@ -119,7 +122,7 @@ export function QuestionEditor(props: {
         />
       </label>
       <label className="field-label">
-        解析
+        {t("explanationLabel")}
         <textarea
           value={draft.explanation}
           onChange={(event) => patch({ explanation: event.target.value })}
@@ -128,7 +131,7 @@ export function QuestionEditor(props: {
       {draft.type === "composite" && (
         <div className="sub-editor">
           <div className="section-title">
-            <span>子题</span>
+            <span>{t("subQuestionsLabel")}</span>
             <button
               className="icon-button"
               onClick={() =>
@@ -143,7 +146,7 @@ export function QuestionEditor(props: {
               key={subQuestion.id}
               className="sub-row"
               onClick={() => {
-                props.showPrompt("子题标题", subQuestion.title, (title) => {
+                props.showPrompt(t("subQuestionTitle"), subQuestion.title, (title) => {
                   patch({
                     subQuestions: draft.subQuestions.map((item) =>
                       item.id === subQuestion.id ? { ...item, title } : item,
@@ -158,9 +161,9 @@ export function QuestionEditor(props: {
         </div>
       )}
       <div className="editor-actions">
-        <button onClick={props.onCancel}>取消</button>
+        <button onClick={props.onCancel}>{t("cancel")}</button>
         <button className="primary-button" onClick={() => props.onSave(normalizeQuestion(draft))}>
-          <Check size={17} /> 保存
+          <Check size={17} /> {t("save")}
         </button>
       </div>
     </div>

@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react"
 import type { LlmConfig, Question, QuestionList, TFunc, Toast } from "../../lib/types"
-import { createEmptyQuestion, typeLabels } from "../../lib/question"
+import { createEmptyQuestion, getTypeLabels } from "../../lib/question"
 import { fillAnswersWithLlm } from "../../lib/llm"
 import { debugLog } from "../../lib/debug"
 import { EmptyState } from "../ui/EmptyState"
@@ -32,6 +32,8 @@ export function ManagerPage(props: {
   llmConfig: LlmConfig
   onOpenLlmConfig: () => void
 }) {
+  const { t } = props
+  const typeLabelsMap = getTypeLabels(t)
   const [localListName, setLocalListName] = useState(props.list.name)
   const [showFillChoice, setShowFillChoice] = useState(false)
   const [showSelfFill, setShowSelfFill] = useState(false)
@@ -62,7 +64,7 @@ export function ManagerPage(props: {
 
   const runFill = async (mode: "answer" | "explanation" | "both") => {
     if (!props.list.questions.length) {
-      props.pushToast("info", "当前题单没有题目。")
+      props.pushToast("info", t("noQuestionsInList"))
       return
     }
     debugLog("LLM fill started", {
@@ -93,11 +95,16 @@ export function ManagerPage(props: {
         const refreshed = updated.find((q) => q.id === props.editing!.id)
         if (refreshed) props.setEditing(refreshed)
       }
-      const label = mode === "answer" ? "答案" : mode === "explanation" ? "解析" : "答案和解析"
-      props.pushToast("success", `LLM 已补充${label}。`)
+      const label =
+        mode === "answer"
+          ? t("fillLabel")
+          : mode === "explanation"
+            ? t("fillLabelExplanation")
+            : t("fillLabelBoth")
+      props.pushToast("success", t("llmFillDone", label))
     } catch (error) {
       debugLog("LLM fill failed", error)
-      props.pushToast("error", error instanceof Error ? error.message : "LLM 补充失败。")
+      props.pushToast("error", error instanceof Error ? error.message : t("llmFillFailed"))
     } finally {
       setFilling(false)
     }
@@ -116,11 +123,11 @@ export function ManagerPage(props: {
       }
     })
     props.setEditing(null)
-    props.pushToast("success", "题目已保存。")
+    props.pushToast("success", t("questionSaved"))
   }
 
   const deleteQuestion = (id: string) => {
-    props.showConfirm("确定删除这道题吗？", () => {
+    props.showConfirm(t("confirmDeleteQuestion"), () => {
       debugLog("Question deleted", { id })
       props.updateList((list) => ({
         ...list,
@@ -135,27 +142,27 @@ export function ManagerPage(props: {
       <section className="manager-list">
         <div className="stage-header">
           <div>
-            <h1>{props.t("manager")}</h1>
-            <p>新增、删除、修改、查询题目，并维护当前题单信息。</p>
+            <h1>{t("manager")}</h1>
+            <p>{t("managerDesc")}</p>
           </div>
           <div className="stage-tools">
             <button onClick={() => setShowSelfFill(true)}>
-              <Sparkles size={17} /> 自助 AI 补充
+              <Sparkles size={17} /> {t("selfFill")}
             </button>
             <button onClick={handleFillAnswers} disabled={filling}>
-              <BrainCircuit size={17} /> {filling ? "补充中…" : "LLM 补充答案/解析"}
+              <BrainCircuit size={17} /> {filling ? t("filling") : t("llmFill")}
             </button>
             <button
               className="primary-button"
               onClick={() => props.setEditing(createEmptyQuestion())}
             >
-              <Plus size={17} /> {props.t("addQuestion")}
+              <Plus size={17} /> {t("addQuestion")}
             </button>
           </div>
         </div>
         <div className="manager-danger-actions">
           <button className="danger-outline" onClick={props.onDeleteList}>
-            <Trash2 size={16} /> 删除当前题单
+            <Trash2 size={16} /> {t("deleteList")}
           </button>
         </div>
         <div className="list-editor">
@@ -172,7 +179,7 @@ export function ManagerPage(props: {
           />
           <textarea
             value={props.list.description}
-            placeholder="题单描述"
+            placeholder={t("listDesc")}
             onChange={(event) =>
               props.updateList((list) => ({
                 ...list,
@@ -187,8 +194,8 @@ export function ManagerPage(props: {
             <div className="question-row" key={question.id}>
               <span>{index + 1}</span>
               <strong>{question.title}</strong>
-              <small>{typeLabels[question.type]}</small>
-              <p>{question.prompt || "暂无题干"}</p>
+              <small>{typeLabelsMap[question.type]}</small>
+              <p>{question.prompt || t("noPrompt")}</p>
               <button className="icon-button" onClick={() => props.setEditing(question)}>
                 <Edit3 size={16} />
               </button>
@@ -203,10 +210,9 @@ export function ManagerPage(props: {
       <aside className="editor-panel" ref={editorRef}>
         {filling ? (
           <div className="fill-stream-panel">
-            <h2>LLM 补充中…</h2>
+            <h2>{t("llmFillingStatus")}</h2>
             <pre className="streaming-preview">
-              {fillStreamText ||
-                "等待 AI 响应…\n\n有推理功能的模型需要等待推理完成后，才能在此处显示解析结果。"}
+              {fillStreamText || t("waitingAiResponse")}
             </pre>
           </div>
         ) : props.editing ? (
@@ -215,20 +221,21 @@ export function ManagerPage(props: {
             onCancel={() => props.setEditing(null)}
             onSave={saveQuestion}
             showPrompt={props.showPrompt}
+            t={t}
           />
         ) : (
-          <EmptyState title="选择题目编辑" description="点击题目行或新增题目开始编辑。" />
+          <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />
         )}
       </aside>
 
-      <button className="editor-fab" onClick={() => setEditorFloatOpen(true)} title="编辑器">
+      <button className="editor-fab" onClick={() => setEditorFloatOpen(true)} title={t("editorTitle")}>
         <FileEdit size={22} />
       </button>
       <div
         className={`editor-float-backdrop ${editorFloatOpen ? "is-visible" : ""}`}
         onClick={() => {
           if (props.editing) {
-            props.showConfirm("编辑内容尚未保存，确认退出吗？", () => {
+            props.showConfirm(t("unsavedConfirm"), () => {
               props.setEditing(null)
               setEditorFloatOpen(false)
             })
@@ -240,17 +247,16 @@ export function ManagerPage(props: {
       <div className={`editor-float ${editorFloatOpen ? "is-open" : ""}`}>
         <div className="editor-float-inner">
           <div className="editor-float-header">
-            <span>编辑器</span>
+            <span>{t("editorTitle")}</span>
             <button className="icon-button" onClick={() => setEditorFloatOpen(false)}>
               <X size={16} />
             </button>
           </div>
           {filling ? (
             <div className="fill-stream-panel">
-              <h2>LLM 补充中…</h2>
+              <h2>{t("llmFillingStatus")}</h2>
               <pre className="streaming-preview">
-                {fillStreamText ||
-                  "等待 AI 响应…\n\n有推理功能的模型需要等待推理完成后，才能在此处显示解析结果。"}
+                {fillStreamText || t("waitingAiResponse")}
               </pre>
             </div>
           ) : props.editing ? (
@@ -265,9 +271,10 @@ export function ManagerPage(props: {
                 setEditorFloatOpen(false)
               }}
               showPrompt={props.showPrompt}
+              t={t}
             />
           ) : (
-            <EmptyState title="选择题目编辑" description="点击题目行或新增题目开始编辑。" />
+            <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />
           )}
         </div>
       </div>
@@ -276,25 +283,25 @@ export function ManagerPage(props: {
         <div className="modal-overlay" onClick={() => setShowFillChoice(false)}>
           <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>选择补充内容</h2>
+              <h2>{t("selectFillContentTitle")}</h2>
               <button className="icon-button" onClick={() => setShowFillChoice(false)}>
                 <X size={18} />
               </button>
             </div>
-            <p className="modal-desc">选择需要 LLM 补充的部分，将对当前题单所有题目生效。</p>
+            <p className="modal-desc">{t("selectFillContentDesc")}</p>
             <div className="fill-choice-grid">
               <button onClick={() => runFill("answer")}>
-                <Check size={17} /> 仅补充答案
+                <Check size={17} /> {t("fillAnswerOnly")}
               </button>
               <button onClick={() => runFill("explanation")}>
-                <BookOpen size={17} /> 仅补充解析
+                <BookOpen size={17} /> {t("fillExplanationOnly")}
               </button>
               <button className="primary-button" onClick={() => runFill("both")}>
-                <Sparkles size={17} /> 同时补充
+                <Sparkles size={17} /> {t("fillBoth")}
               </button>
             </div>
             <div className="fill-choice-divider">
-              <span>或者</span>
+              <span>{t("orDivider")}</span>
             </div>
             <button
               className="self-fill-button"
@@ -303,7 +310,7 @@ export function ManagerPage(props: {
                 setShowSelfFill(true)
               }}
             >
-              <Copy size={17} /> 自助补充（用你自己的 AI）
+              <Copy size={17} /> {t("selfFillButton")}
             </button>
           </div>
         </div>
@@ -327,9 +334,10 @@ export function ManagerPage(props: {
               if (refreshed) props.setEditing(refreshed)
             }
             setShowSelfFill(false)
-            props.pushToast("success", "已应用补充结果。")
+            props.pushToast("success", t("selfFillApplied"))
           }}
           pushToast={props.pushToast}
+          t={t}
         />
       )}
     </div>

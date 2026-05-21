@@ -1,4 +1,4 @@
-import type { Question } from "../../lib/types"
+import type { Question, TFunc } from "../../lib/types"
 import { debugLog } from "../../lib/debug"
 
 type ResultMap = Record<string, boolean>
@@ -11,6 +11,7 @@ export function Navigator(props: {
   viewMode: "single" | "paper"
   revealMode?: "immediate" | "end"
   allSubmitted?: boolean
+  t?: TFunc
 }) {
   const handleClick = (index: number) => {
     debugLog("Navigate to question", { index, questionId: props.questions[index]?.id })
@@ -23,7 +24,7 @@ export function Navigator(props: {
   const showResult = props.revealMode !== "end" || !!props.allSubmitted
   return (
     <section className="inspector-panel navigator-panel">
-      <h3>快捷切题</h3>
+      <h3>{props.t ? props.t("quickNav") : "Quick Nav"}</h3>
       <div className="question-nav-grid">
         {props.questions.map((question, index) => (
           <button

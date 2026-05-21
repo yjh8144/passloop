@@ -57,12 +57,12 @@ export function BottomNav(props: {
         className={`bottom-nav-panel ${panelOpen ? "is-open" : ""}`}
         id="bottom-panel"
         role="region"
-        aria-label="更多功能"
+        aria-label="panel"
       >
         <div className="bottom-nav-panel-content">
           <div>
             <div className="panel-section-title">
-              <span>题单</span>
+              <span>{t("questionList")}</span>
               <button
                 className="icon-button"
                 title={t("addList")}
@@ -85,14 +85,14 @@ export function BottomNav(props: {
                   }}
                 >
                   <span>{list.name}</span>
-                  <span className="panel-list-item-count">{list.questions.length} 题</span>
+                  <span className="panel-list-item-count">{list.questions.length} {t("questionCount")}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <div className="panel-section-title">功能</div>
+            <div className="panel-section-title">{t("features")}</div>
             <div className="panel-actions">
               <button
                 className="panel-action-btn"
@@ -101,7 +101,7 @@ export function BottomNav(props: {
                   close()
                 }}
               >
-                <Settings2 size={15} /> LLM 配置
+                <Settings2 size={15} /> {t("llmConfigBtn")}
               </button>
               <button
                 className="panel-action-btn"
@@ -146,14 +146,14 @@ export function BottomNav(props: {
                   close()
                 }}
               >
-                <Trash2 size={15} /> 清除所有数据
+                <Trash2 size={15} /> {t("clearAllData")}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <nav className="bottom-nav" aria-label="主导航">
+      <nav className="bottom-nav" aria-label="navigation">
         <button
           className={`bottom-nav-btn ${props.page === "practice" ? "active" : ""}`}
           onClick={() => navigate("practice")}

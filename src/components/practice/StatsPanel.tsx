@@ -20,7 +20,7 @@ export function StatsPanel(props: {
       ]
   return (
     <section className="inspector-panel">
-      <h3>统计</h3>
+      <h3>{props.t("stats")}</h3>
       <div className="stats-grid">
         {items.map(([label, value]) => (
           <div key={label}>
@@ -37,7 +37,7 @@ export function StatsPanel(props: {
         />
       </div>
       <small>
-        进度 {props.stats.attempted}/{props.stats.total}
+        {props.t("progress")} {props.stats.attempted}/{props.stats.total}
       </small>
     </section>
   )

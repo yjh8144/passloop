@@ -11,7 +11,7 @@ import {
   saveLlmConfig,
   saveData,
 } from "./lib/storage"
-import { createId, getListStats, sortQuestions, typeLabels } from "./lib/question"
+import { createId, getListStats, getTypeLabels, sortQuestions } from "./lib/question"
 import { debugLog } from "./lib/debug"
 import { defaultLlmConfig, ONBOARDING_KEY } from "./utils/constants"
 import { useToast } from "./hooks/useToast"
@@ -89,17 +89,19 @@ export function App() {
 
   const stats = useMemo(() => getListStats(activeList, data.attempts), [activeList, data.attempts])
 
+
   const displayedQuestions = useMemo(() => {
     const sorted = sortQuestions(activeList.questions, data.settings.sortMode)
     const trimmed = query.trim().toLowerCase()
     if (!trimmed) return sorted
+    const labels = getTypeLabels(t)
     return sorted.filter((question) =>
-      [question.title, question.prompt, typeLabels[question.type]]
+      [question.title, question.prompt, labels[question.type]]
         .join(" ")
         .toLowerCase()
         .includes(trimmed),
     )
-  }, [activeList.questions, data.settings.sortMode, query])
+  }, [activeList.questions, data.settings.sortMode, query, data.settings.language])
 
   const wrongQuestions = useMemo(
     () => activeList.questions.filter((question) => stats.wrongQuestionIds.has(question.id)),
@@ -117,6 +119,7 @@ export function App() {
   const wrongPracticeRef = useRef<UseWrongPracticeReturn>(null!)
 
   const practice = usePractice({
+    t,
     page,
     activeList,
     displayedQuestions,
@@ -130,6 +133,7 @@ export function App() {
   })
 
   const wrongPractice = useWrongPractice({
+    t,
     page,
     setPage,
     activeList,
@@ -142,6 +146,7 @@ export function App() {
   wrongPracticeRef.current = wrongPractice
 
   const importExport = useImportExport({
+    t,
     llmConfig,
     pushToast,
     updateActiveList,
@@ -153,7 +158,7 @@ export function App() {
   const changePage = (nextPage: Page) => {
     debugLog("Page changed", { from: page, to: nextPage })
     if (page === "llm" && nextPage !== "llm" && llmUnsavedRef.current) {
-      showConfirm("LLM 解析结果尚未导出或导入，离开页面后数据将丢失。确定离开吗？", () => {
+      showConfirm(t("confirmLeaveLlm"), () => {
         llmUnsavedRef.current = false
         if (nextPage === "wrong") {
           wrongPractice.startWrongPractice()
@@ -171,7 +176,7 @@ export function App() {
   }
 
   const createList = () => {
-    showPrompt("题单名称", `题单 ${data.lists.length + 1}`, (name) => {
+    showPrompt(t("listNamePrompt"), t("defaultListName", data.lists.length + 1), (name) => {
       debugLog("Create list", { name })
       const list = createEmptyQuestionList(name)
       updateData((current) => ({
@@ -183,11 +188,11 @@ export function App() {
   }
 
   const deleteList = (id: string) => {
-    showConfirm("删除题单会同时移除其中题目和该题单刷题数据。确定删除吗？", () => {
+    showConfirm(t("confirmDeleteList"), () => {
       debugLog("Delete list", { id })
       updateData((current) => {
         const remaining = current.lists.filter((list) => list.id !== id)
-        const lists = remaining.length ? remaining : [createEmptyQuestionList("默认题单")]
+        const lists = remaining.length ? remaining : [createEmptyQuestionList(t("defaultList"))]
         return {
           ...current,
           lists,
@@ -200,12 +205,12 @@ export function App() {
       practice.setResults({})
       practice.startedAtRef.current = {}
       wrongPractice.setWrongSession(null)
-      pushToast("success", "题单已删除。")
+      pushToast("success", t("listDeleted"))
     })
   }
 
   const clearActiveListAttempts = () => {
-    showConfirm(`确定清空「${activeList.name}」的刷题数据吗？题目内容会保留。`, () => {
+    showConfirm(t("confirmClearAttempts", activeList.name), () => {
       debugLog("Clear list attempts", { listId: activeList.id, listName: activeList.name })
       updateData((current) => ({
         ...current,
@@ -214,7 +219,7 @@ export function App() {
       practice.resetPracticeState(activeList.questions)
       wrongPractice.setWrongSession(null)
       if (page === "wrong") setPage("practice")
-      pushToast("success", "当前题单刷题数据已清空。")
+      pushToast("success", t("attemptsCleared"))
     })
   }
 
@@ -225,7 +230,7 @@ export function App() {
       lists: [...current.lists, list],
       activeListId: list.id,
     }))
-    pushToast("success", "已导入到本地题单。")
+    pushToast("success", t("importedToLocal"))
   }
 
   const practiceQuestions = page === "wrong" ? wrongQuestions : displayedQuestions

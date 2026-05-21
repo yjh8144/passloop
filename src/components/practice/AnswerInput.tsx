@@ -1,4 +1,4 @@
-import type { PracticeMode, Question } from "../../lib/types"
+import type { PracticeMode, Question, TFunc } from "../../lib/types"
 import { toArray } from "../../lib/question"
 
 export function AnswerInput(props: {
@@ -6,6 +6,7 @@ export function AnswerInput(props: {
   value?: string | string[]
   onChange: (id: string, value: string | string[]) => void
   practiceMode: PracticeMode
+  t?: TFunc
 }) {
   const { question } = props
   const isMemorize = props.practiceMode === "memorize"
@@ -70,7 +71,7 @@ export function AnswerInput(props: {
           <input
             key={index}
             value={values[index] ?? ""}
-            placeholder={`空 ${index + 1}`}
+            placeholder={props.t ? props.t("blankPlaceholder", index + 1) : `blank ${index + 1}`}
             onChange={(event) => {
               const next = [...values]
               next[index] = event.target.value
@@ -85,7 +86,7 @@ export function AnswerInput(props: {
     <textarea
       value={String(props.value ?? "")}
       onChange={(event) => props.onChange(question.id, event.target.value)}
-      placeholder="输入你的答案"
+      placeholder={props.t ? props.t("inputAnswer") : "input answer"}
     />
   )
 }

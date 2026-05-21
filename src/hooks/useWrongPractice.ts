@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { Question, QuestionList } from "../lib/types"
+import type { Question, QuestionList, TFunc } from "../lib/types"
 import { createId, normalizeImportedList } from "../lib/question"
 import { downloadJson } from "../lib/storage"
 import { debugLog } from "../lib/debug"
@@ -7,6 +7,7 @@ import type { Page, PushToast, SetState, UpdateData } from "./types"
 import type { WrongSession } from "../components/practice/WrongSessionPanel"
 
 interface UseWrongPracticeParams {
+  t: TFunc
   page: Page
   setPage: SetState<Page>
   activeList: QuestionList
@@ -18,6 +19,7 @@ interface UseWrongPracticeParams {
 }
 
 export function useWrongPractice({
+  t,
   page,
   setPage,
   activeList,
@@ -50,7 +52,7 @@ export function useWrongPractice({
 
   const startWrongPractice = () => {
     if (!wrongQuestions.length) {
-      pushToast("info", "当前题单还没有错题。")
+      pushToast("info", t("noWrongQuestions"))
       return false
     }
     debugLog("Wrong practice started", {
@@ -77,13 +79,13 @@ export function useWrongPractice({
 
   const exportWrongList = () => {
     if (!wrongQuestions.length) {
-      pushToast("info", "当前题单还没有错题。")
+      pushToast("info", t("noWrongQuestions"))
       return
     }
     debugLog("Export wrong questions", { count: wrongQuestions.length, listName: activeList.name })
     const list = normalizeImportedList({
-      name: `${activeList.name} - 错题`,
-      description: "由 PassLoop 根据答题记录导出的错题题单。",
+      name: t("wrongListSuffix", activeList.name),
+      description: t("wrongListExportDesc"),
       questions: wrongQuestions,
     })
     downloadJson(`${list.name}.json`, list)
@@ -91,13 +93,13 @@ export function useWrongPractice({
 
   const createWrongList = () => {
     if (!wrongQuestions.length) {
-      pushToast("info", "当前题单还没有错题。")
+      pushToast("info", t("noWrongQuestions"))
       return
     }
     const newList: QuestionList = {
       id: createId(),
-      name: `${activeList.name} - 错题`,
-      description: "由 PassLoop 根据答题记录生成的错题题单。",
+      name: t("wrongListSuffix", activeList.name),
+      description: t("wrongListCreateDesc"),
       questions: wrongQuestions.map((q) => ({ ...q, id: createId() })),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -107,7 +109,7 @@ export function useWrongPractice({
       lists: [...current.lists, newList],
       activeListId: newList.id,
     }))
-    pushToast("success", `已生成错题题单「${newList.name}」，共 ${wrongQuestions.length} 题。`)
+    pushToast("success", t("wrongListCreated", newList.name, wrongQuestions.length))
   }
 
   const updateSessionOnSubmit = (submitted: number, correct: number) => {

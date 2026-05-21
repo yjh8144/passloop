@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Check, Copy, Download, Upload, X } from "lucide-react"
-import type { Question, Toast } from "../../lib/types"
+import type { Question, TFunc, Toast } from "../../lib/types"
 import { debugLog } from "../../lib/debug"
 import { Segmented } from "../ui/Segmented"
 
@@ -12,7 +12,9 @@ export function SelfFillDialog(props: {
   onClose: () => void
   onApply: (updated: Question[]) => void
   pushToast: (tone: Toast["tone"], message: string) => void
+  t: TFunc
 }) {
+  const { t } = props
   const [copied, setCopied] = useState(false)
   const [jsonInput, setJsonInput] = useState("")
   const [validationError, setValidationError] = useState("")
@@ -68,7 +70,7 @@ ${questionsData}`
     setValidationError("")
     const trimmed = jsonInput.trim()
     if (!trimmed) {
-      setValidationError("请粘贴 AI 返回的 JSON。")
+      setValidationError(t("selfFillJsonEmpty"))
       return
     }
     let jsonText = trimmed
@@ -83,7 +85,7 @@ ${questionsData}`
       parsed = JSON.parse(jsonText)
     } catch {
       debugLog("SelfFill JSON parse error", { textLength: jsonText.length })
-      setValidationError("JSON 格式错误，请检查是否完整复制了 AI 的输出。")
+      setValidationError(t("selfFillJsonInvalid"))
       return
     }
     const results: Array<{ id?: string; answer?: unknown; explanation?: string }> = Array.isArray(
@@ -93,7 +95,7 @@ ${questionsData}`
       : []
     if (!results.length) {
       debugLog("SelfFill JSON empty array")
-      setValidationError('JSON 应为数组格式，如 [{"id":"...","answer":"..."}]。')
+      setValidationError(t("selfFillJsonNotArray"))
       return
     }
     const questionIds = new Set(props.questions.map((q) => q.id))
@@ -103,9 +105,7 @@ ${questionsData}`
         resultCount: results.length,
         questionCount: props.questions.length,
       })
-      setValidationError(
-        `未匹配到任何题目。请确认 JSON 中的 id 字段与题目 id 一致（共 ${props.questions.length} 题）。`,
-      )
+      setValidationError(t("selfFillNoMatch", props.questions.length))
       return
     }
     debugLog("SelfFill JSON validated", {
@@ -141,22 +141,20 @@ ${questionsData}`
     <div className="modal-overlay" onClick={props.onClose}>
       <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>自助补充答案/解析</h2>
+          <h2>{t("selfFillHeader")}</h2>
           <button className="icon-button" onClick={props.onClose}>
             <X size={18} />
           </button>
         </div>
-        <p className="modal-desc">
-          复制 Prompt 发给你的 AI，将返回的 JSON 粘贴到下方，校验通过后会自动应用到当前题单。
-        </p>
+        <p className="modal-desc">{t("selfFillInstruction")}</p>
         <div className="self-gen-options">
-          <span>补充内容：</span>
+          <span>{t("fillContentLabel")}</span>
           <Segmented
             value={props.mode}
             options={[
-              ["both", "答案 + 解析"],
-              ["answer", "仅答案"],
-              ["explanation", "仅解析"],
+              ["both", t("answerAndExplanation")],
+              ["answer", t("answerOnly")],
+              ["explanation", t("explanationOnly")],
             ]}
             onChange={(v) => props.setMode(v as "answer" | "explanation" | "both")}
           />
@@ -164,37 +162,35 @@ ${questionsData}`
         <div className="self-gen-prompt-box">
           <div className="self-gen-prompt-header">
             <strong>
-              Prompt（含当前题单 {props.questions.length} 题，{prompt.length.toLocaleString()} 字）
+              {t("promptWithCount", props.questions.length, prompt.length.toLocaleString())}
             </strong>
             <div className="self-gen-prompt-actions">
               <button onClick={handleCopy}>
                 {copied ? (
                   <>
-                    <Check size={15} /> 已复制
+                    <Check size={15} /> {t("copied")}
                   </>
                 ) : (
                   <>
-                    <Copy size={15} /> 复制
+                    <Copy size={15} /> {t("copy")}
                   </>
                 )}
               </button>
               <button onClick={handleDownload}>
-                <Download size={15} /> 下载 TXT
+                <Download size={15} /> {t("downloadTxt")}
               </button>
             </div>
           </div>
           {prompt.length > 10000 && (
-            <p className="prompt-length-warning">
-              内容较长（超过 1 万字），建议下载 TXT 文件后以附件形式发送给 AI。
-            </p>
+            <p className="prompt-length-warning">{t("longTextWarningText")}</p>
           )}
           <pre className="self-gen-prompt-text">{prompt}</pre>
         </div>
         <div className="field-label">
           <div className="json-input-header">
-            <span>粘贴或上传 AI 返回的 JSON</span>
+            <span>{t("pasteOrUploadAiJson")}</span>
             <label className="upload-json-button">
-              <Upload size={14} /> 上传 JSON
+              <Upload size={14} /> {t("uploadJsonBtn")}
               <input
                 type="file"
                 accept=".json,.txt,text/plain,application/json"
@@ -220,7 +216,7 @@ ${questionsData}`
               setJsonInput(e.target.value)
               setValidationError("")
             }}
-            placeholder={'[\n  {"id": "题目id", "answer": "A", "explanation": "..."}\n]'}
+            placeholder={'[\n  {"id": "...", "answer": "A", "explanation": "..."}\n]'}
             style={{ minHeight: 120 }}
           />
         </div>
@@ -230,9 +226,9 @@ ${questionsData}`
           </p>
         )}
         <div className="modal-actions">
-          <button onClick={props.onClose}>取消</button>
+          <button onClick={props.onClose}>{t("cancel")}</button>
           <button className="primary-button" onClick={handleApply}>
-            <Check size={17} /> 校验并应用
+            <Check size={17} /> {t("validateAndApplyBtn")}
           </button>
         </div>
       </div>

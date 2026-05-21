@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react"
-import type { AppData, QuestionList, Toast } from "../lib/types"
+import type { AppData, QuestionList, Toast, TFunc } from "../lib/types"
 
 export type Page = "practice" | "manager" | "llm" | "wrong"
 export type AnswerMap = Record<string, string | string[]>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import type { MutableRefObject } from "react"
-import type { AppData, Question, QuestionList, Settings } from "../lib/types"
+import type { AppData, Question, QuestionList, Settings, TFunc } from "../lib/types"
 import { createId } from "../lib/question"
 import { debugLog } from "../lib/debug"
 import {
@@ -13,6 +13,7 @@ import { evaluateQuestion, collectCompositeAnswer } from "../utils/evaluate"
 import type { AnswerMap, Page, PushToast, ResultMap, ShowConfirm, UpdateData } from "./types"
 
 interface UsePracticeParams {
+  t: TFunc
   page: Page
   activeList: QuestionList
   displayedQuestions: Question[]
@@ -25,6 +26,7 @@ interface UsePracticeParams {
 }
 
 export function usePractice({
+  t,
   page,
   activeList,
   displayedQuestions,
@@ -90,7 +92,7 @@ export function usePractice({
       const questions = page === "wrong" ? wrongQuestions : displayedQuestions
       const allDone = questions.length > 0 && questions.every((q) => q.id in results)
       if (allDone) {
-        pushToast("info", "题目已全部做完，请重新刷题后继续作答。")
+        pushToast("info", t("allQuestionsFinished"))
       }
       return
     }
@@ -124,9 +126,9 @@ export function usePractice({
         ],
       }))
       if (settings.revealMode === "end") {
-        pushToast("info", "已提交。")
+        pushToast("info", t("submittedMsg"))
       } else {
-        pushToast(correct ? "success" : "info", correct ? "回答正确。" : "已记录为错题。")
+        pushToast(correct ? "success" : "info", correct ? t("answerCorrect") : t("recordedAsWrong"))
       }
       if (settings.autoNext) {
         const questions = page === "wrong" ? wrongQuestions : displayedQuestions
@@ -152,7 +154,7 @@ export function usePractice({
     if (isAnswerEmpty(question)) {
       const questions = page === "wrong" ? wrongQuestions : displayedQuestions
       const idx = questions.findIndex((q) => q.id === question.id)
-      showConfirm(`第 ${idx + 1} 题尚未作答，确定提交吗？`, doSubmit)
+      showConfirm(t("confirmEmptySubmit", idx + 1), doSubmit)
     } else {
       doSubmit()
     }
@@ -194,11 +196,11 @@ export function usePractice({
       if (page === "wrong") {
         onSubmitInWrongMode(unsubmitted.length, correctCount)
       }
-      pushToast("success", `已提交 ${unsubmitted.length} 题，正确 ${correctCount} 题。`)
+      pushToast("success", t("submitAllResult", unsubmitted.length, correctCount))
     }
     if (emptyQuestions.length) {
-      const nums = emptyQuestions.map((q) => questions.indexOf(q) + 1).join("、")
-      showConfirm(`第 ${nums} 题尚未作答，确定提交全部吗？`, doSubmitAll)
+      const nums = emptyQuestions.map((q) => questions.indexOf(q) + 1).join(", ")
+      showConfirm(t("confirmEmptySubmitAll", nums), doSubmitAll)
     } else {
       doSubmitAll()
     }

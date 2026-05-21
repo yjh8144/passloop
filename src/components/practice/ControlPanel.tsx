@@ -13,7 +13,7 @@ export function ControlPanel(props: {
 }) {
   return (
     <section className="inspector-panel">
-      <h3>控制</h3>
+      <h3>{props.t("controls")}</h3>
       <Segmented
         value={props.settings.viewMode}
         options={[
@@ -34,8 +34,8 @@ export function ControlPanel(props: {
         <Segmented
           value={props.settings.submitMode}
           options={[
-            ["each", "逐题提交"],
-            ["paper", "统一提交"],
+            ["each", props.t("eachSubmit")],
+            ["paper", props.t("paperSubmit")],
           ]}
           onChange={(value) => props.updateSettings({ submitMode: value as SubmitMode })}
         />
@@ -44,8 +44,8 @@ export function ControlPanel(props: {
         <Segmented
           value={props.settings.revealMode}
           options={[
-            ["immediate", "立即显示答案"],
-            ["end", "最后显示答案"],
+            ["immediate", props.t("revealImmediate")],
+            ["end", props.t("revealEnd")],
           ]}
           onChange={(value) => props.updateSettings({ revealMode: value as RevealMode })}
         />
@@ -82,12 +82,12 @@ export function ControlPanel(props: {
       </div>
       <div className="two-col-actions">
         <button onClick={props.onCreateWrongList}>
-          <Plus size={16} /> 错题生成题单
+          <Plus size={16} /> {props.t("createWrongList")}
         </button>
       </div>
       <div className="two-col-actions">
         <button className="danger-outline" onClick={props.onClearListAttempts}>
-          <Eraser size={16} /> 清空刷题数据
+          <Eraser size={16} /> {props.t("clearListAttempts")}
         </button>
       </div>
     </section>

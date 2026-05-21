@@ -18,6 +18,7 @@ export function Topbar(props: {
   onCreateWrongList: () => void
   onClearListAttempts: () => void
 }) {
+  const { t } = props
   const [showSettings, setShowSettings] = useState(false)
   const showSearch = props.page === "practice" || props.page === "wrong"
   const showSettingsButton = props.page === "practice" || props.page === "wrong"
@@ -29,13 +30,13 @@ export function Topbar(props: {
           <input
             value={props.query}
             onChange={(event) => props.setQuery(event.target.value)}
-            placeholder={props.t("questionSearch")}
+            placeholder={t("questionSearch")}
           />
         </div>
       )}
       <div className="topbar-meta">
         <span>{props.activeList.name}</span>
-        <span>{props.activeList.questions.length} 题</span>
+        <span>{props.activeList.questions.length} {t("questionCount")}</span>
       </div>
       <div className="topbar-actions">
         <label className="select-label">
@@ -76,7 +77,7 @@ export function Topbar(props: {
           <div className="topbar-settings-wrap">
             <button
               className="icon-button"
-              title="刷题设置"
+              title={t("practiceSettings")}
               onClick={() => setShowSettings((v) => !v)}
             >
               <Settings2 size={17} />
@@ -84,7 +85,7 @@ export function Topbar(props: {
             {showSettings && (
               <div className="topbar-settings-dropdown">
                 <ControlPanel
-                  t={props.t}
+                  t={t}
                   settings={props.data.settings}
                   updateSettings={props.updateSettings}
                   onRedoWrong={props.onRedoWrong}

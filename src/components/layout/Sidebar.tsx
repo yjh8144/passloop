@@ -74,7 +74,7 @@ export function Sidebar(props: {
         </div>
         <div className="brand-text">
           <strong>PassLoop</strong>
-          <span>本地轻量化刷题平台</span>
+          <span>{t("brandTagline")}</span>
         </div>
         <a
           href="https://github.com/yjh8144/passloop"
@@ -87,14 +87,14 @@ export function Sidebar(props: {
         </a>
         <button
           className="icon-button desktop-sidebar-toggle"
-          title={props.desktopCollapsed ? "展开侧边栏" : "收起侧边栏"}
+          title={props.desktopCollapsed ? t("expandSidebar") : t("collapseSidebar")}
           onClick={props.onToggleDesktopCollapsed}
         >
           {props.desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
         </button>
         <button
           className="icon-button mobile-sidebar-toggle"
-          title={props.collapsed ? "展开题单栏" : "收起题单栏"}
+          title={props.collapsed ? t("expandListPanel") : t("collapseListPanel")}
           onClick={props.onToggleCollapsed}
         >
           {props.collapsed ? <ChevronDown size={17} /> : <ChevronUp size={17} />}
@@ -102,7 +102,7 @@ export function Sidebar(props: {
       </div>
 
       <div className="sidebar-body">
-        <nav className="nav-stack" aria-label="主导航">
+        <nav className="nav-stack" aria-label="navigation">
           <button
             className={props.page === "practice" ? "active" : ""}
             onClick={() => props.setPage("practice")}
@@ -131,7 +131,7 @@ export function Sidebar(props: {
 
         <div className="sidebar-section">
           <div className="section-title">
-            <span>题单</span>
+            <span>{t("questionList")}</span>
             <button className="icon-button" title={t("addList")} onClick={props.createList}>
               <Plus size={16} />
             </button>
@@ -144,7 +144,9 @@ export function Sidebar(props: {
                 onClick={() => props.setData((current) => ({ ...current, activeListId: list.id }))}
               >
                 <span className="list-item-name">{list.name}</span>
-                <small className="list-item-count">{list.questions.length} 题</small>
+                <small className="list-item-count">
+                  {list.questions.length} {t("questionCount")}
+                </small>
               </button>
             ))}
           </div>
@@ -152,7 +154,7 @@ export function Sidebar(props: {
 
         <div className="sidebar-actions">
           <button onClick={props.onOpenLlmConfig}>
-            <Settings2 size={16} /> LLM 配置
+            <Settings2 size={16} /> {t("llmConfigBtn")}
           </button>
           <button onClick={props.onQuestionImport}>
             <Upload size={16} /> {t("importQuestions")}
@@ -167,7 +169,7 @@ export function Sidebar(props: {
             <FileJson size={16} /> {t("exportBackup")}
           </button>
           <button className="danger-outline" onClick={props.onResetAll}>
-            <Trash2 size={16} /> 清除所有数据
+            <Trash2 size={16} /> {t("clearAllData")}
           </button>
         </div>
       </div>
@@ -176,16 +178,16 @@ export function Sidebar(props: {
         <div className="modal-overlay" onClick={() => setShowDebugDialog(false)}>
           <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Debug 模式</h2>
+              <h2>{t("debugModeTitle")}</h2>
               <button className="icon-button" onClick={() => setShowDebugDialog(false)}>
                 <X size={18} />
               </button>
             </div>
             <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>
-              {debugEnabled ? "Debug 模式已开启，控制台将输出日志。" : "Debug 模式已关闭。"}
+              {debugEnabled ? t("debugEnabledText") : t("debugDisabledText")}
             </p>
             <div className="modal-actions">
-              <button onClick={() => setShowDebugDialog(false)}>取消</button>
+              <button onClick={() => setShowDebugDialog(false)}>{t("cancel")}</button>
               <button
                 style={{
                   background: debugEnabled ? "var(--danger)" : "var(--accent)",
@@ -194,7 +196,7 @@ export function Sidebar(props: {
                 }}
                 onClick={toggleDebug}
               >
-                {debugEnabled ? "关闭 Debug" : "开启 Debug"}
+                {debugEnabled ? t("disableDebugBtn") : t("enableDebugBtn")}
               </button>
             </div>
           </div>

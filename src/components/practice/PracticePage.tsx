@@ -43,6 +43,7 @@ function InspectorContent(props: {
   onExportWrong: () => void
   onCreateWrongList: () => void
 }) {
+  const { t } = props
   const navigator = (
     <Navigator
       questions={props.questions}
@@ -58,28 +59,28 @@ function InspectorContent(props: {
     <>
       {props.allSubmitted && (
         <section className="inspector-panel completion-actions-panel">
-          <h3>全部完成</h3>
+          <h3>{t("allComplete")}</h3>
           <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 10px" }}>
-            共 {props.questions.length} 题，正确 {props.correctCount} 题，错误 {props.wrongCount} 题
+            {t("completionSummary", props.questions.length, props.correctCount, props.wrongCount)}
           </p>
           <div className="completion-buttons">
             <button className="btn-danger" onClick={props.onClearListAttempts}>
-              <Undo2 size={16} /> 重新刷题
+              <Undo2 size={16} /> {t("redoAll")}
             </button>
             <button onClick={props.onRedoWrong}>
-              <Shuffle size={16} /> 重做错题
+              <Shuffle size={16} /> {t("redoWrongBtn")}
             </button>
             <button onClick={props.onExportWrong}>
-              <Download size={16} /> 导出错题
+              <Download size={16} /> {t("exportWrongBtn")}
             </button>
             <button onClick={props.onCreateWrongList}>
-              <Plus size={16} /> 错题生成题单
+              <Plus size={16} /> {t("createWrongList")}
             </button>
           </div>
         </section>
       )}
       <StatsPanel t={props.t} stats={props.stats} revealMode={props.settings.revealMode} />
-      {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
+      {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} t={t} />}
       {props.navigatorClassName ? (
         <div className={props.navigatorClassName}>{navigator}</div>
       ) : (
@@ -110,6 +111,7 @@ export function PracticePage(props: {
   onClearListAttempts: () => void
   startedAtRef: MutableRefObject<Record<string, number>>
 }) {
+  const { t } = props
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false)
   const [inspectorFloatOpen, setInspectorFloatOpen] = useState(false)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
@@ -173,7 +175,7 @@ export function PracticePage(props: {
 
   const content =
     props.questions.length === 0 ? (
-      <EmptyState title="暂无题目" description="请先导入题库 JSON，或在题库管理中新增题目。" />
+      <EmptyState title={t("noQuestionsTitle")} description={t("noQuestionsDesc")} />
     ) : props.settings.viewMode === "paper" ? (
       <div className="paper-stack" ref={paperStackRef}>
         {props.questions.map((question, index) => (
@@ -191,13 +193,14 @@ export function PracticePage(props: {
             hideSubmit={props.settings.submitMode === "paper"}
             revealMode={props.settings.revealMode}
             allSubmitted={allSubmitted}
+            t={t}
           />
         ))}
         {props.settings.practiceMode !== "memorize" &&
           props.settings.submitMode === "paper" &&
           props.questions.some((q) => !(q.id in props.results)) && (
             <button className="submit-all-button" onClick={props.submitAll}>
-              <Check size={18} /> 提交全部答案
+              <Check size={18} /> {t("submitAllAnswers")}
             </button>
           )}
       </div>
@@ -220,6 +223,7 @@ export function PracticePage(props: {
           hideSubmit={props.settings.submitMode === "paper"}
           revealMode={props.settings.revealMode}
           allSubmitted={allSubmitted}
+          t={t}
         />
       )
     )
@@ -229,11 +233,9 @@ export function PracticePage(props: {
       <section className="question-stage">
         <div className="stage-header">
           <div>
-            <h1>{props.mode === "wrong" ? "错题重练" : "刷题台"}</h1>
+            <h1>{props.mode === "wrong" ? t("wrongPracticeTitle") : t("practiceTitle")}</h1>
             <p>
-              {props.settings.practiceMode === "memorize"
-                ? "背题模式会直接展示答案和解析。"
-                : "提交后会记录正确率、错题和平均用时。"}
+              {props.settings.practiceMode === "memorize" ? t("memorizeHint") : t("practiceHint")}
             </p>
           </div>
           <div className="stage-tools">
@@ -267,7 +269,7 @@ export function PracticePage(props: {
               onClick={() => setInspectorCollapsed((collapsed) => !collapsed)}
             >
               {inspectorCollapsed ? <ChevronLeft size={17} /> : <ChevronRight size={17} />}
-              {inspectorCollapsed ? "显示侧栏" : "隐藏侧栏"}
+              {inspectorCollapsed ? t("showSidebar") : t("hideSidebar")}
             </button>
           </div>
         </div>
@@ -289,7 +291,7 @@ export function PracticePage(props: {
           props.currentIndex >= props.questions.length - 1 &&
           props.questions.some((q) => !(q.id in props.results)) && (
             <button className="submit-all-button" onClick={props.submitAll}>
-              <Check size={18} /> 提交全部答案
+              <Check size={18} /> {t("submitAllAnswers")}
             </button>
           )}
       </section>
@@ -297,7 +299,7 @@ export function PracticePage(props: {
       {!inspectorCollapsed && (
         <aside className="inspector">
           <InspectorContent
-            t={props.t}
+            t={t}
             questions={props.questions}
             currentIndex={props.currentIndex}
             setCurrentIndex={props.setCurrentIndex}
@@ -321,7 +323,7 @@ export function PracticePage(props: {
       <button
         className="inspector-fab"
         onClick={() => setInspectorFloatOpen(true)}
-        title="统计与导航"
+        title={t("statsAndNav")}
       >
         <BarChart3 size={22} />
       </button>
@@ -332,7 +334,7 @@ export function PracticePage(props: {
       <div className={`inspector-float ${inspectorFloatOpen ? "is-open" : ""}`}>
         <div className="inspector-float-inner">
           <InspectorContent
-            t={props.t}
+            t={t}
             questions={props.questions}
             currentIndex={props.currentIndex}
             setCurrentIndex={(idx) => {
@@ -359,26 +361,26 @@ export function PracticePage(props: {
         <div className="modal-overlay" onClick={() => setShowCompletionDialog(false)}>
           <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>答题完成</h2>
+              <h2>{t("completionDialogTitle")}</h2>
               <button className="icon-button" onClick={() => setShowCompletionDialog(false)}>
                 <X size={18} />
               </button>
             </div>
             <div className="completion-stats">
               <div className="completion-stat-row">
-                <span>总题数</span>
+                <span>{t("statTotal")}</span>
                 <strong>{props.questions.length}</strong>
               </div>
               <div className="completion-stat-row">
-                <span>正确</span>
+                <span>{t("statCorrect")}</span>
                 <strong className="text-correct">{correctCount}</strong>
               </div>
               <div className="completion-stat-row">
-                <span>错误</span>
+                <span>{t("statWrong")}</span>
                 <strong className="text-wrong">{wrongCount}</strong>
               </div>
               <div className="completion-stat-row">
-                <span>正确率</span>
+                <span>{t("statAccuracy")}</span>
                 <strong>
                   {props.questions.length
                     ? Math.round((correctCount / props.questions.length) * 100)
@@ -395,7 +397,7 @@ export function PracticePage(props: {
                   props.onClearListAttempts()
                 }}
               >
-                <Undo2 size={16} /> 重新刷题
+                <Undo2 size={16} /> {t("redoAll")}
               </button>
               <button
                 onClick={() => {
@@ -403,7 +405,7 @@ export function PracticePage(props: {
                   props.onRedoWrong()
                 }}
               >
-                <Shuffle size={16} /> 重做错题
+                <Shuffle size={16} /> {t("redoWrongBtn")}
               </button>
               <button
                 onClick={() => {
@@ -411,7 +413,7 @@ export function PracticePage(props: {
                   props.onExportWrong()
                 }}
               >
-                <Download size={16} /> 导出错题
+                <Download size={16} /> {t("exportWrongBtn")}
               </button>
               <button
                 onClick={() => {
@@ -419,7 +421,7 @@ export function PracticePage(props: {
                   props.onCreateWrongList()
                 }}
               >
-                <Plus size={16} /> 错题生成题单
+                <Plus size={16} /> {t("createWrongList")}
               </button>
             </div>
           </div>

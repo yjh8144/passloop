@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Check, Copy, Download, X } from "lucide-react"
+import type { TFunc } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
 
 export function SelfGenerateDialog(props: {
@@ -8,7 +9,9 @@ export function SelfGenerateDialog(props: {
   setMode: (mode: "answer" | "explanation" | "both" | "none") => void
   rawText?: string
   onClose: () => void
+  t: TFunc
 }) {
+  const { t } = props
   const [copied, setCopied] = useState(false)
 
   if (!props.open) return null
@@ -74,25 +77,23 @@ ${jsonFormat}${rawTextSection}`
     <div className="modal-overlay" onClick={props.onClose}>
       <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>自助 AI 生成题目 JSON</h2>
+          <h2>{t("selfGenerateHeader")}</h2>
           <button className="icon-button" onClick={props.onClose}>
             <X size={18} />
           </button>
         </div>
         <p className="modal-desc">
-          {hasRawText
-            ? "Prompt 已包含你输入的题目文本。复制或下载后直接发给你的 AI，将返回的 JSON 粘贴到右侧解析结果区域。"
-            : "选择生成内容，复制下方 Prompt 发送给你的 AI（ChatGPT、Claude、Gemini 等），将题目文本一并发送，然后把生成的 JSON 粘贴到解析结果区域导入。"}
+          {hasRawText ? t("selfGenerateDescWithRawText") : t("selfGenerateDescNoRaw")}
         </p>
         <div className="self-gen-options">
-          <span>生成内容：</span>
+          <span>{t("selfGenerateContentLabel")}</span>
           <Segmented
             value={props.mode}
             options={[
-              ["both", "答案 + 解析 + 题目"],
-              ["answer", "答案 + 题目"],
-              ["explanation", "解析 + 题目"],
-              ["none", "仅题目"],
+              ["both", t("answerExplanationQuestionsOpt")],
+              ["answer", t("answerQuestionsOpt")],
+              ["explanation", t("explanationQuestionsOpt")],
+              ["none", t("onlyQuestionsOpt")],
             ]}
             onChange={(v) => props.setMode(v as "answer" | "explanation" | "both" | "none")}
           />
@@ -100,46 +101,43 @@ ${jsonFormat}${rawTextSection}`
         <div className="self-gen-prompt-box">
           <div className="self-gen-prompt-header">
             <strong>
-              Prompt
               {hasRawText
-                ? `（已包含题目文本，${prompt.length.toLocaleString()} 字）`
-                : `（${prompt.length.toLocaleString()} 字）`}
+                ? t("promptWithRawInfo", prompt.length.toLocaleString())
+                : t("promptCharCount", prompt.length.toLocaleString())}
             </strong>
             <div className="self-gen-prompt-actions">
               <button onClick={handleCopy}>
                 {copied ? (
                   <>
-                    <Check size={15} /> 已复制
+                    <Check size={15} /> {t("copied")}
                   </>
                 ) : (
                   <>
-                    <Copy size={15} /> 复制
+                    <Copy size={15} /> {t("copy")}
                   </>
                 )}
               </button>
               <button onClick={handleDownload}>
-                <Download size={15} /> 下载 TXT
+                <Download size={15} /> {t("downloadTxt")}
               </button>
             </div>
           </div>
           {prompt.length > 10000 && (
-            <p className="prompt-length-warning">
-              内容较长（超过 1 万字），建议下载 TXT 文件后以附件形式发送给 AI。
-            </p>
+            <p className="prompt-length-warning">{t("longTextWarningText")}</p>
           )}
           <pre className="self-gen-prompt-text">{prompt}</pre>
         </div>
         <div className="self-gen-tip">
-          <strong>使用步骤：</strong>
+          <strong>{t("usageStepsTitle")}</strong>
           <ol>
-            <li>复制或下载上方 Prompt{!hasRawText && "，并附上需要整理的题目文本"}</li>
-            <li>在你的 AI 对话中粘贴完整 Prompt</li>
-            <li>AI 返回 JSON 后，将 JSON 粘贴到右侧解析结果区域</li>
-            <li>点击「校验并保存」后即可导入题单</li>
+            <li>{hasRawText ? t("stepCopyPrompt") : t("stepCopyPromptWithText")}</li>
+            <li>{t("stepPasteToAi")}</li>
+            <li>{t("stepPasteJson")}</li>
+            <li>{t("stepValidateAndSave")}</li>
           </ol>
         </div>
         <div className="modal-actions">
-          <button onClick={props.onClose}>关闭</button>
+          <button onClick={props.onClose}>{t("closeBtn")}</button>
         </div>
       </div>
     </div>

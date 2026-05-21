@@ -1,6 +1,6 @@
 import { useState } from "react"
 import type { ChangeEvent } from "react"
-import type { AppData, LlmConfig, QuestionList } from "../lib/types"
+import type { AppData, LlmConfig, QuestionList, TFunc } from "../lib/types"
 import {
   createId,
   normalizeImportedList,
@@ -16,6 +16,7 @@ import { defaultLlmConfig } from "../utils/constants"
 import type { PushToast, UpdateActiveList, UpdateData, SetState } from "./types"
 
 interface UseImportExportParams {
+  t: TFunc
   llmConfig: LlmConfig
   pushToast: PushToast
   updateActiveList: UpdateActiveList
@@ -25,6 +26,7 @@ interface UseImportExportParams {
 }
 
 export function useImportExport({
+  t,
   llmConfig,
   pushToast,
   updateActiveList,
@@ -55,7 +57,7 @@ export function useImportExport({
       setShowImportDialog(false)
     } catch (error) {
       debugLog("Question import failed", error)
-      pushToast("error", error instanceof Error ? error.message : "导入失败。")
+      pushToast("error", error instanceof Error ? error.message : t("importFailed"))
     }
   }
 
@@ -72,7 +74,7 @@ export function useImportExport({
     try {
       const response = await fetch(fetchUrl, { headers })
       if (!response.ok) {
-        throw new Error(`请求失败：${response.status}`)
+        throw new Error(t("requestFailed", response.status))
       }
       const text = await response.text()
       const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }))
@@ -85,7 +87,7 @@ export function useImportExport({
       setShowImportDialog(false)
     } catch (error) {
       debugLog("URL import failed", error)
-      pushToast("error", error instanceof Error ? error.message : "URL 导入失败。")
+      pushToast("error", error instanceof Error ? error.message : t("urlImportFailed"))
     }
   }
 
@@ -101,9 +103,9 @@ export function useImportExport({
         questions: [...list.questions, ...questions],
         updatedAt: new Date().toISOString(),
       }))
-      pushToast("success", `已添加 ${questions.length} 道题到当前题单。`)
+      pushToast("success", t("addedToCurrentList", questions.length))
     } else {
-      const name = pendingImportLists.length === 1 ? pendingImportLists[0].name : `导入题单`
+      const name = pendingImportLists.length === 1 ? pendingImportLists[0].name : t("importedListName")
       debugLog("Import as new list", { name, questionCount: questions.length })
       updateData((current) => {
         const newList: QuestionList = {
@@ -116,7 +118,7 @@ export function useImportExport({
         }
         return { ...current, lists: [...current.lists, newList], activeListId: newList.id }
       })
-      pushToast("success", `已创建新题单「${name}」，共 ${questions.length} 道题。`)
+      pushToast("success", t("createdNewList", name, questions.length))
     }
     setPendingImportLists(null)
   }
@@ -134,7 +136,7 @@ export function useImportExport({
       setPendingBackup(imported)
       setShowBackupImportDialog(false)
     } catch {
-      pushToast("error", "文件不是有效的 PassLoop 配置数据。")
+      pushToast("error", t("invalidBackupFile"))
     }
   }
 
@@ -151,7 +153,7 @@ export function useImportExport({
     try {
       const response = await fetch(fetchUrl, { headers })
       if (!response.ok) {
-        throw new Error(`请求失败：${response.status}`)
+        throw new Error(t("requestFailed", response.status))
       }
       const text = await response.text()
       const imported = normalizeAppData(JSON.parse(text))
@@ -164,7 +166,7 @@ export function useImportExport({
       setShowBackupImportDialog(false)
     } catch (error) {
       debugLog("Backup URL import failed", error)
-      pushToast("error", error instanceof Error ? error.message : "URL 导入配置失败。")
+      pushToast("error", error instanceof Error ? error.message : t("urlBackupImportFailed"))
     }
   }
 
@@ -173,7 +175,7 @@ export function useImportExport({
     if (mode === "overwrite") {
       debugLog("Backup import: overwrite")
       setData(pendingBackup)
-      pushToast("success", "配置已覆盖恢复。")
+      pushToast("success", t("backupOverwritten"))
     } else {
       debugLog("Backup import: merge", {
         existingLists: data.lists.length,
@@ -194,7 +196,7 @@ export function useImportExport({
         lists: [...current.lists, ...newLists],
         attempts: [...current.attempts, ...newAttempts],
       }))
-      pushToast("success", `已合并 ${newLists.length} 个题单。`)
+      pushToast("success", t("mergedLists", newLists.length))
     }
     setPendingBackup(null)
   }

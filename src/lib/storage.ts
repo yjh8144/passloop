@@ -17,12 +17,12 @@ export const defaultSettings: Settings = {
   revealMode: "immediate",
 }
 
-export function createEmptyQuestionList(name = "默认题单"): QuestionList {
+export function createEmptyQuestionList(name = "Default List"): QuestionList {
   const timestamp = now()
   return {
     id: createId(),
     name,
-    description: "从 JSON 导入题目，或手动新增题目。",
+    description: "",
     questions: [],
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -134,7 +134,7 @@ export function normalizeList(value: unknown): QuestionList | null {
   const timestamp = now()
   return {
     id: typeof source.id === "string" ? source.id : createId(),
-    name: typeof source.name === "string" ? source.name : "未命名题单",
+    name: typeof source.name === "string" ? source.name : "Unnamed List",
     description: typeof source.description === "string" ? source.description : "",
     questions: Array.isArray(source.questions) ? source.questions.map(normalizeQuestion) : [],
     createdAt: typeof source.createdAt === "string" ? source.createdAt : timestamp,

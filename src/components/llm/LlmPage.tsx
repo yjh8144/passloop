@@ -32,6 +32,7 @@ export function LlmPage(props: {
   llmConfig: LlmConfig
   onOpenLlmConfig: () => void
 }) {
+  const { t } = props
   const config = props.llmConfig
   const [rawText, setRawText] = useState("")
   const [parsedList, setParsedList] = useState<QuestionList | null>(null)
@@ -54,7 +55,7 @@ export function LlmPage(props: {
 
   const runParser = async () => {
     if (!rawText.trim()) {
-      props.pushToast("error", "请先粘贴未整理题目文本。")
+      props.pushToast("error", t("pleaseInputRawText"))
       return
     }
     if ((manualJsonText.trim() || parsedList) && !showOverwriteConfirm) {
@@ -87,10 +88,10 @@ export function LlmPage(props: {
       setParsedJsonText(JSON.stringify(lists[0], null, 2))
       setStreamingText("")
       setSaved(false)
-      props.pushToast("success", "LLM 解析完成。")
+      props.pushToast("success", t("llmParseComplete"))
     } catch (error) {
       debugLog("LLM parse failed", error)
-      props.pushToast("error", error instanceof Error ? error.message : "LLM 解析失败。")
+      props.pushToast("error", error instanceof Error ? error.message : t("llmParseFailed"))
     } finally {
       setLoading(false)
     }
@@ -100,7 +101,7 @@ export function LlmPage(props: {
     try {
       return normalizeImportedList(JSON.parse(parsedJsonText))
     } catch {
-      props.pushToast("error", "解析结果 JSON 仍有格式错误，请修正后再操作。")
+      props.pushToast("error", t("jsonFormatError"))
       return null
     }
   }
@@ -110,14 +111,14 @@ export function LlmPage(props: {
     if (!list) return
     if (!list.questions.length) {
       debugLog("Validation failed: no questions")
-      props.pushToast("error", "校验失败：题单中没有题目。")
+      props.pushToast("error", t("validateNoQuestions"))
       return
     }
     for (let i = 0; i < list.questions.length; i++) {
       const q = list.questions[i]
       if (!q.title.trim()) {
         debugLog("Validation failed: missing title", { index: i })
-        props.pushToast("error", `校验失败：第 ${i + 1} 题缺少标题。`)
+        props.pushToast("error", t("validateNoTitle", i + 1))
         return
       }
       if ((q.type === "single" || q.type === "multiple") && q.options.length < 2) {
@@ -125,7 +126,7 @@ export function LlmPage(props: {
           index: i,
           optionCount: q.options.length,
         })
-        props.pushToast("error", `校验失败：第 ${i + 1} 题选项不足 2 个。`)
+        props.pushToast("error", t("validateFewOptions", i + 1))
         return
       }
     }
@@ -133,7 +134,7 @@ export function LlmPage(props: {
     setParsedList(list)
     setParsedJsonText(JSON.stringify(list, null, 2))
     setSaved(true)
-    props.pushToast("success", "校验通过，已保存。")
+    props.pushToast("success", t("validatePassed"))
   }
 
   const enterEdit = () => {
@@ -145,24 +146,24 @@ export function LlmPage(props: {
       <section className="llm-input">
         <div className="stage-header">
           <div>
-            <h1>{props.t("llm")}</h1>
-            <p>把未整理题目转换为标准题库 JSON，可补答案、解析并直接导入。</p>
+            <h1>{t("llm")}</h1>
+            <p>{t("llmDesc")}</p>
           </div>
           <div className="stage-tools">
             <button
               onClick={() => {
                 if (!rawText.trim()) {
-                  props.pushToast("error", "请先在下方输入框中粘贴题目文本。")
+                  props.pushToast("error", t("pleaseInputRawTextFirst"))
                   return
                 }
                 setShowSelfParse(true)
                 setManualInput(true)
               }}
             >
-              <Copy size={17} /> 自助解析
+              <Copy size={17} /> {t("selfParse")}
             </button>
             <button className="primary-button" onClick={runParser} disabled={loading}>
-              <Sparkles size={17} /> {loading ? "解析中" : props.t("parse")}
+              <Sparkles size={17} /> {loading ? t("parsing") : t("parse")}
             </button>
           </div>
         </div>
@@ -170,16 +171,16 @@ export function LlmPage(props: {
           <Settings2 size={16} />
           <span>
             {config.provider === "openai"
-              ? "OpenAI 兼容"
+              ? t("openAiCompatible")
               : config.provider === "anthropic"
                 ? "Anthropic"
                 : "Gemini"}{" "}
-            / {config.model || "未设置模型"}
+            / {config.model || t("modelNotSet")}
           </span>
           <ChevronRight size={14} />
         </button>
         <label className="upload-raw-text">
-          <Upload size={16} /> 上传文本文件
+          <Upload size={16} /> {t("uploadTextFile")}
           <input
             type="file"
             accept=".txt,.md,text/plain"
@@ -201,26 +202,26 @@ export function LlmPage(props: {
           className="raw-question-input"
           value={rawText}
           onChange={(event) => setRawText(event.target.value)}
-          placeholder="粘贴未整理格式的题目文本..."
+          placeholder={t("rawTextPlaceholder")}
         />
       </section>
       <section className="llm-output">
         <div className="section-title">
-          <span>{props.t("parsedQuestions")}</span>
+          <span>{t("parsedQuestions")}</span>
           {parsedList && (
             <div className="inline-actions">
               <Segmented
                 value={outputTab}
                 options={[
                   ["json", "JSON"],
-                  ["preview", "题目预览"],
+                  ["preview", t("questionPreviewTab")],
                 ]}
                 onChange={(v) => setOutputTab(v as "json" | "preview")}
               />
               {saved ? (
                 <>
                   <button onClick={enterEdit}>
-                    <Edit3 size={16} /> 修改
+                    <Edit3 size={16} /> {t("edit")}
                   </button>
                   <button
                     onClick={() => {
@@ -235,7 +236,7 @@ export function LlmPage(props: {
                       }
                     }}
                   >
-                    <Download size={16} /> {props.t("exportJson")}
+                    <Download size={16} /> {t("exportJson")}
                   </button>
                   <button
                     className="primary-button"
@@ -251,7 +252,7 @@ export function LlmPage(props: {
                       props.unsavedRef.current = false
                     }}
                   >
-                    <Plus size={16} /> 导入当前题单
+                    <Plus size={16} /> {t("importCurrentList")}
                   </button>
                   <button
                     onClick={() => {
@@ -266,12 +267,12 @@ export function LlmPage(props: {
                       }
                     }}
                   >
-                    <Copy size={16} /> 新建题单
+                    <Copy size={16} /> {t("createNewList")}
                   </button>
                 </>
               ) : (
                 <button className="primary-button" onClick={validateAndSave}>
-                  <Check size={16} /> 校验并保存
+                  <Check size={16} /> {t("validateAndSave")}
                 </button>
               )}
             </div>
@@ -301,23 +302,18 @@ export function LlmPage(props: {
                 setParsedList(updated)
                 setParsedJsonText(JSON.stringify(updated, null, 2))
               }}
+              t={t}
             />
           )
         ) : loading ? (
-          <pre className="streaming-preview">
-            {streamingText ||
-              "等待 AI 响应…\n\n有推理功能的模型需要等待推理完成后，才能在此处显示解析结果。"}
-          </pre>
+          <pre className="streaming-preview">{streamingText || t("waitingAiResponse")}</pre>
         ) : manualInput ? (
           <div className="manual-json-input">
-            <p className="manual-json-hint">
-              将 AI 返回的 JSON 粘贴到下方，或上传 JSON
-              文件，然后点击「校验并保存」。你也可以继续使用左侧内置解析。
-            </p>
+            <p className="manual-json-hint">{t("manualJsonHintText")}</p>
             <div className="json-input-header">
-              <span>{manualJsonText.length.toLocaleString()} 字</span>
+              <span>{t("charCount", manualJsonText.length.toLocaleString())}</span>
               <label className="upload-json-button">
-                <Upload size={14} /> 上传 JSON
+                <Upload size={14} /> {t("uploadJsonBtn")}
                 <input
                   type="file"
                   accept=".json,.txt,text/plain,application/json"
@@ -343,16 +339,14 @@ export function LlmPage(props: {
               className="json-preview"
               value={manualJsonText}
               onChange={(e) => setManualJsonText(e.target.value)}
-              placeholder={
-                '粘贴 AI 返回的 JSON...\n\n{\n  "name": "题单名称",\n  "questions": [...]\n}'
-              }
+              placeholder={t("pasteJsonPlaceholder")}
             />
             <button
               className="primary-button"
               style={{ marginTop: 10 }}
               onClick={() => {
                 if (!manualJsonText.trim()) {
-                  props.pushToast("error", "请先粘贴 JSON 内容。")
+                  props.pushToast("error", t("pleaseInputJson"))
                   return
                 }
                 try {
@@ -365,24 +359,21 @@ export function LlmPage(props: {
                   setParsedJsonText(JSON.stringify(lists[0], null, 2))
                   setSaved(false)
                   setManualInput(false)
-                  props.pushToast("success", "JSON 解析成功。")
+                  props.pushToast("success", t("jsonParseSuccess"))
                 } catch (error) {
                   debugLog("Manual JSON validation failed", error)
                   props.pushToast(
                     "error",
-                    error instanceof Error ? error.message : "JSON 格式错误，请检查内容。",
+                    error instanceof Error ? error.message : t("jsonFormatErrorCheck"),
                   )
                 }
               }}
             >
-              <Check size={16} /> 校验并保存
+              <Check size={16} /> {t("validateAndSave")}
             </button>
           </div>
         ) : (
-          <EmptyState
-            title="等待解析"
-            description="使用左侧内置解析，或点击「自助解析」手动粘贴 JSON。"
-          />
+          <EmptyState title={t("waitingForParseTitle")} description={t("waitingForParseDesc")} />
         )}
       </section>
 
@@ -393,6 +384,7 @@ export function LlmPage(props: {
           setMode={setSelfParseMode}
           rawText={rawText}
           onClose={() => setShowSelfParse(false)}
+          t={t}
         />
       )}
 
@@ -400,16 +392,16 @@ export function LlmPage(props: {
         <div className="modal-overlay" onClick={() => setShowOverwriteConfirm(false)}>
           <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>覆盖确认</h2>
+              <h2>{t("overwriteConfirmHeader")}</h2>
               <button className="icon-button" onClick={() => setShowOverwriteConfirm(false)}>
                 <X size={18} />
               </button>
             </div>
             <p style={{ margin: "8px 0 0", lineHeight: 1.6 }}>
-              右侧已有解析内容，使用内置 LLM 解析会覆盖当前内容。确定继续吗？
+              {t("overwriteConfirmContent")}
             </p>
             <div className="modal-actions">
-              <button onClick={() => setShowOverwriteConfirm(false)}>取消</button>
+              <button onClick={() => setShowOverwriteConfirm(false)}>{t("cancel")}</button>
               <button
                 style={{ background: "var(--accent)", color: "#fff", borderColor: "var(--accent)" }}
                 onClick={() => {
@@ -417,7 +409,7 @@ export function LlmPage(props: {
                   doRunParser()
                 }}
               >
-                确定覆盖
+                {t("confirmOverwriteBtn")}
               </button>
             </div>
           </div>

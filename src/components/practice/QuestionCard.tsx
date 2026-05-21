@@ -1,6 +1,6 @@
 import { Check, ChevronRight } from "lucide-react"
-import type { PracticeMode, Question } from "../../lib/types"
-import { formatAnswer, isAnswerCorrect, typeLabels } from "../../lib/question"
+import type { PracticeMode, Question, TFunc } from "../../lib/types"
+import { formatAnswer, getTypeLabels, isAnswerCorrect } from "../../lib/question"
 import { AnswerInput } from "./AnswerInput"
 
 type AnswerMap = Record<string, string | string[]>
@@ -20,7 +20,10 @@ export function QuestionCard(props: {
   hideSubmit?: boolean
   revealMode?: "immediate" | "end"
   allSubmitted?: boolean
+  t?: TFunc
 }) {
+  const t = props.t ?? ((key: string) => key)
+  const labels = getTypeLabels(t)
   const showAnswer =
     props.practiceMode === "memorize" ||
     (props.submitted && (props.revealMode !== "end" || !!props.allSubmitted))
@@ -31,21 +34,25 @@ export function QuestionCard(props: {
     <article id={props.id} className={`question-card ${props.compact ? "compact" : ""}`}>
       <div className="question-heading">
         <div>
-          <span className="question-type">{typeLabels[props.question.type]}</span>
+          <span className="question-type">{labels[props.question.type]}</span>
           <h2>
             {props.index + 1}. {props.question.title}
           </h2>
         </div>
         {props.submitted && (props.revealMode !== "end" || !!props.allSubmitted) && (
           <span className={`result-chip ${props.result ? "correct" : "wrong"}`}>
-            {props.result ? "正确" : "错误"}
+            {props.result ? t("correct") : t("incorrect")}
           </span>
         )}
       </div>
       {props.question.prompt && props.question.prompt !== props.question.title && (
         <p className="prompt-text">{props.question.prompt}</p>
       )}
-      {props.question.hint && <div className="hint-box">提示：{props.question.hint}</div>}
+      {props.question.hint && (
+        <div className="hint-box">
+          {t("hint")}：{props.question.hint}
+        </div>
+      )}
 
       {props.question.type === "composite" ? (
         <div className="subquestion-stack">
@@ -62,13 +69,14 @@ export function QuestionCard(props: {
                 practiceMode={props.practiceMode}
                 onSubmit={() => undefined}
                 compact
+                t={props.t}
               />
             ))
           ) : (
             <textarea
               value={String(props.answers[props.question.id] ?? "")}
               onChange={(event) => updateAnswer(props.question.id, event.target.value)}
-              placeholder="输入综合题作答"
+              placeholder={t("compositeInput")}
             />
           )}
         </div>
@@ -78,17 +86,18 @@ export function QuestionCard(props: {
           value={props.answers[props.question.id]}
           onChange={updateAnswer}
           practiceMode={props.practiceMode}
+          t={props.t}
         />
       )}
 
       {!props.compact && !props.hideSubmit && props.practiceMode !== "memorize" && (
         <div className="question-actions">
           <button className="primary-button" onClick={props.onSubmit}>
-            <Check size={17} /> 提交答案
+            <Check size={17} /> {t("submit")}
           </button>
           {props.submitted && props.onNext && (
             <button onClick={props.onNext}>
-              下一题 <ChevronRight size={17} />
+              {t("next")} <ChevronRight size={17} />
             </button>
           )}
         </div>
@@ -97,7 +106,7 @@ export function QuestionCard(props: {
       {!props.compact && props.hideSubmit && props.onNext && (
         <div className="question-actions">
           <button className="primary-button" onClick={props.onNext}>
-            下一题 <ChevronRight size={17} />
+            {t("next")} <ChevronRight size={17} />
           </button>
         </div>
       )}
@@ -105,12 +114,12 @@ export function QuestionCard(props: {
       {showAnswer && (
         <div className="answer-panel">
           <div>
-            <strong>答案</strong>
-            <p>{formatAnswer(props.question.answer) || "未设置"}</p>
+            <strong>{t("answer")}</strong>
+            <p>{formatAnswer(props.question.answer) || t("notSet")}</p>
           </div>
           <div>
-            <strong>解析</strong>
-            <p>{props.question.explanation || "暂无解析"}</p>
+            <strong>{t("explanation")}</strong>
+            <p>{props.question.explanation || t("noExplanation")}</p>
           </div>
         </div>
       )}
