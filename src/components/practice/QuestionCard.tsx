@@ -2,8 +2,7 @@ import { Check, ChevronRight } from "lucide-react"
 import type { PracticeMode, Question, TFunc } from "../../lib/types"
 import { formatAnswer, getTypeLabels, isAnswerCorrect } from "../../lib/question"
 import { AnswerInput } from "./AnswerInput"
-
-type AnswerMap = Record<string, string | string[]>
+import type { AnswerMap } from "../../hooks/types"
 
 export function QuestionCard(props: {
   id?: string

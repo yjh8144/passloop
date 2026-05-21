@@ -2,8 +2,7 @@ import { useState } from "react"
 import { Languages, Moon, Search, Settings2 } from "lucide-react"
 import type { AppData, QuestionList, TFunc } from "../../lib/types"
 import { ControlPanel } from "../practice/ControlPanel"
-
-type Page = "practice" | "manager" | "llm" | "wrong"
+import type { Page } from "../../hooks/types"
 
 export function Topbar(props: {
   t: TFunc

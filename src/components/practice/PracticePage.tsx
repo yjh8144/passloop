@@ -19,10 +19,7 @@ import { WrongSessionPanel } from "../practice/WrongSessionPanel"
 import type { WrongSession } from "../practice/WrongSessionPanel"
 import { Navigator } from "../practice/Navigator"
 import { QuestionCard } from "../practice/QuestionCard"
-
-type Page = "practice" | "manager" | "llm" | "wrong"
-type AnswerMap = Record<string, string | string[]>
-type ResultMap = Record<string, boolean>
+import type { AnswerMap, Page, ResultMap } from "../../hooks/types"
 
 function InspectorContent(props: {
   t: TFunc

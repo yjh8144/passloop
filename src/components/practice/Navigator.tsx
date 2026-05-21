@@ -1,7 +1,6 @@
 import type { Question, TFunc } from "../../lib/types"
 import { debugLog } from "../../lib/debug"
-
-type ResultMap = Record<string, boolean>
+import type { ResultMap } from "../../hooks/types"
 
 export function Navigator(props: {
   questions: Question[]

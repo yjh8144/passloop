@@ -1,7 +1,6 @@
 import type { Question } from "../lib/types"
 import { isAnswerCorrect, formatAnswer } from "../lib/question"
-
-type AnswerMap = Record<string, string | string[]>
+import type { AnswerMap } from "../hooks/types"
 
 export function evaluateQuestion(question: Question, answers: AnswerMap) {
   if (question.type === "composite" && question.subQuestions.length) {

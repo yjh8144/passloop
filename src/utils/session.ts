@@ -1,6 +1,5 @@
 import { ANSWERS_SESSION_KEY, INDEX_SESSION_KEY } from "./constants"
-
-type AnswerMap = Record<string, string | string[]>
+import type { AnswerMap } from "../hooks/types"
 
 export function loadSessionAnswers(): AnswerMap {
   try {

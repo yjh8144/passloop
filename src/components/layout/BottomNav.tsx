@@ -12,8 +12,7 @@ import {
   Upload,
 } from "lucide-react"
 import type { AppData, QuestionList, TFunc } from "../../lib/types"
-
-type Page = "practice" | "manager" | "llm" | "wrong"
+import type { Page } from "../../hooks/types"
 
 export function BottomNav(props: {
   t: TFunc
