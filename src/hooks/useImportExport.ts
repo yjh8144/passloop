@@ -182,15 +182,21 @@ export function useImportExport({
         importedLists: pendingBackup.lists.length,
       })
       const existingIds = new Set(data.lists.map((l) => l.id))
-      const newLists = pendingBackup.lists.map((l) =>
-        existingIds.has(l.id) ? { ...l, id: createId() } : l,
-      )
+      const idRemap = new Map<string, string>()
+      const newLists = pendingBackup.lists.map((l) => {
+        if (existingIds.has(l.id)) {
+          const newId = createId()
+          idRemap.set(l.id, newId)
+          return { ...l, id: newId }
+        }
+        return l
+      })
       const existingAttemptKeys = new Set(
         data.attempts.map((a) => `${a.questionId}-${a.submittedAt}`),
       )
-      const newAttempts = pendingBackup.attempts.filter(
-        (a) => !existingAttemptKeys.has(`${a.questionId}-${a.submittedAt}`),
-      )
+      const newAttempts = pendingBackup.attempts
+        .filter((a) => !existingAttemptKeys.has(`${a.questionId}-${a.submittedAt}`))
+        .map((a) => (idRemap.has(a.listId) ? { ...a, listId: idRemap.get(a.listId)! } : a))
       updateData((current) => ({
         ...current,
         lists: [...current.lists, ...newLists],

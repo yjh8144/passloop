@@ -64,7 +64,7 @@ export function QuestionCard(props: {
                 question={subQuestion}
                 answers={props.answers}
                 setAnswers={props.setAnswers}
-                submitted={showAnswer}
+                submitted={showAnswer && subQuestion.id in props.answers}
                 result={isAnswerCorrect(subQuestion, props.answers[subQuestion.id] ?? "")}
                 practiceMode={props.practiceMode}
                 onSubmit={() => undefined}

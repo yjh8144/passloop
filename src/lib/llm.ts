@@ -230,7 +230,8 @@ async function readSSEStream(
   const decoder = new TextDecoder()
   let accumulated = ""
   let buffer = ""
-  while (true) {
+  let streamDone = false
+  while (!streamDone) {
     const { done, value } = await reader.read()
     if (done) break
     buffer += decoder.decode(value, { stream: true })
@@ -241,7 +242,10 @@ async function readSSEStream(
       const data = line.slice(5).trim()
       if (!data) continue
       const delta = extractDelta(data)
-      if (delta === null) break
+      if (delta === null) {
+        streamDone = true
+        break
+      }
       if (delta) {
         accumulated += delta
         onChunk(accumulated)

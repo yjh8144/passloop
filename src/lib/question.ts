@@ -172,7 +172,12 @@ export function normalizeImportedList(value: unknown): QuestionList {
   }
 }
 
-export function sortQuestions(questions: Question[], mode: SortMode) {
+export function sortQuestions(
+  questions: Question[],
+  mode: SortMode,
+  locale?: string,
+  localizedLabels?: Record<QuestionType, string>,
+) {
   if (mode === "manual") return questions
   const copy = [...questions]
   if (mode === "random") {
@@ -181,8 +186,10 @@ export function sortQuestions(questions: Question[], mode: SortMode) {
       .sort((a, b) => a.score - b.score)
       .map((item) => item.question)
   }
-  if (mode === "name") return copy.sort((a, b) => a.title.localeCompare(b.title, "zh"))
-  return copy.sort((a, b) => typeLabels[a.type].localeCompare(typeLabels[b.type], "zh"))
+  const loc = locale ?? "zh"
+  if (mode === "name") return copy.sort((a, b) => a.title.localeCompare(b.title, loc))
+  const labels = localizedLabels ?? typeLabels
+  return copy.sort((a, b) => labels[a.type].localeCompare(labels[b.type], loc))
 }
 
 function seededScore(value: string) {
@@ -223,8 +230,14 @@ export function getListStats(list: QuestionList, attempts: AttemptRecord[]) {
   const related = attempts.filter((attempt) => attempt.listId === list.id)
   const submitted = related.length
   const correct = related.filter((attempt) => attempt.correct).length
+  const lastAttemptByQuestion = new Map<string, boolean>()
+  for (const attempt of related) {
+    lastAttemptByQuestion.set(attempt.questionId, attempt.correct)
+  }
   const wrongQuestionIds = new Set(
-    related.filter((attempt) => !attempt.correct).map((attempt) => attempt.questionId),
+    [...lastAttemptByQuestion.entries()]
+      .filter(([, wasCorrect]) => !wasCorrect)
+      .map(([id]) => id),
   )
   const attemptedQuestionIds = new Set(related.map((attempt) => attempt.questionId))
   const avgTime = submitted

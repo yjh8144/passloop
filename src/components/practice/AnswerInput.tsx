@@ -22,8 +22,11 @@ export function AnswerInput(props: {
                 type="radio"
                 name={question.id}
                 checked={isMemorize ? option.label === correctAnswer : props.value === option.label}
-                onChange={() => props.onChange(question.id, option.label)}
-                readOnly={isMemorize}
+                onChange={() => {
+                  if (isMemorize) return
+                  props.onChange(question.id, option.label)
+                }}
+                disabled={isMemorize}
               />
               <span>{option.label}</span>
               <p>{option.text}</p>
@@ -52,7 +55,7 @@ export function AnswerInput(props: {
                     : selected.filter((item) => item !== option.label)
                   props.onChange(question.id, next)
                 }}
-                readOnly={isMemorize}
+                disabled={isMemorize}
               />
               <span>{option.label}</span>
               <p>{option.text}</p>

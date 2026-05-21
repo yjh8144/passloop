@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { Question, QuestionList, TFunc } from "../lib/types"
 import { createId, normalizeImportedList } from "../lib/question"
 import { downloadJson } from "../lib/storage"
@@ -30,6 +30,10 @@ export function useWrongPractice({
   setCurrentIndex,
 }: UseWrongPracticeParams) {
   const [wrongSession, setWrongSession] = useState<WrongSession | null>(null)
+  const pageRef = useRef(page)
+  useEffect(() => {
+    pageRef.current = page
+  })
 
   useEffect(() => {
     if (page !== "wrong" || !wrongSession) return
@@ -45,10 +49,6 @@ export function useWrongPractice({
     }, 1000)
     return () => window.clearInterval(intervalId)
   }, [page, wrongSession?.id])
-
-  useEffect(() => {
-    if (page === "wrong") startWrongPractice()
-  }, [activeList.id])
 
   const startWrongPractice = () => {
     if (!wrongQuestions.length) {
@@ -72,6 +72,15 @@ export function useWrongPractice({
     resetPracticeState(wrongQuestions)
     return true
   }
+
+  const startWrongPracticeRef = useRef(startWrongPractice)
+  useEffect(() => {
+    startWrongPracticeRef.current = startWrongPractice
+  })
+
+  useEffect(() => {
+    if (pageRef.current === "wrong") startWrongPracticeRef.current()
+  }, [activeList.id])
 
   const resetWrongPractice = () => {
     startWrongPractice()

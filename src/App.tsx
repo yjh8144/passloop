@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { AppData, LlmConfig, Question, QuestionList } from "./lib/types"
 import { getTranslator } from "./lib/i18n/index"
 import {
@@ -12,7 +12,8 @@ import {
   saveData,
 } from "./lib/storage"
 import { createId, getListStats, getTypeLabels, sortQuestions } from "./lib/question"
-import { debugLog } from "./lib/debug"
+import { debugLog, isDebugEnabled, setDebugEnabled } from "./lib/debug"
+import { X } from "lucide-react"
 import { defaultLlmConfig, ONBOARDING_KEY } from "./utils/constants"
 import { useToast } from "./hooks/useToast"
 import { usePractice } from "./hooks/usePractice"
@@ -52,8 +53,18 @@ export function App() {
   })
   const [llmConfig, setLlmConfig] = useState<LlmConfig>(() => loadLlmConfig(defaultLlmConfig))
   const [showGlobalLlmConfig, setShowGlobalLlmConfig] = useState(false)
+  const [showDebugDialog, setShowDebugDialog] = useState(false)
+  const [debugEnabled, setDebugState] = useState(() => isDebugEnabled())
   const llmUnsavedRef = useRef(false)
   const t = getTranslator(data.settings.language)
+
+  const toggleDebug = useCallback(() => {
+    const next = !debugEnabled
+    setDebugEnabled(next)
+    setDebugState(next)
+    debugLog(next ? "Debug mode enabled" : "Debug mode disabled")
+    setShowDebugDialog(false)
+  }, [debugEnabled])
 
   const showConfirm = (message: string, onConfirm: () => void) => {
     setConfirmDialog({ message, onConfirm })
@@ -91,10 +102,10 @@ export function App() {
 
 
   const displayedQuestions = useMemo(() => {
-    const sorted = sortQuestions(activeList.questions, data.settings.sortMode)
+    const labels = getTypeLabels(t)
+    const sorted = sortQuestions(activeList.questions, data.settings.sortMode, data.settings.language, labels)
     const trimmed = query.trim().toLowerCase()
     if (!trimmed) return sorted
-    const labels = getTypeLabels(t)
     return sorted.filter((question) =>
       [question.title, question.prompt, labels[question.type]]
         .join(" ")
@@ -143,7 +154,9 @@ export function App() {
     resetPracticeState: practice.resetPracticeState,
     setCurrentIndex: practice.setCurrentIndex,
   })
-  wrongPracticeRef.current = wrongPractice
+  useEffect(() => {
+    wrongPracticeRef.current = wrongPractice
+  })
 
   const importExport = useImportExport({
     t,
@@ -251,6 +264,7 @@ export function App() {
         onExportBackup={() => downloadJson("passloop-config.json", data)}
         onResetAll={() => setResetConfirmDialog(true)}
         onOpenLlmConfig={() => setShowGlobalLlmConfig(true)}
+        onOpenDebugDialog={() => setShowDebugDialog(true)}
         collapsed={mobileSidebarCollapsed}
         onToggleCollapsed={() => setMobileSidebarCollapsed((collapsed) => !collapsed)}
         desktopCollapsed={desktopSidebarCollapsed}
@@ -397,6 +411,34 @@ export function App() {
         pushToast={pushToast}
         t={t}
       />
+      {showDebugDialog && (
+        <div className="modal-overlay" onClick={() => setShowDebugDialog(false)}>
+          <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{t("debugModeTitle")}</h2>
+              <button className="icon-button" onClick={() => setShowDebugDialog(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>
+              {debugEnabled ? t("debugEnabledText") : t("debugDisabledText")}
+            </p>
+            <div className="modal-actions">
+              <button onClick={() => setShowDebugDialog(false)}>{t("cancel")}</button>
+              <button
+                style={{
+                  background: debugEnabled ? "var(--danger)" : "var(--accent)",
+                  color: "#fff",
+                  borderColor: debugEnabled ? "var(--danger)" : "var(--accent)",
+                }}
+                onClick={toggleDebug}
+              >
+                {debugEnabled ? t("disableDebugBtn") : t("enableDebugBtn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

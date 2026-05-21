@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useRef } from "react"
 import {
   BookOpen,
   BrainCircuit,
@@ -15,10 +15,8 @@ import {
   Shuffle,
   Trash2,
   Upload,
-  X,
 } from "lucide-react"
 import type { AppData, QuestionList, TFunc } from "../../lib/types"
-import { isDebugEnabled, setDebugEnabled, debugLog } from "../../lib/debug"
 
 type Page = "practice" | "manager" | "llm" | "wrong"
 
@@ -36,6 +34,7 @@ export function Sidebar(props: {
   onExportBackup: () => void
   onResetAll: () => void
   onOpenLlmConfig: () => void
+  onOpenDebugDialog: () => void
   collapsed: boolean
   onToggleCollapsed: () => void
   desktopCollapsed: boolean
@@ -43,8 +42,6 @@ export function Sidebar(props: {
 }) {
   const { t } = props
   const clickTimesRef = useRef<number[]>([])
-  const [showDebugDialog, setShowDebugDialog] = useState(false)
-  const [debugEnabled, setDebugState] = useState(() => isDebugEnabled())
 
   const handleBrandClick = useCallback(() => {
     const now = Date.now()
@@ -52,17 +49,9 @@ export function Sidebar(props: {
     clickTimesRef.current = clickTimesRef.current.filter((ts) => now - ts < 3000)
     if (clickTimesRef.current.length >= 7) {
       clickTimesRef.current = []
-      setShowDebugDialog(true)
+      props.onOpenDebugDialog()
     }
-  }, [])
-
-  const toggleDebug = useCallback(() => {
-    const next = !debugEnabled
-    setDebugEnabled(next)
-    setDebugState(next)
-    debugLog(next ? "Debug mode enabled" : "Debug mode disabled")
-    setShowDebugDialog(false)
-  }, [debugEnabled])
+  }, [props.onOpenDebugDialog])
 
   return (
     <aside
@@ -174,34 +163,6 @@ export function Sidebar(props: {
         </div>
       </div>
 
-      {showDebugDialog && (
-        <div className="modal-overlay" onClick={() => setShowDebugDialog(false)}>
-          <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{t("debugModeTitle")}</h2>
-              <button className="icon-button" onClick={() => setShowDebugDialog(false)}>
-                <X size={18} />
-              </button>
-            </div>
-            <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>
-              {debugEnabled ? t("debugEnabledText") : t("debugDisabledText")}
-            </p>
-            <div className="modal-actions">
-              <button onClick={() => setShowDebugDialog(false)}>{t("cancel")}</button>
-              <button
-                style={{
-                  background: debugEnabled ? "var(--danger)" : "var(--accent)",
-                  color: "#fff",
-                  borderColor: debugEnabled ? "var(--danger)" : "var(--accent)",
-                }}
-                onClick={toggleDebug}
-              >
-                {debugEnabled ? t("disableDebugBtn") : t("enableDebugBtn")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </aside>
   )
 }

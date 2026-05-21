@@ -83,6 +83,9 @@ export function LlmPage(props: {
         setStreamingText(accumulated)
       })
       const lists = parseQuestionJson(extractJsonText(fullText))
+      if (!lists.length) {
+        throw new Error(t("llmParseFailed"))
+      }
       debugLog("LLM parse completed", { questionCount: lists[0]?.questions.length ?? 0 })
       setParsedList(lists[0])
       setParsedJsonText(JSON.stringify(lists[0], null, 2))

@@ -67,6 +67,11 @@ export function loadLlmConfig(fallback: LlmConfig): LlmConfig {
       apiKey: typeof source.apiKey === "string" ? source.apiKey : fallback.apiKey,
       proxyUrl: typeof source.proxyUrl === "string" ? source.proxyUrl : fallback.proxyUrl,
       proxyKey: typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey,
+      fillAnswer: typeof source.fillAnswer === "boolean" ? source.fillAnswer : fallback.fillAnswer,
+      fillExplanation:
+        typeof source.fillExplanation === "boolean"
+          ? source.fillExplanation
+          : fallback.fillExplanation,
     }
   } catch {
     return fallback
@@ -83,6 +88,8 @@ export function saveLlmConfig(config: LlmConfig) {
       apiKey: config.apiKey,
       proxyUrl: config.proxyUrl,
       proxyKey: config.proxyKey,
+      fillAnswer: config.fillAnswer,
+      fillExplanation: config.fillExplanation,
     }),
   )
 }
