@@ -109,7 +109,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
               onOpenLlmConfig={openLlmConfig}
             />
           ) : (
-            <PracticePageConnected onClearListAttempts={clearActiveListAttempts} />
+            <PracticePage />
           )}
         </main>
 
@@ -189,45 +189,3 @@ function ResetConfirmConnected({
   )
 }
 
-function PracticePageConnected({ onClearListAttempts }: { onClearListAttempts: () => void }) {
-  const { data, stats, updateSettings } = useAppData()
-  const { page } = useNavigation()
-  const {
-    practiceQuestions,
-    currentIndex,
-    setCurrentIndex,
-    answers,
-    setAnswers,
-    results,
-    submitQuestion,
-    submitAll,
-    wrongSession,
-    resetWrongPractice,
-    exportWrongList,
-    createWrongList,
-    startedAtRef,
-  } = usePracticeContext()
-
-  return (
-    <PracticePage
-      mode={page}
-      questions={practiceQuestions}
-      currentIndex={currentIndex}
-      setCurrentIndex={setCurrentIndex}
-      answers={answers}
-      setAnswers={setAnswers}
-      results={results}
-      submitQuestion={submitQuestion}
-      submitAll={submitAll}
-      settings={data.settings}
-      updateSettings={updateSettings}
-      stats={stats}
-      wrongSession={page === "wrong" ? wrongSession : null}
-      onRedoWrong={resetWrongPractice}
-      onExportWrong={exportWrongList}
-      onCreateWrongList={createWrongList}
-      onClearListAttempts={onClearListAttempts}
-      startedAtRef={startedAtRef}
-    />
-  )
-}
