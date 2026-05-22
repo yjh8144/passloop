@@ -10,6 +10,7 @@ import {
   readFileAsText,
 } from "../lib/storage"
 import { debugLog } from "../lib/debug"
+import { fetchViaProxy } from "../lib/llm"
 import { defaultLlmConfig } from "../utils/constants"
 import type { PushToast, UpdateActiveList, UpdateData, SetState } from "./types"
 
@@ -60,21 +61,13 @@ export function useImportExport({
   }
 
   const handleUrlImport = async (url: string) => {
-    const proxyEnabled = llmConfig.proxyEnabled !== false
-    const proxyUrl = proxyEnabled ? (llmConfig.proxyUrl || defaultLlmConfig.proxyUrl) : ""
-    const proxyKey = proxyEnabled ? (llmConfig.proxyKey || defaultLlmConfig.proxyKey) : ""
-    const fetchUrl = proxyUrl
-      ? `${proxyUrl.replace(/\/+$/, "")}/?url=${encodeURIComponent(url)}`
-      : url
-    const headers: Record<string, string> = {}
-    if (proxyUrl && proxyKey) {
-      headers["X-Proxy-Key"] = proxyKey
+    const proxyConfig = {
+      proxyEnabled: llmConfig.proxyEnabled !== false,
+      proxyUrl: (llmConfig.proxyEnabled !== false) ? (llmConfig.proxyUrl || defaultLlmConfig.proxyUrl) : "",
+      proxyKey: (llmConfig.proxyEnabled !== false) ? (llmConfig.proxyKey || defaultLlmConfig.proxyKey) : "",
     }
     try {
-      const response = await fetch(fetchUrl, { headers })
-      if (!response.ok) {
-        throw new Error(t("requestFailed", response.status))
-      }
+      const response = await fetchViaProxy(url, proxyConfig)
       const text = await response.text()
       const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }))
       debugLog("URL import", {
@@ -140,21 +133,13 @@ export function useImportExport({
   }
 
   const handleBackupUrlImport = async (url: string) => {
-    const proxyEnabled = llmConfig.proxyEnabled !== false
-    const proxyUrl = proxyEnabled ? (llmConfig.proxyUrl || defaultLlmConfig.proxyUrl) : ""
-    const proxyKey = proxyEnabled ? (llmConfig.proxyKey || defaultLlmConfig.proxyKey) : ""
-    const fetchUrl = proxyUrl
-      ? `${proxyUrl.replace(/\/+$/, "")}/?url=${encodeURIComponent(url)}`
-      : url
-    const headers: Record<string, string> = {}
-    if (proxyUrl && proxyKey) {
-      headers["X-Proxy-Key"] = proxyKey
+    const proxyConfig = {
+      proxyEnabled: llmConfig.proxyEnabled !== false,
+      proxyUrl: (llmConfig.proxyEnabled !== false) ? (llmConfig.proxyUrl || defaultLlmConfig.proxyUrl) : "",
+      proxyKey: (llmConfig.proxyEnabled !== false) ? (llmConfig.proxyKey || defaultLlmConfig.proxyKey) : "",
     }
     try {
-      const response = await fetch(fetchUrl, { headers })
-      if (!response.ok) {
-        throw new Error(t("requestFailed", response.status))
-      }
+      const response = await fetchViaProxy(url, proxyConfig)
       const text = await response.text()
       const imported = normalizeAppData(JSON.parse(text))
       debugLog("Backup URL import parsed", {

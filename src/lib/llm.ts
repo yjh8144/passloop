@@ -7,13 +7,22 @@ function assertConfigValid(apiKey: string, model: string, endpoint: string): voi
   if (!endpoint) throw new Error("请填写 API 地址。")
 }
 
-function buildProxyUrl(targetUrl: string, config: LlmConfig): string {
+type ProxyConfig = Pick<LlmConfig, "proxyEnabled" | "proxyUrl" | "proxyKey">
+
+class NetworkError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "NetworkError"
+  }
+}
+
+function buildProxyUrl(targetUrl: string, config: ProxyConfig): string {
   if (!config.proxyEnabled || !config.proxyUrl) return targetUrl
   const proxy = config.proxyUrl.replace(/\/+$/, "")
   return `${proxy}/?url=${encodeURIComponent(targetUrl)}`
 }
 
-function proxyHeaders(config: LlmConfig): Record<string, string> {
+function proxyHeaders(config: ProxyConfig): Record<string, string> {
   if (!config.proxyEnabled || !config.proxyUrl || !config.proxyKey) return {}
   return { "X-Proxy-Key": config.proxyKey }
 }
@@ -24,7 +33,7 @@ async function safeFetch(url: string, options?: RequestInit): Promise<Response> 
     response = await fetch(url, options)
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error(
+      throw new NetworkError(
         "网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。",
       )
     }
@@ -35,6 +44,39 @@ async function safeFetch(url: string, options?: RequestInit): Promise<Response> 
     throw new Error(text || `请求失败：${response.status}`)
   }
   return response
+}
+
+async function fetchWithProxyFallback(
+  targetUrl: string,
+  options: RequestInit | undefined,
+  config: ProxyConfig,
+): Promise<Response> {
+  const proxyActive = config.proxyEnabled && !!config.proxyUrl
+  const proxiedUrl = buildProxyUrl(targetUrl, config)
+  const mergedOptions: RequestInit = {
+    ...options,
+    headers: { ...options?.headers, ...proxyHeaders(config) },
+  }
+
+  try {
+    return await safeFetch(proxiedUrl, mergedOptions)
+  } catch (error) {
+    if (!(error instanceof NetworkError) || !proxyActive) throw error
+    try {
+      return await safeFetch(targetUrl, options)
+    } catch (retryError) {
+      if (retryError instanceof NetworkError) throw error
+      throw retryError
+    }
+  }
+}
+
+export async function fetchViaProxy(
+  targetUrl: string,
+  config: ProxyConfig,
+  options?: RequestInit,
+): Promise<Response> {
+  return fetchWithProxyFallback(targetUrl, options, config)
 }
 
 const SYSTEM_PROMPT = `你是题库整理助手。请把用户提供的未整理题目转换为 PassLoop 标准 JSON。
@@ -89,15 +131,14 @@ async function streamOpenAiCompatible(
     temperature: 0.2,
     stream: true,
   }
-  const response = await safeFetch(buildProxyUrl(endpoint, config), {
+  const response = await fetchWithProxyFallback(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${config.apiKey}`,
-      ...proxyHeaders(config),
     },
     body: JSON.stringify(body),
-  })
+  }, config)
   return readSSEStream(
     response,
     (data) => {
@@ -126,17 +167,16 @@ async function streamGemini(
   const endpoint = baseEndpoint.includes("streamGenerateContent")
     ? baseEndpoint
     : baseEndpoint.replace(":generateContent", ":streamGenerateContent").replace(/\?/, "?alt=sse&")
-  const response = await safeFetch(buildProxyUrl(endpoint, config), {
+  const response = await fetchWithProxyFallback(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...proxyHeaders(config),
     },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
     }),
-  })
+  }, config)
   return readSSEStream(
     response,
     (data) => {
@@ -163,13 +203,12 @@ async function streamAnthropic(
   const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages"
   const model = config.model.trim() || "claude-sonnet-4-20250514"
   assertConfigValid(config.apiKey, model, endpoint)
-  const response = await safeFetch(buildProxyUrl(endpoint, config), {
+  const response = await fetchWithProxyFallback(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "x-api-key": config.apiKey,
       "anthropic-version": "2023-06-01",
-      ...proxyHeaders(config),
     },
     body: JSON.stringify({
       model,
@@ -178,7 +217,7 @@ async function streamAnthropic(
       stream: true,
       messages: [{ role: "user", content: prompt }],
     }),
-  })
+  }, config)
   return readSSEStream(
     response,
     (data) => {
@@ -315,9 +354,9 @@ export async function fetchModelList(config: LlmConfig): Promise<string[]> {
     const baseUrl = config.endpoint.trim()
       ? config.endpoint.trim().replace(/\/models.*$/, "")
       : "https://generativelanguage.googleapis.com/v1beta"
-    const response = await safeFetch(buildProxyUrl(`${baseUrl}/models?key=${config.apiKey}`, config), {
-      headers: { ...proxyHeaders(config) },
-    })
+    const response = await fetchWithProxyFallback(`${baseUrl}/models?key=${config.apiKey}`, {
+      headers: {},
+    }, config)
     const payload = await response.json()
     return (payload.models ?? [])
       .map((m: { name?: string }) => (m.name ?? "").replace(/^models\//, ""))
@@ -325,12 +364,11 @@ export async function fetchModelList(config: LlmConfig): Promise<string[]> {
   }
   const raw = config.endpoint.trim() || "https://api.openai.com/v1"
   const base = normalizeModelsEndpoint(raw)
-  const response = await safeFetch(buildProxyUrl(base, config), {
+  const response = await fetchWithProxyFallback(base, {
     headers: {
       Authorization: `Bearer ${config.apiKey}`,
-      ...proxyHeaders(config),
     },
-  })
+  }, config)
   const payload = await response.json()
   return (payload.data ?? [])
     .map((m: { id?: string }) => m.id ?? "")
@@ -369,37 +407,35 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
       config.endpoint.trim() ||
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey}`
     assertConfigValid(config.apiKey, model, endpoint)
-    await safeFetch(buildProxyUrl(endpoint, config), {
+    await fetchWithProxyFallback(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...proxyHeaders(config),
       },
       body: JSON.stringify({
         contents: [{ parts: [{ text: "hi" }] }],
         generationConfig: { maxOutputTokens: 10 },
       }),
-    })
+    }, config)
     return model
   }
   if (config.provider === "anthropic") {
     const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages"
     const model = config.model.trim() || "claude-sonnet-4-20250514"
     assertConfigValid(config.apiKey, model, endpoint)
-    await safeFetch(buildProxyUrl(endpoint, config), {
+    await fetchWithProxyFallback(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": config.apiKey,
         "anthropic-version": "2023-06-01",
-        ...proxyHeaders(config),
       },
       body: JSON.stringify({
         model,
         max_tokens: 10,
         messages: [{ role: "user", content: "hi" }],
       }),
-    })
+    }, config)
     return model
   }
   const endpoint = normalizeOpenAiChatEndpoint(
@@ -407,19 +443,18 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
   )
   const model = config.model.trim() || "gpt-4.1-mini"
   assertConfigValid(config.apiKey, model, endpoint)
-  await safeFetch(buildProxyUrl(endpoint, config), {
+  await fetchWithProxyFallback(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${config.apiKey}`,
-      ...proxyHeaders(config),
     },
     body: JSON.stringify({
       model,
       messages: [{ role: "user", content: "hi" }],
       max_tokens: 10,
     }),
-  })
+  }, config)
   return model
 }
 
