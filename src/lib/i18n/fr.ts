@@ -306,6 +306,7 @@ export const fr: Record<string, string> = {
   whatIsCorsProxy: "Qu'est-ce qu'un proxy CORS ?",
   proxyListTitle: "Liste des proxys",
   proxyListTest: "Tester",
+  proxyListTestAll: "Tout tester",
   proxyListTesting: "Test en cours...",
   proxyListAlive: "Disponible",
   proxyListDead: "Indisponible",

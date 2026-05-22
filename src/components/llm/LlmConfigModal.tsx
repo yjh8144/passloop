@@ -30,7 +30,7 @@ export function LlmConfigModal(props: {
   const [modelList, setModelList] = useState<string[]>([])
   const [fetchingModels, setFetchingModels] = useState(false)
   const [showProxyList, setShowProxyList] = useState(false)
-  const [proxyStatus, setProxyStatus] = useState<Record<string, "idle" | "testing" | "alive" | "dead">>({})
+  const [proxyStatus, setProxyStatus] = useState<Record<string, { status: "idle" | "testing" | "alive" | "dead"; latency?: number }>>({})
 
   useEffect(() => {
     if (!modelDropdownOpen) return
@@ -77,16 +77,22 @@ export function LlmConfigModal(props: {
   }
 
   const testProxy = async (url: string) => {
-    setProxyStatus((s) => ({ ...s, [url]: "testing" }))
+    setProxyStatus((s) => ({ ...s, [url]: { status: "testing" } }))
     try {
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 5000)
+      const start = performance.now()
       await fetch(url.replace(/\/+$/, "") + "/", { signal: controller.signal })
+      const latency = Math.round(performance.now() - start)
       clearTimeout(timer)
-      setProxyStatus((s) => ({ ...s, [url]: "alive" }))
+      setProxyStatus((s) => ({ ...s, [url]: { status: "alive", latency } }))
     } catch {
-      setProxyStatus((s) => ({ ...s, [url]: "dead" }))
+      setProxyStatus((s) => ({ ...s, [url]: { status: "dead" } }))
     }
+  }
+
+  const testAllProxies = () => {
+    PRESET_PROXIES.forEach((proxy) => testProxy(proxy.url))
   }
 
   if (!props.open) return null
@@ -482,13 +488,23 @@ export function LlmConfigModal(props: {
           >
             <div className="modal-header">
               <h2>{t("proxyListTitle")}</h2>
-              <button className="icon-button" onClick={() => setShowProxyList(false)}>
-                <X size={18} />
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button
+                  className="test-button"
+                  style={{ padding: "4px 10px", fontSize: 12 }}
+                  onClick={testAllProxies}
+                >
+                  {t("proxyListTestAll")}
+                </button>
+                <button className="icon-button" onClick={() => setShowProxyList(false)}>
+                  <X size={18} />
+                </button>
+              </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {PRESET_PROXIES.map((proxy) => {
-                const status = proxyStatus[proxy.url] ?? "idle"
+                const info = proxyStatus[proxy.url] ?? { status: "idle" }
+                const status = info.status
                 return (
                   <div
                     key={proxy.url}
@@ -522,7 +538,9 @@ export function LlmConfigModal(props: {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                       {status === "alive" && (
-                        <span style={{ fontSize: 12, color: "#22c55e" }}>{t("proxyListAlive")}</span>
+                        <span style={{ fontSize: 12, color: "#22c55e" }}>
+                          {t("proxyListAlive")}{info.latency != null ? ` ${info.latency}ms` : ""}
+                        </span>
                       )}
                       {status === "dead" && (
                         <span style={{ fontSize: 12, color: "#ef4444" }}>{t("proxyListDead")}</span>

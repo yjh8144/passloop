@@ -296,6 +296,7 @@ export const zh: Record<string, string> = {
   whatIsCorsProxy: "什么是 CORS 代理？",
   proxyListTitle: "代理列表",
   proxyListTest: "检测",
+  proxyListTestAll: "测试全部",
   proxyListTesting: "检测中...",
   proxyListAlive: "可用",
   proxyListDead: "不可用",

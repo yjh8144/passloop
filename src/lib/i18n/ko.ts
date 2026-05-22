@@ -296,6 +296,7 @@ export const ko: Record<string, string> = {
   whatIsCorsProxy: "CORS 프록시란?",
   proxyListTitle: "프록시 목록",
   proxyListTest: "테스트",
+  proxyListTestAll: "전체 테스트",
   proxyListTesting: "테스트 중...",
   proxyListAlive: "사용 가능",
   proxyListDead: "사용 불가",

@@ -296,6 +296,7 @@ export const ja: Record<string, string> = {
   whatIsCorsProxy: "CORS プロキシとは？",
   proxyListTitle: "プロキシ一覧",
   proxyListTest: "テスト",
+  proxyListTestAll: "すべてテスト",
   proxyListTesting: "テスト中...",
   proxyListAlive: "利用可能",
   proxyListDead: "利用不可",
