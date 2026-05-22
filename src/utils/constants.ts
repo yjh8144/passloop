@@ -42,6 +42,11 @@ export const PRESET_PROXIES: Array<{ name: string; url: string; key: string }> =
     url: "https://passloop.mtwsf.workers.dev",
     key: "d5c3cdc6210f8c9430c334c897bd883488f76d23b7d423d10e190a3d504e45d3",
   },
+  {
+    name: "Backup (Aliyun ECS)",
+    url: "http://121.40.35.52:9362",
+    key: "19b0451c81fb111df6704051c438c0d868bf661a27e816a287fe5aa28a1a2143",
+  },
 ]
 
 export const ANSWERS_SESSION_KEY = "passloop.session.answers"
