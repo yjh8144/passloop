@@ -162,6 +162,67 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     return typeof val === "string" && !val.trim()
   }, [])
 
+  const recordSubmission = useCallback(
+    (question: Question): boolean => {
+      const currentState = stateRef.current
+      const startedAt = startedAtRef.current[question.id] ?? Date.now()
+      const correct = evaluateQuestion(question, currentState.answers)
+      const inWrongMode = pageRef.current === "wrong"
+      debugLog("Question submitted", {
+        questionId: question.id,
+        title: question.title,
+        correct,
+        elapsedMs: Date.now() - startedAt,
+        answer: currentState.answers[question.id],
+      })
+      dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct, inWrongMode })
+      updateData((current) => ({
+        ...current,
+        attempts: [
+          ...current.attempts,
+          {
+            id: createId(),
+            listId: activeList.id,
+            questionId: question.id,
+            answer:
+              currentState.answers[question.id] ??
+              collectCompositeAnswer(question, currentState.answers),
+            correct,
+            elapsedMs: Math.max(1000, Date.now() - startedAt),
+            submittedAt: new Date().toISOString(),
+          },
+        ],
+      }))
+      return correct
+    },
+    [activeList.id, updateData],
+  )
+
+  const autoNavigateAfterSubmit = useCallback(
+    (question: Question) => {
+      if (!data.settings.autoNext) return
+      const questions = pageRef.current === "wrong" ? wrongQuestions : displayedQuestions
+      if (data.settings.viewMode === "single") {
+        const questionCount = questions.length
+        if (stateRef.current.currentIndex < questionCount - 1) {
+          window.setTimeout(() => {
+            const idx = stateRef.current.currentIndex
+            dispatch({ type: "NAVIGATE", index: Math.min(idx + 1, questionCount - 1) })
+          }, 500)
+        }
+      } else if (data.settings.viewMode === "paper") {
+        const questionIndex = questions.findIndex((q) => q.id === question.id)
+        if (questionIndex >= 0 && questionIndex < questions.length - 1) {
+          window.setTimeout(() => {
+            document.getElementById(`question-${questionIndex + 1}`)
+              ?.scrollIntoView({ behavior: "smooth", block: "center" })
+          }, 500)
+        }
+      }
+    },
+    [data.settings.autoNext, data.settings.viewMode, displayedQuestions, wrongQuestions],
+  )
+
   const submitQuestion = useCallback(
     (question: Question) => {
       const currentState = stateRef.current
@@ -172,62 +233,13 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         return
       }
       const doSubmit = () => {
-        const startedAt = startedAtRef.current[question.id] ?? Date.now()
-        const correct = evaluateQuestion(question, currentState.answers)
-        const inWrongMode = pageRef.current === "wrong"
-        debugLog("Question submitted", {
-          questionId: question.id,
-          title: question.title,
-          correct,
-          elapsedMs: Date.now() - startedAt,
-          answer: currentState.answers[question.id],
-        })
-        dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct, inWrongMode })
-        updateData((current) => ({
-          ...current,
-          attempts: [
-            ...current.attempts,
-            {
-              id: createId(),
-              listId: activeList.id,
-              questionId: question.id,
-              answer:
-                currentState.answers[question.id] ??
-                collectCompositeAnswer(question, currentState.answers),
-              correct,
-              elapsedMs: Math.max(1000, Date.now() - startedAt),
-              submittedAt: new Date().toISOString(),
-            },
-          ],
-        }))
+        const correct = recordSubmission(question)
         if (data.settings.revealMode === "end") {
           pushToast("info", t("submittedMsg"))
         } else {
           pushToast(correct ? "success" : "info", correct ? t("answerCorrect") : t("recordedAsWrong"))
         }
-        if (data.settings.autoNext) {
-          const questions = pageRef.current === "wrong" ? wrongQuestions : displayedQuestions
-          if (data.settings.viewMode === "single") {
-            const questionCount = questions.length
-            if (currentState.currentIndex < questionCount - 1) {
-              window.setTimeout(
-                () => {
-                  const idx = stateRef.current.currentIndex
-                  dispatch({ type: "NAVIGATE", index: Math.min(idx + 1, questionCount - 1) })
-                },
-                500,
-              )
-            }
-          } else if (data.settings.viewMode === "paper") {
-            const questionIndex = questions.findIndex((q) => q.id === question.id)
-            if (questionIndex >= 0 && questionIndex < questions.length - 1) {
-              window.setTimeout(() => {
-                const el = document.getElementById(`question-${questionIndex + 1}`)
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
-              }, 500)
-            }
-          }
-        }
+        autoNavigateAfterSubmit(question)
       }
       if (isAnswerEmpty(question)) {
         const questions = pageRef.current === "wrong" ? wrongQuestions : displayedQuestions
@@ -237,7 +249,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         doSubmit()
       }
     },
-    [t, activeList, displayedQuestions, wrongQuestions, data.settings, pushToast, showConfirm, updateData, isAnswerEmpty],
+    [t, displayedQuestions, wrongQuestions, data.settings.revealMode, pushToast, showConfirm, isAnswerEmpty, recordSubmission, autoNavigateAfterSubmit],
   )
 
   const submitAll = useCallback(() => {
