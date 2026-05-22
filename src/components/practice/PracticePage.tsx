@@ -1,91 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 import type { MutableRefObject } from "react"
-import {
-  BarChart3,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Plus,
-  Shuffle,
-  Undo2,
-  X,
-} from "lucide-react"
+import { BarChart3, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import type { AppData, Question } from "../../lib/types"
 import { getListStats } from "../../lib/question"
 import { EmptyState } from "../ui/EmptyState"
-import { StatsPanel } from "../practice/StatsPanel"
-import { WrongSessionPanel } from "../practice/WrongSessionPanel"
-import type { WrongSession } from "../practice/WrongSessionPanel"
-import { Navigator } from "../practice/Navigator"
-import { QuestionCard } from "../practice/QuestionCard"
+import type { WrongSession } from "./WrongSessionPanel"
+import { Navigator } from "./Navigator"
+import { QuestionCard } from "./QuestionCard"
+import { InspectorContent } from "./InspectorContent"
+import { CompletionDialog } from "./CompletionDialog"
 import type { AnswerMap, Page, ResultMap } from "../../hooks/types"
 import { useT } from "../../contexts"
-
-function InspectorContent(props: {
-  questions: Question[]
-  currentIndex: number
-  setCurrentIndex: (value: number | ((value: number) => number)) => void
-  results: ResultMap
-  stats: ReturnType<typeof getListStats>
-  settings: AppData["settings"]
-  mode: Page
-  wrongSession: WrongSession | null
-  allSubmitted: boolean
-  correctCount: number
-  wrongCount: number
-  navigatorClassName?: string
-  onClearListAttempts: () => void
-  onRedoWrong: () => void
-  onExportWrong: () => void
-  onCreateWrongList: () => void
-}) {
-  const t = useT()
-  const navigator = (
-    <Navigator
-      questions={props.questions}
-      currentIndex={props.currentIndex}
-      results={props.results}
-      setCurrentIndex={props.setCurrentIndex}
-      viewMode={props.settings.viewMode}
-      revealMode={props.settings.revealMode}
-      allSubmitted={props.allSubmitted}
-    />
-  )
-  return (
-    <>
-      {props.allSubmitted && (
-        <section className="inspector-panel completion-actions-panel">
-          <h3>{t("allComplete")}</h3>
-          <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 10px" }}>
-            {t("completionSummary", props.questions.length, props.correctCount, props.wrongCount)}
-          </p>
-          <div className="completion-buttons">
-            <button className="btn-danger" onClick={props.onClearListAttempts}>
-              <Undo2 size={16} /> {t("redoAll")}
-            </button>
-            <button onClick={props.onRedoWrong}>
-              <Shuffle size={16} /> {t("redoWrongBtn")}
-            </button>
-            <button onClick={props.onExportWrong}>
-              <Download size={16} /> {t("exportWrongBtn")}
-            </button>
-            <button onClick={props.onCreateWrongList}>
-              <Plus size={16} /> {t("createWrongList")}
-            </button>
-          </div>
-        </section>
-      )}
-      <StatsPanel stats={props.stats} revealMode={props.settings.revealMode} />
-      {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
-      {props.navigatorClassName ? (
-        <div className={props.navigatorClassName}>{navigator}</div>
-      ) : (
-        navigator
-      )}
-    </>
-  )
-}
 
 export function PracticePage(props: {
   mode: Page
@@ -190,7 +115,6 @@ export function PracticePage(props: {
             hideSubmit={props.settings.submitMode === "paper"}
             revealMode={props.settings.revealMode}
             allSubmitted={allSubmitted}
-
           />
         ))}
         {props.settings.practiceMode !== "memorize" &&
@@ -351,76 +275,16 @@ export function PracticePage(props: {
         </div>
       </div>
 
-      {showCompletionDialog && (
-        <div className="modal-overlay" onClick={() => setShowCompletionDialog(false)}>
-          <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{t("completionDialogTitle")}</h2>
-              <button className="icon-button" onClick={() => setShowCompletionDialog(false)}>
-                <X size={18} />
-              </button>
-            </div>
-            <div className="completion-stats">
-              <div className="completion-stat-row">
-                <span>{t("statTotal")}</span>
-                <strong>{props.questions.length}</strong>
-              </div>
-              <div className="completion-stat-row">
-                <span>{t("statCorrect")}</span>
-                <strong className="text-correct">{correctCount}</strong>
-              </div>
-              <div className="completion-stat-row">
-                <span>{t("statWrong")}</span>
-                <strong className="text-wrong">{wrongCount}</strong>
-              </div>
-              <div className="completion-stat-row">
-                <span>{t("statAccuracy")}</span>
-                <strong>
-                  {props.questions.length
-                    ? Math.round((correctCount / props.questions.length) * 100)
-                    : 0}
-                  %
-                </strong>
-              </div>
-            </div>
-            <div className="completion-buttons">
-              <button
-                className="btn-danger"
-                onClick={() => {
-                  setShowCompletionDialog(false)
-                  props.onClearListAttempts()
-                }}
-              >
-                <Undo2 size={16} /> {t("redoAll")}
-              </button>
-              <button
-                onClick={() => {
-                  setShowCompletionDialog(false)
-                  props.onRedoWrong()
-                }}
-              >
-                <Shuffle size={16} /> {t("redoWrongBtn")}
-              </button>
-              <button
-                onClick={() => {
-                  setShowCompletionDialog(false)
-                  props.onExportWrong()
-                }}
-              >
-                <Download size={16} /> {t("exportWrongBtn")}
-              </button>
-              <button
-                onClick={() => {
-                  setShowCompletionDialog(false)
-                  props.onCreateWrongList()
-                }}
-              >
-                <Plus size={16} /> {t("createWrongList")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CompletionDialog
+        open={showCompletionDialog}
+        onClose={() => setShowCompletionDialog(false)}
+        questions={props.questions}
+        results={props.results}
+        onClearListAttempts={props.onClearListAttempts}
+        onRedoWrong={props.onRedoWrong}
+        onExportWrong={props.onExportWrong}
+        onCreateWrongList={props.onCreateWrongList}
+      />
     </div>
   )
 }
