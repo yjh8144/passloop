@@ -18,7 +18,9 @@ export interface PracticeState {
 export type PracticeAction =
   | { type: "SET_ANSWER"; questionId: string; value: string | string[] }
   | { type: "SET_ANSWERS"; answers: AnswerMap }
+  | { type: "SET_ANSWERS_FN"; updater: (current: AnswerMap) => AnswerMap }
   | { type: "NAVIGATE"; index: number }
+  | { type: "NAVIGATE_FN"; updater: (current: number) => number }
   | { type: "SUBMIT_QUESTION"; questionId: string; correct: boolean; inWrongMode: boolean }
   | {
       type: "SUBMIT_ALL"
@@ -41,8 +43,14 @@ export function practiceReducer(state: PracticeState, action: PracticeAction): P
     case "SET_ANSWERS":
       return { ...state, answers: action.answers }
 
+    case "SET_ANSWERS_FN":
+      return { ...state, answers: action.updater(state.answers) }
+
     case "NAVIGATE":
       return { ...state, currentIndex: action.index }
+
+    case "NAVIGATE_FN":
+      return { ...state, currentIndex: action.updater(state.currentIndex) }
 
     case "SUBMIT_QUESTION": {
       const nextResults = { ...state.results, [action.questionId]: action.correct }

@@ -14,7 +14,6 @@ interface NavigationContextValue {
   desktopSidebarCollapsed: boolean
   setDesktopSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>
   llmUnsavedRef: MutableRefObject<boolean>
-  registerWrongStart: (fn: () => void) => void
 }
 
 const NavigationContext = createContext<NavigationContextValue | null>(null)
@@ -26,11 +25,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [mobileSidebarCollapsed, setMobileSidebarCollapsed] = useState(false)
   const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(false)
   const llmUnsavedRef = useRef(false)
-  const wrongStartRef = useRef<(() => void) | null>(null)
-
-  const registerWrongStart = useCallback((fn: () => void) => {
-    wrongStartRef.current = fn
-  }, [])
 
   const changePage = useCallback(
     (nextPage: Page) => {
@@ -38,16 +32,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       if (page === "llm" && nextPage !== "llm" && llmUnsavedRef.current) {
         showConfirm(t("confirmLeaveLlm"), () => {
           llmUnsavedRef.current = false
-          if (nextPage === "wrong") {
-            wrongStartRef.current?.()
-          } else {
-            setPage(nextPage)
-          }
+          setPage(nextPage)
         })
-        return
-      }
-      if (nextPage === "wrong") {
-        wrongStartRef.current?.()
         return
       }
       setPage(nextPage)
@@ -65,9 +51,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       desktopSidebarCollapsed,
       setDesktopSidebarCollapsed,
       llmUnsavedRef,
-      registerWrongStart,
     }),
-    [page, changePage, mobileSidebarCollapsed, desktopSidebarCollapsed, registerWrongStart],
+    [page, changePage, mobileSidebarCollapsed, desktopSidebarCollapsed],
   )
 
   return <NavigationContext.Provider value={value}>{children}</NavigationContext.Provider>

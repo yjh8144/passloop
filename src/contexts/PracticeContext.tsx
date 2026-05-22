@@ -7,16 +7,12 @@ import { usePushToast } from "./ToastContext"
 import { useT } from "./I18nContext"
 import { practiceReducer } from "../hooks/practiceReducer"
 import type { PracticeState, WrongSession } from "../hooks/practiceReducer"
+import { useSessionPersistence } from "../hooks/useSessionPersistence"
+import { useWrongPractice } from "../hooks/useWrongPractice"
 import { evaluateQuestion, collectCompositeAnswer } from "../utils/evaluate"
-import { createId, normalizeImportedList } from "../lib/question"
-import { downloadJson } from "../lib/storage"
+import { createId } from "../lib/question"
 import { debugLog } from "../lib/debug"
-import {
-  loadSessionAnswers,
-  saveSessionAnswers,
-  loadSessionIndex,
-  saveSessionIndex,
-} from "../utils/session"
+import { loadSessionAnswers, loadSessionIndex } from "../utils/session"
 import type { AppData, Question } from "../lib/types"
 import type { AnswerMap, ResultMap, SetState } from "../hooks/types"
 
@@ -53,7 +49,7 @@ function createInitialState(): PracticeState {
 
 export function PracticeProvider({ children }: { children: ReactNode }) {
   const t = useT()
-  const { page, setPage, registerWrongStart } = useNavigation()
+  const { page, setPage } = useNavigation()
   const {
     activeList,
     displayedQuestions,
@@ -67,16 +63,11 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   const [state, dispatch] = useReducer(practiceReducer, undefined, createInitialState)
   const startedAtRef = useRef<Record<string, number>>({})
-  const stateRef = useRef(state)
-  const pageRef = useRef(page)
-  useEffect(() => { stateRef.current = state })
-  useEffect(() => { pageRef.current = page })
 
-  // Persistence
-  useEffect(() => saveSessionAnswers(state.answers), [state.answers])
-  useEffect(() => saveSessionIndex(state.currentIndex), [state.currentIndex])
+  // --- Persistence ---
+  useSessionPersistence(state.answers, state.currentIndex)
 
-  // Clamp index when question count changes
+  // --- Clamp index when question count changes ---
   const prevLength = useRef(displayedQuestions.length)
   useEffect(() => {
     if (displayedQuestions.length !== prevLength.current) {
@@ -85,7 +76,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     }
   }, [displayedQuestions.length])
 
-  // List reset signal from AppDataContext
+  // --- List reset signal from AppDataContext ---
   const prevResetVersion = useRef(listResetSignal.version)
   useEffect(() => {
     if (listResetSignal.version === prevResetVersion.current) return
@@ -97,53 +88,73 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     } else {
       dispatch({ type: "LIST_RESET_SELECTIVE", questionIds: listResetSignal.questionIds })
       for (const id of listResetSignal.questionIds) delete startedAtRef.current[id]
-      if (pageRef.current === "wrong") setPage("practice")
+      if (page === "wrong") setPage("practice")
     }
-  }, [listResetSignal, setPage])
+  }, [listResetSignal, setPage, page])
 
-  // Wrong practice timer
-  useEffect(() => {
-    if (page !== "wrong" || !state.wrongSession?.id) return
-    const startedAt = state.wrongSession.startedAt
-    const intervalId = window.setInterval(() => {
-      dispatch({
-        type: "TICK_TIMER",
-        elapsedSeconds: Math.max(0, Math.floor((Date.now() - startedAt) / 1000)),
-      })
-    }, 1000)
-    return () => window.clearInterval(intervalId)
-  }, [page, state.wrongSession?.id, state.wrongSession?.startedAt])
-
-  // Restart wrong practice when activeList changes while on wrong page
-  const prevActiveListId = useRef(activeList.id)
-  const startWrongRef = useRef<() => boolean>(() => false)
-  useEffect(() => {
-    if (activeList.id === prevActiveListId.current) {
-      prevActiveListId.current = activeList.id
-      return
-    }
-    prevActiveListId.current = activeList.id
-    if (pageRef.current === "wrong") {
-      startWrongRef.current()
-    }
-  }, [activeList.id])
-
-  // --- Action creators ---
-
+  // --- Wrong practice ---
   const practiceQuestions = page === "wrong" ? wrongQuestions : displayedQuestions
 
+  const { startWrongPractice, resetWrongPractice, exportWrongList, createWrongList } =
+    useWrongPractice({
+      dispatch,
+      wrongQuestions,
+      wrongSession: state.wrongSession,
+      page,
+      setPage,
+      activeList,
+      updateData,
+      pushToast,
+      startedAtRef,
+      t,
+    })
+
+  // When page transitions to "wrong" via NavigationContext (e.g. changePage("wrong")),
+  // initialize wrong practice if not already active.
+  // If start fails (no wrong questions), revert to the previous page.
+  const prevPageRef = useRef(page)
+  useEffect(() => {
+    if (page === "wrong" && prevPageRef.current !== "wrong" && !state.wrongSession) {
+      if (!wrongQuestions.length) {
+        pushToast("info", t("noWrongQuestions"))
+        setPage(prevPageRef.current)
+        return
+      }
+      const questionIds = wrongQuestions.flatMap((q) => [q.id, ...q.subQuestions.map((sq) => sq.id)])
+      debugLog("Wrong practice started (nav)", {
+        questionCount: wrongQuestions.length,
+        listId: activeList.id,
+      })
+      dispatch({
+        type: "START_WRONG_PRACTICE",
+        sessionId: createId(),
+        startedAt: Date.now(),
+        questionIds,
+      })
+      for (const id of questionIds) delete startedAtRef.current[id]
+    }
+    prevPageRef.current = page
+  }, [page, state.wrongSession, wrongQuestions, activeList.id, pushToast, t, setPage])
+
+  // --- State setters (using dispatch to avoid stale closures) ---
   const setCurrentIndex: SetState<number> = useCallback((v) => {
-    const next = typeof v === "function" ? v(stateRef.current.currentIndex) : v
-    dispatch({ type: "NAVIGATE", index: next })
+    if (typeof v === "function") {
+      dispatch({ type: "NAVIGATE_FN", updater: v })
+    } else {
+      dispatch({ type: "NAVIGATE", index: v })
+    }
   }, [])
 
   const setAnswers: SetState<AnswerMap> = useCallback((v) => {
-    const next = typeof v === "function" ? v(stateRef.current.answers) : v
-    dispatch({ type: "SET_ANSWERS", answers: next })
+    if (typeof v === "function") {
+      dispatch({ type: "SET_ANSWERS_FN", updater: v })
+    } else {
+      dispatch({ type: "SET_ANSWERS", answers: v })
+    }
   }, [])
 
-  const isAnswerEmpty = useCallback((question: Question): boolean => {
-    const answers = stateRef.current.answers
+  // --- Submission logic ---
+  const isAnswerEmpty = useCallback((question: Question, answers: AnswerMap): boolean => {
     if (question.type === "composite") {
       if (!question.subQuestions.length) {
         const val = answers[question.id]
@@ -162,105 +173,87 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     return typeof val === "string" && !val.trim()
   }, [])
 
-  const recordSubmission = useCallback(
-    (question: Question): boolean => {
-      const currentState = stateRef.current
-      const startedAt = startedAtRef.current[question.id] ?? Date.now()
-      const correct = evaluateQuestion(question, currentState.answers)
-      const inWrongMode = pageRef.current === "wrong"
-      debugLog("Question submitted", {
-        questionId: question.id,
-        title: question.title,
-        correct,
-        elapsedMs: Date.now() - startedAt,
-        answer: currentState.answers[question.id],
-      })
-      dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct, inWrongMode })
-      updateData((current) => ({
-        ...current,
-        attempts: [
-          ...current.attempts,
-          {
-            id: createId(),
-            listId: activeList.id,
-            questionId: question.id,
-            answer:
-              currentState.answers[question.id] ??
-              collectCompositeAnswer(question, currentState.answers),
-            correct,
-            elapsedMs: Math.max(1000, Date.now() - startedAt),
-            submittedAt: new Date().toISOString(),
-          },
-        ],
-      }))
-      return correct
-    },
-    [activeList.id, updateData],
-  )
-
-  const autoNavigateAfterSubmit = useCallback(
-    (question: Question) => {
-      if (!data.settings.autoNext) return
-      const questions = pageRef.current === "wrong" ? wrongQuestions : displayedQuestions
-      if (data.settings.viewMode === "single") {
-        const questionCount = questions.length
-        if (stateRef.current.currentIndex < questionCount - 1) {
-          window.setTimeout(() => {
-            const idx = stateRef.current.currentIndex
-            dispatch({ type: "NAVIGATE", index: Math.min(idx + 1, questionCount - 1) })
-          }, 500)
-        }
-      } else if (data.settings.viewMode === "paper") {
-        const questionIndex = questions.findIndex((q) => q.id === question.id)
-        if (questionIndex >= 0 && questionIndex < questions.length - 1) {
-          window.setTimeout(() => {
-            document.getElementById(`question-${questionIndex + 1}`)
-              ?.scrollIntoView({ behavior: "smooth", block: "center" })
-          }, 500)
-        }
-      }
-    },
-    [data.settings.autoNext, data.settings.viewMode, displayedQuestions, wrongQuestions],
-  )
-
   const submitQuestion = useCallback(
     (question: Question) => {
-      const currentState = stateRef.current
-      if (question.id in currentState.results) {
-        const questions = pageRef.current === "wrong" ? wrongQuestions : displayedQuestions
-        const allDone = questions.length > 0 && questions.every((q) => q.id in currentState.results)
+      if (question.id in state.results) {
+        const allDone = practiceQuestions.length > 0 && practiceQuestions.every((q) => q.id in state.results)
         if (allDone) pushToast("info", t("allQuestionsFinished"))
         return
       }
       const doSubmit = () => {
-        const correct = recordSubmission(question)
+        const startedAt = startedAtRef.current[question.id] ?? Date.now()
+        const correct = evaluateQuestion(question, state.answers)
+        const inWrongMode = page === "wrong"
+        debugLog("Question submitted", {
+          questionId: question.id,
+          title: question.title,
+          correct,
+          elapsedMs: Date.now() - startedAt,
+          answer: state.answers[question.id],
+        })
+        dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct, inWrongMode })
+        updateData((current) => ({
+          ...current,
+          attempts: [
+            ...current.attempts,
+            {
+              id: createId(),
+              listId: activeList.id,
+              questionId: question.id,
+              answer:
+                state.answers[question.id] ??
+                collectCompositeAnswer(question, state.answers),
+              correct,
+              elapsedMs: Math.max(1000, Date.now() - startedAt),
+              submittedAt: new Date().toISOString(),
+            },
+          ],
+        }))
         if (data.settings.revealMode === "end") {
           pushToast("info", t("submittedMsg"))
         } else {
           pushToast(correct ? "success" : "info", correct ? t("answerCorrect") : t("recordedAsWrong"))
         }
-        autoNavigateAfterSubmit(question)
+        // Auto-navigate after submit
+        if (data.settings.autoNext) {
+          if (data.settings.viewMode === "single") {
+            const questionCount = practiceQuestions.length
+            if (state.currentIndex < questionCount - 1) {
+              window.setTimeout(() => {
+                dispatch({
+                  type: "NAVIGATE_FN",
+                  updater: (idx) => Math.min(idx + 1, questionCount - 1),
+                })
+              }, 500)
+            }
+          } else if (data.settings.viewMode === "paper") {
+            const questionIndex = practiceQuestions.findIndex((q) => q.id === question.id)
+            if (questionIndex >= 0 && questionIndex < practiceQuestions.length - 1) {
+              window.setTimeout(() => {
+                document.getElementById(`question-${questionIndex + 1}`)
+                  ?.scrollIntoView({ behavior: "smooth", block: "center" })
+              }, 500)
+            }
+          }
+        }
       }
-      if (isAnswerEmpty(question)) {
-        const questions = pageRef.current === "wrong" ? wrongQuestions : displayedQuestions
-        const idx = questions.findIndex((q) => q.id === question.id)
+      if (isAnswerEmpty(question, state.answers)) {
+        const idx = practiceQuestions.findIndex((q) => q.id === question.id)
         showConfirm(t("confirmEmptySubmit", idx + 1), doSubmit)
       } else {
         doSubmit()
       }
     },
-    [t, displayedQuestions, wrongQuestions, data.settings.revealMode, pushToast, showConfirm, isAnswerEmpty, recordSubmission, autoNavigateAfterSubmit],
+    [state.answers, state.results, state.currentIndex, practiceQuestions, page, activeList.id, data.settings, pushToast, showConfirm, t, updateData, isAnswerEmpty],
   )
 
   const submitAll = useCallback(() => {
-    const currentState = stateRef.current
-    const questions = pageRef.current === "wrong" ? wrongQuestions : displayedQuestions
-    const unsubmitted = questions.filter((q) => !(q.id in currentState.results))
+    const unsubmitted = practiceQuestions.filter((q) => !(q.id in state.results))
     if (!unsubmitted.length) return
-    const emptyQuestions = unsubmitted.filter((q) => isAnswerEmpty(q))
+    const emptyQuestions = unsubmitted.filter((q) => isAnswerEmpty(q, state.answers))
     const doSubmitAll = () => {
       debugLog("Submit all", {
-        totalQuestions: questions.length,
+        totalQuestions: practiceQuestions.length,
         unsubmittedCount: unsubmitted.length,
       })
       let correctCount = 0
@@ -268,7 +261,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       const newAttempts: AppData["attempts"] = []
       for (const question of unsubmitted) {
         const startedAt = startedAtRef.current[question.id] ?? Date.now()
-        const correct = evaluateQuestion(question, currentState.answers)
+        const correct = evaluateQuestion(question, state.answers)
         newResults[question.id] = correct
         if (correct) correctCount++
         newAttempts.push({
@@ -276,14 +269,14 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           listId: activeList.id,
           questionId: question.id,
           answer:
-            currentState.answers[question.id] ??
-            collectCompositeAnswer(question, currentState.answers),
+            state.answers[question.id] ??
+            collectCompositeAnswer(question, state.answers),
           correct,
           elapsedMs: Math.max(1000, Date.now() - startedAt),
           submittedAt: new Date().toISOString(),
         })
       }
-      const inWrongMode = pageRef.current === "wrong"
+      const inWrongMode = page === "wrong"
       dispatch({
         type: "SUBMIT_ALL",
         results: newResults,
@@ -298,88 +291,17 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       pushToast("success", t("submitAllResult", unsubmitted.length, correctCount))
     }
     if (emptyQuestions.length) {
-      const nums = emptyQuestions.map((q) => questions.indexOf(q) + 1).join(", ")
+      const nums = emptyQuestions.map((q) => practiceQuestions.indexOf(q) + 1).join(", ")
       showConfirm(t("confirmEmptySubmitAll", nums), doSubmitAll)
     } else {
       doSubmitAll()
     }
-  }, [t, activeList, displayedQuestions, wrongQuestions, pushToast, showConfirm, updateData, isAnswerEmpty])
-
-  function startWrongPracticeInner(): boolean {
-    if (!wrongQuestions.length) {
-      pushToast("info", t("noWrongQuestions"))
-      return false
-    }
-    debugLog("Wrong practice started", {
-      questionCount: wrongQuestions.length,
-      listId: activeList.id,
-    })
-    const questionIds = wrongQuestions.flatMap((q) => [q.id, ...q.subQuestions.map((sq) => sq.id)])
-    dispatch({
-      type: "START_WRONG_PRACTICE",
-      sessionId: createId(),
-      startedAt: Date.now(),
-      questionIds,
-    })
-    for (const id of questionIds) delete startedAtRef.current[id]
-    setPage("wrong")
-    return true
-  }
-
-  useEffect(() => { startWrongRef.current = startWrongPracticeInner })
-
-  const startWrongPractice = useCallback((): boolean => {
-    return startWrongRef.current()
-  }, [])
-
-  const resetWrongPractice = useCallback(() => {
-    startWrongRef.current()
-  }, [])
-
-  const exportWrongList = useCallback(() => {
-    if (!wrongQuestions.length) {
-      pushToast("info", t("noWrongQuestions"))
-      return
-    }
-    debugLog("Export wrong questions", { count: wrongQuestions.length, listName: activeList.name })
-    const list = normalizeImportedList({
-      name: t("wrongListSuffix", activeList.name),
-      description: t("wrongListExportDesc"),
-      questions: wrongQuestions,
-    })
-    downloadJson(`${list.name}.json`, list)
-  }, [wrongQuestions, activeList.name, pushToast, t])
-
-  const createWrongList = useCallback(() => {
-    if (!wrongQuestions.length) {
-      pushToast("info", t("noWrongQuestions"))
-      return
-    }
-    const newList = {
-      id: createId(),
-      name: t("wrongListSuffix", activeList.name),
-      description: t("wrongListCreateDesc"),
-      questions: wrongQuestions.map((q) => ({ ...q, id: createId() })),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    updateData((current) => ({
-      ...current,
-      lists: [...current.lists, newList],
-      activeListId: newList.id,
-    }))
-    pushToast("success", t("wrongListCreated", newList.name, wrongQuestions.length))
-  }, [wrongQuestions, activeList.name, pushToast, t, updateData])
+  }, [state.answers, state.results, practiceQuestions, page, activeList.id, pushToast, showConfirm, t, updateData, isAnswerEmpty])
 
   const resetAll = useCallback(() => {
     dispatch({ type: "LIST_RESET_FULL" })
     startedAtRef.current = {}
   }, [])
-
-  // Register wrong practice start with NavigationContext
-  useEffect(() => {
-    registerWrongStart(() => startWrongRef.current())
-  })
 
   const value = useMemo(
     () => ({
