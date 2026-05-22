@@ -1,13 +1,8 @@
 import { useT } from "../../contexts"
 import { formatDuration } from "../../utils/evaluate"
+import type { WrongSession } from "../../hooks/practiceReducer"
 
-export type WrongSession = {
-  id: string
-  startedAt: number
-  elapsedSeconds: number
-  submitted: number
-  correct: number
-}
+export type { WrongSession }
 
 export function WrongSessionPanel(props: { session: WrongSession | null }) {
   const t = useT()

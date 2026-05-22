@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import type { ReactNode } from "react"
 import type { AppData, Question, QuestionList } from "../lib/types"
 import { getListStats, getTypeLabels, sortQuestions } from "../lib/question"
@@ -10,7 +10,12 @@ import { useT } from "./I18nContext"
 
 type UpdateData = (recipe: (draft: AppData) => AppData) => void
 type UpdateActiveList = (recipe: (list: QuestionList) => QuestionList) => void
-type ListResetCallback = (questions: Question[], mode: "full" | "selective") => void
+
+export interface ListResetSignal {
+  version: number
+  questionIds: string[]
+  mode: "full" | "selective"
+}
 
 interface AppDataContextValue {
   data: AppData
@@ -28,7 +33,7 @@ interface AppDataContextValue {
   deleteList: (id: string) => void
   clearActiveListAttempts: () => void
   addImportedList: (list: QuestionList) => void
-  registerListResetCallback: (cb: ListResetCallback) => void
+  listResetSignal: ListResetSignal
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
@@ -46,11 +51,11 @@ export function AppDataProvider({
   const { showConfirm, showPrompt } = useDialog()
   const pushToast = usePushToast()
   const [query, setQuery] = useState("")
-  const listResetRef = useRef<ListResetCallback | null>(null)
-
-  const registerListResetCallback = useCallback((cb: ListResetCallback) => {
-    listResetRef.current = cb
-  }, [])
+  const [listResetSignal, setListResetSignal] = useState<ListResetSignal>({
+    version: 0,
+    questionIds: [],
+    mode: "full",
+  })
 
   const updateData: UpdateData = useCallback(
     (recipe) => setData((current) => recipe(current)),
@@ -145,11 +150,11 @@ export function AppDataProvider({
             attempts: current.attempts.filter((attempt) => attempt.listId !== id),
           }
         })
-        listResetRef.current?.(activeList.questions, "full")
+        setListResetSignal((prev) => ({ version: prev.version + 1, questionIds: [], mode: "full" }))
         pushToast("success", t("listDeleted"))
       })
     },
-    [showConfirm, t, updateData, activeList.questions, pushToast],
+    [showConfirm, t, updateData, pushToast],
   )
 
   const clearActiveListAttempts = useCallback(() => {
@@ -159,7 +164,15 @@ export function AppDataProvider({
         ...current,
         attempts: current.attempts.filter((attempt) => attempt.listId !== activeList.id),
       }))
-      listResetRef.current?.(activeList.questions, "selective")
+      const questionIds = activeList.questions.flatMap((q) => [
+        q.id,
+        ...q.subQuestions.map((sq) => sq.id),
+      ])
+      setListResetSignal((prev) => ({
+        version: prev.version + 1,
+        questionIds,
+        mode: "selective",
+      }))
       pushToast("success", t("attemptsCleared"))
     })
   }, [showConfirm, t, activeList, updateData, pushToast])
@@ -194,7 +207,7 @@ export function AppDataProvider({
       deleteList,
       clearActiveListAttempts,
       addImportedList,
-      registerListResetCallback,
+      listResetSignal,
     }),
     [
       data,
@@ -211,7 +224,7 @@ export function AppDataProvider({
       deleteList,
       clearActiveListAttempts,
       addImportedList,
-      registerListResetCallback,
+      listResetSignal,
     ],
   )
 
