@@ -270,6 +270,7 @@ export function LlmConfigModal(props: {
                 type="checkbox"
                 checked={config.proxyEnabled}
                 onChange={(event) => setConfig({ ...config, proxyEnabled: event.target.checked })}
+                style={{ width: "auto", height: "auto" }}
               />
               <span>{t("proxyToggleLabel")}</span>
             </label>
