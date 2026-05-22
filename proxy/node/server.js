@@ -1,7 +1,8 @@
 import express from 'express';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const portArg = process.argv.find(arg => arg.startsWith('--port='));
+const PORT = portArg ? portArg.split('=')[1] : (process.env.PORT || 3001);
 const AUTH_SECRET = process.env.AUTH_SECRET;
 
 if (!AUTH_SECRET) {
