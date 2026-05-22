@@ -288,6 +288,8 @@ export const zh: Record<string, string> = {
   modelLabel: "模型",
   apiUrlLabel: "API 地址",
   apiKeyLabel: "API Key",
+  proxyToggleLabel: "启用 CORS 代理",
+  proxyDisabledHint: "已关闭代理，将直接请求 API 地址",
   proxyUrlLabel: "CORS 代理地址",
   proxyKeyLabel: "代理密钥",
   proxyKeyPlaceholder: "留空则不发送 X-Proxy-Key",

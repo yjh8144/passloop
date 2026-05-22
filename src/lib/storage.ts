@@ -65,6 +65,8 @@ export function loadLlmConfig(fallback: LlmConfig): LlmConfig {
       model: typeof source.model === "string" ? source.model : fallback.model,
       endpoint: typeof source.endpoint === "string" ? source.endpoint : fallback.endpoint,
       apiKey: typeof source.apiKey === "string" ? source.apiKey : fallback.apiKey,
+      proxyEnabled:
+        typeof source.proxyEnabled === "boolean" ? source.proxyEnabled : fallback.proxyEnabled,
       proxyUrl: typeof source.proxyUrl === "string" ? source.proxyUrl : fallback.proxyUrl,
       proxyKey: typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey,
       fillAnswer: typeof source.fillAnswer === "boolean" ? source.fillAnswer : fallback.fillAnswer,
@@ -86,6 +88,7 @@ export function saveLlmConfig(config: LlmConfig) {
       model: config.model,
       endpoint: config.endpoint,
       apiKey: config.apiKey,
+      proxyEnabled: config.proxyEnabled,
       proxyUrl: config.proxyUrl,
       proxyKey: config.proxyKey,
       fillAnswer: config.fillAnswer,

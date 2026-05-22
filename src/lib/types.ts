@@ -76,6 +76,7 @@ export interface LlmConfig {
   model: string
   fillAnswer: boolean
   fillExplanation: boolean
+  proxyEnabled: boolean
   proxyUrl: string
   proxyKey: string
 }

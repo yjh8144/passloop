@@ -288,6 +288,8 @@ export const ko: Record<string, string> = {
   modelLabel: "모델",
   apiUrlLabel: "API 주소",
   apiKeyLabel: "API 키",
+  proxyToggleLabel: "CORS 프록시 활성화",
+  proxyDisabledHint: "프록시 비활성화됨, API에 직접 요청합니다",
   proxyUrlLabel: "CORS 프록시 주소",
   proxyKeyLabel: "프록시 키",
   proxyKeyPlaceholder: "비워두면 X-Proxy-Key를 보내지 않음",

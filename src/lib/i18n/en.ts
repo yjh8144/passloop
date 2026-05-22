@@ -297,6 +297,8 @@ export const en: Record<string, string> = {
   modelLabel: "Model",
   apiUrlLabel: "API URL",
   apiKeyLabel: "API Key",
+  proxyToggleLabel: "Enable CORS Proxy",
+  proxyDisabledHint: "Proxy disabled, requests go directly to API",
   proxyUrlLabel: "CORS Proxy URL",
   proxyKeyLabel: "Proxy Key",
   proxyKeyPlaceholder: "Leave empty to skip X-Proxy-Key",

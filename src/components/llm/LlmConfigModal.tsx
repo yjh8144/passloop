@@ -250,7 +250,20 @@ export function LlmConfigModal(props: {
                 </button>
               </div>
             </label>
-            <label className="field-label wide">
+            <label className="field-label wide" style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={config.proxyEnabled}
+                onChange={(event) => setConfig({ ...config, proxyEnabled: event.target.checked })}
+              />
+              <span>{t("proxyToggleLabel")}</span>
+            </label>
+            {!config.proxyEnabled && (
+              <div className="field-label wide" style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -8 }}>
+                {t("proxyDisabledHint")}
+              </div>
+            )}
+            <label className="field-label wide" style={{ opacity: config.proxyEnabled ? 1 : 0.5 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 {t("proxyUrlLabel")}
                 <button
@@ -267,6 +280,7 @@ export function LlmConfigModal(props: {
                   value={config.proxyUrl}
                   placeholder="https://your-worker.workers.dev"
                   onChange={(event) => setConfig({ ...config, proxyUrl: event.target.value })}
+                  disabled={!config.proxyEnabled}
                 />
                 {config.proxyUrl ? (
                   <button
@@ -308,7 +322,7 @@ export function LlmConfigModal(props: {
                 </button>
               </div>
             </label>
-            <label className="field-label wide">
+            <label className="field-label wide" style={{ opacity: config.proxyEnabled ? 1 : 0.5 }}>
               {t("proxyKeyLabel")}
               <div className="input-with-actions">
                 <input
@@ -316,6 +330,7 @@ export function LlmConfigModal(props: {
                   value={config.proxyKey}
                   placeholder={t("proxyKeyPlaceholder")}
                   onChange={(event) => setConfig({ ...config, proxyKey: event.target.value })}
+                  disabled={!config.proxyEnabled}
                 />
                 {config.proxyKey ? (
                   <button

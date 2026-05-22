@@ -298,6 +298,8 @@ export const fr: Record<string, string> = {
   modelLabel: "Modèle",
   apiUrlLabel: "URL de l'API",
   apiKeyLabel: "Clé API",
+  proxyToggleLabel: "Activer le proxy CORS",
+  proxyDisabledHint: "Proxy désactivé, les requêtes vont directement à l'API",
   proxyUrlLabel: "URL du proxy CORS",
   proxyKeyLabel: "Clé du proxy",
   proxyKeyPlaceholder: "Laisser vide pour ne pas envoyer X-Proxy-Key",

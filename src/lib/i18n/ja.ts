@@ -288,6 +288,8 @@ export const ja: Record<string, string> = {
   modelLabel: "モデル",
   apiUrlLabel: "API アドレス",
   apiKeyLabel: "API Key",
+  proxyToggleLabel: "CORS プロキシを有効化",
+  proxyDisabledHint: "プロキシ無効、API に直接リクエストします",
   proxyUrlLabel: "CORS プロキシ URL",
   proxyKeyLabel: "プロキシキー",
   proxyKeyPlaceholder: "空欄の場合 X-Proxy-Key は送信されません",

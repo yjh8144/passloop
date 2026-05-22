@@ -8,13 +8,13 @@ function assertConfigValid(apiKey: string, model: string, endpoint: string): voi
 }
 
 function buildProxyUrl(targetUrl: string, config: LlmConfig): string {
-  if (!config.proxyUrl) return targetUrl
+  if (!config.proxyEnabled || !config.proxyUrl) return targetUrl
   const proxy = config.proxyUrl.replace(/\/+$/, "")
   return `${proxy}/?url=${encodeURIComponent(targetUrl)}`
 }
 
 function proxyHeaders(config: LlmConfig): Record<string, string> {
-  if (!config.proxyUrl || !config.proxyKey) return {}
+  if (!config.proxyEnabled || !config.proxyUrl || !config.proxyKey) return {}
   return { "X-Proxy-Key": config.proxyKey }
 }
 

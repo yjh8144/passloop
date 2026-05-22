@@ -60,8 +60,9 @@ export function useImportExport({
   }
 
   const handleUrlImport = async (url: string) => {
-    const proxyUrl = llmConfig.proxyUrl || defaultLlmConfig.proxyUrl
-    const proxyKey = llmConfig.proxyKey || defaultLlmConfig.proxyKey
+    const proxyEnabled = llmConfig.proxyEnabled !== false
+    const proxyUrl = proxyEnabled ? (llmConfig.proxyUrl || defaultLlmConfig.proxyUrl) : ""
+    const proxyKey = proxyEnabled ? (llmConfig.proxyKey || defaultLlmConfig.proxyKey) : ""
     const fetchUrl = proxyUrl
       ? `${proxyUrl.replace(/\/+$/, "")}/?url=${encodeURIComponent(url)}`
       : url
@@ -139,8 +140,9 @@ export function useImportExport({
   }
 
   const handleBackupUrlImport = async (url: string) => {
-    const proxyUrl = llmConfig.proxyUrl || defaultLlmConfig.proxyUrl
-    const proxyKey = llmConfig.proxyKey || defaultLlmConfig.proxyKey
+    const proxyEnabled = llmConfig.proxyEnabled !== false
+    const proxyUrl = proxyEnabled ? (llmConfig.proxyUrl || defaultLlmConfig.proxyUrl) : ""
+    const proxyKey = proxyEnabled ? (llmConfig.proxyKey || defaultLlmConfig.proxyKey) : ""
     const fetchUrl = proxyUrl
       ? `${proxyUrl.replace(/\/+$/, "")}/?url=${encodeURIComponent(url)}`
       : url

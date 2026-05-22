@@ -31,6 +31,7 @@ export const defaultLlmConfig: LlmConfig = {
   model: "",
   fillAnswer: true,
   fillExplanation: true,
+  proxyEnabled: true,
   proxyUrl: "https://passloop.mtwsf.workers.dev",
   proxyKey: "d5c3cdc6210f8c9430c334c897bd883488f76d23b7d423d10e190a3d504e45d3",
 }
