@@ -1,158 +1,134 @@
-# PassLoop CORS 代理服务
+# PassLoop CORS 代理
 
-PassLoop 是纯前端应用，直接从浏览器请求 LLM API 或远程 JSON 文件时会遇到跨域（CORS）限制。此 Cloudflare Worker 脚本作为中间代理，转发请求并添加 CORS 响应头。
+PassLoop 是纯前端应用，浏览器直接请求 LLM API 会遇到跨域（CORS）限制。本代理作为中间层，转发请求并添加 CORS 响应头，使前端可以正常调用各家 API。
 
 ## 工作原理
 
 ```
 浏览器 (PassLoop)
-    │
     │  带 X-Proxy-Key 头的请求
     ▼
-Cloudflare Worker (本代理)
-    │
-    │  转发请求（去掉代理头，保留 Authorization 等）
+CORS 代理服务
+    │  转发请求（保留 Authorization 等认证头）
     ▼
 目标 API (OpenAI / Anthropic / Gemini / 任意 URL)
-    │
     │  响应
     ▼
-Worker 添加 Access-Control-Allow-Origin: *
+代理添加 Access-Control-Allow-Origin: *
     │
     ▼
 浏览器收到响应（无 CORS 错误）
 ```
 
-## 功能
+## 选择部署方式
 
-- 处理 CORS 预检（OPTIONS）请求
-- 通过 `X-Proxy-Key` 验证请求者身份，防止滥用
-- 转发 `Authorization`、`x-api-key`、`anthropic-version` 等认证头
-- 支持所有 HTTP 方法（GET / POST / PUT / DELETE）
-- 目标 URL 通过查询参数 `?url=` 传递
+本目录提供两种部署方案，功能完全一致，选择适合你的即可：
 
-## 部署步骤
+| 方案 | 目录 | 适用场景 |
+|------|------|----------|
+| [Cloudflare Workers](./cloudflare/) | `proxy/cloudflare/` | 无自有服务器，想快速部署，免费额度够用 |
+| [Node.js 自有服务器](./node/) | `proxy/node/` | 有 VPS/云主机，需要完全控制，或 Workers 在你所在地区不可用 |
 
-### 前置条件
+## 快速开始
 
-- 一个 [Cloudflare](https://cloudflare.com) 账户（免费计划即可）
-- 安装 [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/)
+### 方案 A：Cloudflare Workers（最简单）
 
 ```bash
 npm install -g wrangler
-```
-
-### 1. 登录 Cloudflare
-
-```bash
 wrangler login
+cd proxy/cloudflare
+wrangler secret put AUTH_SECRET   # 设置密钥
+wrangler deploy                   # 部署
 ```
 
-### 2. 设置密钥
+详见 [cloudflare/README.md](./cloudflare/README.md)
 
-生成一个随机字符串作为认证密钥：
+### 方案 B：Node.js 自有服务器
 
 ```bash
-# 生成随机密钥（可用任意方式生成）
-openssl rand -hex 32
+cd proxy/node
+npm install
+AUTH_SECRET=$(openssl rand -hex 32) node server.js
 ```
 
-将密钥设置为 Worker 的加密环境变量：
+支持 Docker 和 systemd 守护进程，生产环境建议配合 Nginx + HTTPS。详见 [node/README.md](./node/README.md)
 
-```bash
-wrangler secret put AUTH_SECRET
-# 粘贴刚才生成的密钥，回车确认
-```
+## 代理协议
 
-### 3. 部署
+两种方案使用完全相同的请求格式，客户端无需修改。
 
-```bash
-cd proxy
-wrangler deploy
-```
-
-部署成功后会输出 Worker 的 URL，类似：
+### 请求格式
 
 ```
-https://passloop-proxy.<your-subdomain>.workers.dev
+GET/POST  https://<代理地址>/?url=<encodeURIComponent(目标URL)>
 ```
 
-### 4. 在 PassLoop 中配置
+### 请求头
 
-打开 PassLoop 侧边栏的 **LLM 配置**：
+| 头部 | 必需 | 说明 |
+|------|------|------|
+| `X-Proxy-Key` | 是 | 代理认证密钥，必须与服务端 `AUTH_SECRET` 一致 |
+| `Authorization` | 否 | OpenAI / Gemini Bearer Token，自动转发 |
+| `x-api-key` | 否 | Anthropic API Key，自动转发 |
+| `anthropic-version` | 否 | Anthropic API 版本号，自动转发 |
+| `Content-Type` | 否 | 请求体类型，默认 `application/json` |
+
+### 响应
+
+代理原样返回目标服务器的响应体和状态码，并附加 `Access-Control-Allow-Origin: *` 头。
+
+### 错误码
+
+| 状态码 | 含义 |
+|--------|------|
+| 401 | `X-Proxy-Key` 不匹配 |
+| 400 | 缺少 `?url=` 参数 |
+| 500 | 代理请求目标服务器时出错 |
+
+## 在 PassLoop 中配置
+
+打开 PassLoop 侧边栏 → LLM 配置：
 
 | 字段 | 填写内容 |
 |------|----------|
-| 代理 URL | `https://passloop-proxy.<your-subdomain>.workers.dev` |
-| 代理密钥 | 第 2 步生成的随机字符串 |
+| 代理 URL | 你部署的代理地址（末尾不加 `/`） |
+| 代理密钥 | 部署时设置的 `AUTH_SECRET` 值 |
 
-配置完成后，所有 LLM 请求和 URL 导入都会通过你的代理转发。
+配置完成后，所有 LLM 请求和远程 URL 导入都会通过代理转发。
 
-## 请求格式
+## 安全建议
 
-代理通过查询参数接收目标 URL：
+1. **密钥管理**：密钥不要写在代码或配置文件中，使用环境变量或加密存储
+2. **HTTPS**：生产环境必须使用 HTTPS，否则密钥和 API Key 会明文传输
+3. **定期轮换**：建议每 90 天更换一次代理密钥
+4. **访问限制**：如果只有固定 IP 使用，可在 Nginx 或防火墙层面限制来源 IP
 
-```
-GET/POST https://<worker-url>/?url=<编码后的目标URL>
-```
-
-### 必需请求头
-
-| 头部 | 说明 |
-|------|------|
-| `X-Proxy-Key` | 认证密钥，必须与 `AUTH_SECRET` 匹配 |
-
-### 可选转发头
-
-以下头部会被自动转发到目标服务器：
-
-| 头部 | 用途 |
-|------|------|
-| `Authorization` | OpenAI / Gemini Bearer Token |
-| `x-api-key` | Anthropic API Key |
-| `anthropic-version` | Anthropic API 版本号 |
-| `Content-Type` | 请求体类型 |
-
-## 使用示例
+## 示例
 
 ### 通过代理调用 OpenAI
 
 ```bash
-curl "https://passloop-proxy.xxx.workers.dev/?url=https%3A%2F%2Fapi.openai.com%2Fv1%2Fchat%2Fcompletions" \
+curl "https://你的代理地址/?url=https%3A%2F%2Fapi.openai.com%2Fv1%2Fchat%2Fcompletions" \
   -H "X-Proxy-Key: 你的代理密钥" \
   -H "Authorization: Bearer sk-你的openai密钥" \
   -H "Content-Type: application/json" \
   -d '{"model":"gpt-4.1-mini","messages":[{"role":"user","content":"hello"}]}'
 ```
 
-### 通过代理下载远程 JSON 题库
+### 通过代理调用 Anthropic
 
 ```bash
-curl "https://passloop-proxy.xxx.workers.dev/?url=https%3A%2F%2Fexample.com%2Fquestions.json" \
+curl "https://你的代理地址/?url=https%3A%2F%2Fapi.anthropic.com%2Fv1%2Fmessages" \
+  -H "X-Proxy-Key: 你的代理密钥" \
+  -H "x-api-key: sk-ant-你的anthropic密钥" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"claude-sonnet-4-20250514","max_tokens":1024,"messages":[{"role":"user","content":"hello"}]}'
+```
+
+### 通过代理下载远程 JSON
+
+```bash
+curl "https://你的代理地址/?url=https%3A%2F%2Fexample.com%2Fquestions.json" \
   -H "X-Proxy-Key: 你的代理密钥"
 ```
-
-## 安全说明
-
-- `AUTH_SECRET` 必须通过 `wrangler secret put` 设置，不要写在代码或 `wrangler.toml` 中
-- Worker 免费计划每天 100,000 次请求，一般个人使用绑绑有余
-- 建议定期轮换密钥：更新 Worker secret 后同步更新 PassLoop 中的代理密钥配置
-
-## 自定义
-
-如需修改 Worker 名称或其他配置，编辑 `wrangler.toml`：
-
-```toml
-name = "passloop-proxy"        # Worker 名称，影响 URL 中的子域名
-main = "worker.js"             # 入口文件
-compatibility_date = "2024-01-01"
-```
-
-## 故障排查
-
-| 症状 | 可能原因 |
-|------|----------|
-| 401 Unauthorized | 代理密钥不匹配，检查 PassLoop 配置中的密钥是否与 `AUTH_SECRET` 一致 |
-| 400 Missing ?url= | 请求未携带目标 URL 参数 |
-| 500 Proxy Error | 目标服务器不可达或返回异常 |
-| CORS 仍然报错 | 检查是否填写了正确的代理 URL（末尾不要加 `/`） |
