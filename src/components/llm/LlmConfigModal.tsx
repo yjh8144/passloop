@@ -265,7 +265,7 @@ export function LlmConfigModal(props: {
                 </button>
               </div>
             </label>
-            <label className="field-label wide" style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <label className="field-label wide" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8 }}>
               <input
                 type="checkbox"
                 checked={config.proxyEnabled}
