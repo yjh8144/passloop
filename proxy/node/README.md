@@ -33,7 +33,7 @@ AUTH_SECRET=你的密钥 node server.js
 AUTH_SECRET=你的密钥 node server.js --port=8080
 ```
 
-服务默认监听 `3001` 端口，可通过 `--port=端口号` 参数或 `PORT` 环境变量修改。
+服务默认监听 `3001` 端口，可通过 `--port=端口号` 参数修改。
 
 ### 方式二：Docker 部署
 
@@ -67,9 +67,8 @@ After=network.target
 Type=simple
 User=www-data
 WorkingDirectory=/opt/passloop-proxy
-ExecStart=/usr/bin/node server.js
 Environment=AUTH_SECRET=你的密钥
-Environment=PORT=3001
+ExecStart=/usr/bin/node server.js --port=3001
 Restart=always
 RestartSec=5
 
