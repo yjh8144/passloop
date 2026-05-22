@@ -28,9 +28,12 @@ openssl rand -hex 32
 
 # 启动服务（替换为你的密钥）
 AUTH_SECRET=你的密钥 node server.js
+
+# 指定端口
+AUTH_SECRET=你的密钥 node server.js --port=8080
 ```
 
-服务默认监听 `3001` 端口，可通过 `PORT` 环境变量修改。
+服务默认监听 `3001` 端口，可通过 `--port=端口号` 参数或 `PORT` 环境变量修改。
 
 ### 方式二：Docker 部署
 
