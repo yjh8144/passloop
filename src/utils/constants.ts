@@ -36,6 +36,14 @@ export const defaultLlmConfig: LlmConfig = {
   proxyKey: "d5c3cdc6210f8c9430c334c897bd883488f76d23b7d423d10e190a3d504e45d3",
 }
 
+export const PRESET_PROXIES: Array<{ name: string; url: string; key: string }> = [
+  {
+    name: "Default (Cloudflare Workers)",
+    url: "https://passloop.mtwsf.workers.dev",
+    key: "d5c3cdc6210f8c9430c334c897bd883488f76d23b7d423d10e190a3d504e45d3",
+  },
+]
+
 export const ANSWERS_SESSION_KEY = "passloop.session.answers"
 export const INDEX_SESSION_KEY = "passloop.session.index"
 export const ONBOARDING_KEY = "passloop.onboarding.shown"

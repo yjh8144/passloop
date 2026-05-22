@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { ChevronRight, Eye, EyeOff, HelpCircle, Undo2, X } from "lucide-react"
+import { ChevronRight, Eye, EyeOff, HelpCircle, List, Undo2, X } from "lucide-react"
 import type { LlmConfig } from "../../lib/types"
 import { testLlmConnection, fetchModelList } from "../../lib/llm"
-import { providerPlaceholders, defaultLlmConfig } from "../../utils/constants"
+import { providerPlaceholders, defaultLlmConfig, PRESET_PROXIES } from "../../utils/constants"
 import { Segmented } from "../ui/Segmented"
 import { useT, usePushToast } from "../../contexts"
 
@@ -29,6 +29,8 @@ export function LlmConfigModal(props: {
   const [testing, setTesting] = useState(false)
   const [modelList, setModelList] = useState<string[]>([])
   const [fetchingModels, setFetchingModels] = useState(false)
+  const [showProxyList, setShowProxyList] = useState(false)
+  const [proxyStatus, setProxyStatus] = useState<Record<string, "idle" | "testing" | "alive" | "dead">>({})
 
   useEffect(() => {
     if (!modelDropdownOpen) return
@@ -71,6 +73,19 @@ export function LlmConfigModal(props: {
       pushToast("error", error instanceof Error ? error.message : t("fetchModelsFailed"))
     } finally {
       setFetchingModels(false)
+    }
+  }
+
+  const testProxy = async (url: string) => {
+    setProxyStatus((s) => ({ ...s, [url]: "testing" }))
+    try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 5000)
+      await fetch(url.replace(/\/+$/, "") + "/", { signal: controller.signal })
+      clearTimeout(timer)
+      setProxyStatus((s) => ({ ...s, [url]: "alive" }))
+    } catch {
+      setProxyStatus((s) => ({ ...s, [url]: "dead" }))
     }
   }
 
@@ -274,6 +289,14 @@ export function LlmConfigModal(props: {
                 >
                   <HelpCircle size={14} />
                 </button>
+                <button
+                  className="icon-button"
+                  style={{ padding: 2 }}
+                  onClick={() => setShowProxyList(true)}
+                  title={t("proxyListTitle")}
+                >
+                  <List size={14} />
+                </button>
               </span>
               <div className="input-with-actions">
                 <input
@@ -307,19 +330,6 @@ export function LlmConfigModal(props: {
                     </button>
                   )
                 )}
-                <button
-                  className="input-clear-btn"
-                  onClick={() =>
-                    setConfig({
-                      ...config,
-                      proxyUrl: defaultLlmConfig.proxyUrl,
-                      proxyKey: defaultLlmConfig.proxyKey,
-                    })
-                  }
-                  title={t("resetToDefaultProxy")}
-                >
-                  <Undo2 size={14} />
-                </button>
               </div>
             </label>
             <label className="field-label wide" style={{ opacity: config.proxyEnabled ? 1 : 0.5 }}>
@@ -357,13 +367,6 @@ export function LlmConfigModal(props: {
                     </button>
                   )
                 )}
-                <button
-                  className="input-clear-btn"
-                  onClick={() => setConfig({ ...config, proxyKey: defaultLlmConfig.proxyKey })}
-                  title={t("resetToDefaultKey")}
-                >
-                  <Undo2 size={14} />
-                </button>
                 <button
                   className="input-clear-btn"
                   onClick={() => setShowProxyKey((v) => !v)}
@@ -461,6 +464,83 @@ export function LlmConfigModal(props: {
               <button className="primary-button" onClick={() => setShowProxyHelp(false)}>
                 {t("understood")}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showProxyList && (
+        <div
+          className="modal-overlay"
+          style={{ zIndex: 1100 }}
+          onClick={() => setShowProxyList(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 460 }}
+          >
+            <div className="modal-header">
+              <h2>{t("proxyListTitle")}</h2>
+              <button className="icon-button" onClick={() => setShowProxyList(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {PRESET_PROXIES.map((proxy) => {
+                const status = proxyStatus[proxy.url] ?? "idle"
+                return (
+                  <div
+                    key={proxy.url}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      border: "1px solid var(--border)",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setConfig({ ...config, proxyUrl: proxy.url, proxyKey: proxy.key })
+                      setShowProxyList(false)
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>{proxy.name}</div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "var(--text-muted)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {proxy.url}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                      {status === "alive" && (
+                        <span style={{ fontSize: 12, color: "#22c55e" }}>{t("proxyListAlive")}</span>
+                      )}
+                      {status === "dead" && (
+                        <span style={{ fontSize: 12, color: "#ef4444" }}>{t("proxyListDead")}</span>
+                      )}
+                      <button
+                        className="test-button"
+                        style={{ padding: "4px 10px", fontSize: 12 }}
+                        disabled={status === "testing"}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          testProxy(proxy.url)
+                        }}
+                      >
+                        {status === "testing" ? t("proxyListTesting") : t("proxyListTest")}
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
