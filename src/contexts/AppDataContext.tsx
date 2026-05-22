@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
-import type { ReactNode } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import type { MutableRefObject, ReactNode } from "react"
 import type { AppData, Question, QuestionList } from "../lib/types"
 import { getListStats, getTypeLabels, sortQuestions } from "../lib/question"
 import { createEmptyQuestionList, saveData } from "../lib/storage"
@@ -11,11 +11,7 @@ import { useT } from "./I18nContext"
 type UpdateData = (recipe: (draft: AppData) => AppData) => void
 type UpdateActiveList = (recipe: (list: QuestionList) => QuestionList) => void
 
-export interface ListResetSignal {
-  version: number
-  questionIds: string[]
-  mode: "full" | "selective"
-}
+export type ListResetHandler = (mode: "full" | "selective", questionIds: string[]) => void
 
 interface AppDataContextValue {
   data: AppData
@@ -33,7 +29,7 @@ interface AppDataContextValue {
   deleteList: (id: string) => void
   clearActiveListAttempts: () => void
   addImportedList: (list: QuestionList) => void
-  listResetSignal: ListResetSignal
+  resetHandlerRef: MutableRefObject<ListResetHandler | null>
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
@@ -51,11 +47,7 @@ export function AppDataProvider({
   const { showConfirm, showPrompt } = useDialog()
   const pushToast = usePushToast()
   const [query, setQuery] = useState("")
-  const [listResetSignal, setListResetSignal] = useState<ListResetSignal>({
-    version: 0,
-    questionIds: [],
-    mode: "full",
-  })
+  const resetHandlerRef = useRef<ListResetHandler | null>(null)
 
   const updateData: UpdateData = useCallback(
     (recipe) => setData((current) => recipe(current)),
@@ -150,7 +142,7 @@ export function AppDataProvider({
             attempts: current.attempts.filter((attempt) => attempt.listId !== id),
           }
         })
-        setListResetSignal((prev) => ({ version: prev.version + 1, questionIds: [], mode: "full" }))
+        resetHandlerRef.current?.("full", [])
         pushToast("success", t("listDeleted"))
       })
     },
@@ -168,11 +160,7 @@ export function AppDataProvider({
         q.id,
         ...q.subQuestions.map((sq) => sq.id),
       ])
-      setListResetSignal((prev) => ({
-        version: prev.version + 1,
-        questionIds,
-        mode: "selective",
-      }))
+      resetHandlerRef.current?.("selective", questionIds)
       pushToast("success", t("attemptsCleared"))
     })
   }, [showConfirm, t, activeList, updateData, pushToast])
@@ -207,7 +195,7 @@ export function AppDataProvider({
       deleteList,
       clearActiveListAttempts,
       addImportedList,
-      listResetSignal,
+      resetHandlerRef,
     }),
     [
       data,
@@ -224,7 +212,6 @@ export function AppDataProvider({
       deleteList,
       clearActiveListAttempts,
       addImportedList,
-      listResetSignal,
     ],
   )
 

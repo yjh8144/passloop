@@ -56,41 +56,43 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     wrongQuestions,
     data,
     updateData,
-    listResetSignal,
+    resetHandlerRef,
   } = useAppData()
   const { showConfirm } = useDialog()
   const pushToast = usePushToast()
 
   const [state, dispatch] = useReducer(practiceReducer, undefined, createInitialState)
+  const stateRef = useRef(state)
+  useEffect(() => { stateRef.current = state })
+
   const startedAtRef = useRef<Record<string, number>>({})
 
   // --- Persistence ---
   useSessionPersistence(state.answers, state.currentIndex)
 
   // --- Clamp index when question count changes ---
-  const prevLength = useRef(displayedQuestions.length)
   useEffect(() => {
-    if (displayedQuestions.length !== prevLength.current) {
-      prevLength.current = displayedQuestions.length
-      dispatch({ type: "CLAMP_INDEX", maxIndex: Math.max(displayedQuestions.length - 1, 0) })
-    }
+    dispatch({ type: "CLAMP_INDEX", maxIndex: Math.max(displayedQuestions.length - 1, 0) })
   }, [displayedQuestions.length])
 
-  // --- List reset signal from AppDataContext ---
-  const prevResetVersion = useRef(listResetSignal.version)
-  useEffect(() => {
-    if (listResetSignal.version === prevResetVersion.current) return
-    prevResetVersion.current = listResetSignal.version
+  // --- Register reset handler for AppDataContext ---
+  const pageRef = useRef(page)
+  useEffect(() => { pageRef.current = page })
 
-    if (listResetSignal.mode === "full") {
-      dispatch({ type: "LIST_RESET_FULL" })
-      startedAtRef.current = {}
-    } else {
-      dispatch({ type: "LIST_RESET_SELECTIVE", questionIds: listResetSignal.questionIds })
-      for (const id of listResetSignal.questionIds) delete startedAtRef.current[id]
-      if (page === "wrong") setPage("practice")
-    }
-  }, [listResetSignal, setPage, page])
+  const handleListReset = useCallback(
+    (mode: "full" | "selective", questionIds: string[]) => {
+      if (mode === "full") {
+        dispatch({ type: "LIST_RESET_FULL" })
+        startedAtRef.current = {}
+      } else {
+        dispatch({ type: "LIST_RESET_SELECTIVE", questionIds })
+        for (const id of questionIds) delete startedAtRef.current[id]
+        if (pageRef.current === "wrong") setPage("practice")
+      }
+    },
+    [setPage],
+  )
+  useEffect(() => { resetHandlerRef.current = handleListReset })
 
   // --- Wrong practice ---
   const practiceQuestions = page === "wrong" ? wrongQuestions : displayedQuestions
@@ -109,15 +111,13 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       t,
     })
 
-  // When page transitions to "wrong" via NavigationContext (e.g. changePage("wrong")),
-  // initialize wrong practice if not already active.
-  // If start fails (no wrong questions), revert to the previous page.
-  const prevPageRef = useRef(page)
+  // When page transitions to "wrong" via NavigationContext, initialize wrong practice
+  // if not already active. If start fails (no wrong questions), revert to practice.
   useEffect(() => {
-    if (page === "wrong" && prevPageRef.current !== "wrong" && !state.wrongSession) {
+    if (page === "wrong" && !state.wrongSession) {
       if (!wrongQuestions.length) {
         pushToast("info", t("noWrongQuestions"))
-        setPage(prevPageRef.current)
+        setPage("practice")
         return
       }
       const questionIds = wrongQuestions.flatMap((q) => [q.id, ...q.subQuestions.map((sq) => sq.id)])
@@ -133,7 +133,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       })
       for (const id of questionIds) delete startedAtRef.current[id]
     }
-    prevPageRef.current = page
   }, [page, state.wrongSession, wrongQuestions, activeList.id, pushToast, t, setPage])
 
   // --- State setters (using dispatch to avoid stale closures) ---
@@ -154,7 +153,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // --- Submission logic ---
-  const isAnswerEmpty = useCallback((question: Question, answers: AnswerMap): boolean => {
+  const isAnswerEmpty = useCallback((question: Question): boolean => {
+    const answers = stateRef.current.answers
     if (question.type === "composite") {
       if (!question.subQuestions.length) {
         const val = answers[question.id]
@@ -175,21 +175,23 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   const submitQuestion = useCallback(
     (question: Question) => {
-      if (question.id in state.results) {
-        const allDone = practiceQuestions.length > 0 && practiceQuestions.every((q) => q.id in state.results)
+      const { results } = stateRef.current
+      if (question.id in results) {
+        const allDone = practiceQuestions.length > 0 && practiceQuestions.every((q) => q.id in results)
         if (allDone) pushToast("info", t("allQuestionsFinished"))
         return
       }
       const doSubmit = () => {
+        const { answers } = stateRef.current
         const startedAt = startedAtRef.current[question.id] ?? Date.now()
-        const correct = evaluateQuestion(question, state.answers)
+        const correct = evaluateQuestion(question, answers)
         const inWrongMode = page === "wrong"
         debugLog("Question submitted", {
           questionId: question.id,
           title: question.title,
           correct,
           elapsedMs: Date.now() - startedAt,
-          answer: state.answers[question.id],
+          answer: answers[question.id],
         })
         dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct, inWrongMode })
         updateData((current) => ({
@@ -201,8 +203,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
               listId: activeList.id,
               questionId: question.id,
               answer:
-                state.answers[question.id] ??
-                collectCompositeAnswer(question, state.answers),
+                answers[question.id] ??
+                collectCompositeAnswer(question, answers),
               correct,
               elapsedMs: Math.max(1000, Date.now() - startedAt),
               submittedAt: new Date().toISOString(),
@@ -214,15 +216,15 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         } else {
           pushToast(correct ? "success" : "info", correct ? t("answerCorrect") : t("recordedAsWrong"))
         }
-        // Auto-navigate after submit
         if (data.settings.autoNext) {
           if (data.settings.viewMode === "single") {
             const questionCount = practiceQuestions.length
-            if (state.currentIndex < questionCount - 1) {
+            const idx = stateRef.current.currentIndex
+            if (idx < questionCount - 1) {
               window.setTimeout(() => {
                 dispatch({
                   type: "NAVIGATE_FN",
-                  updater: (idx) => Math.min(idx + 1, questionCount - 1),
+                  updater: (i) => Math.min(i + 1, questionCount - 1),
                 })
               }, 500)
             }
@@ -237,21 +239,23 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           }
         }
       }
-      if (isAnswerEmpty(question, state.answers)) {
+      if (isAnswerEmpty(question)) {
         const idx = practiceQuestions.findIndex((q) => q.id === question.id)
         showConfirm(t("confirmEmptySubmit", idx + 1), doSubmit)
       } else {
         doSubmit()
       }
     },
-    [state.answers, state.results, state.currentIndex, practiceQuestions, page, activeList.id, data.settings, pushToast, showConfirm, t, updateData, isAnswerEmpty],
+    [practiceQuestions, page, activeList.id, data.settings, pushToast, showConfirm, t, updateData, isAnswerEmpty],
   )
 
   const submitAll = useCallback(() => {
-    const unsubmitted = practiceQuestions.filter((q) => !(q.id in state.results))
+    const { results } = stateRef.current
+    const unsubmitted = practiceQuestions.filter((q) => !(q.id in results))
     if (!unsubmitted.length) return
-    const emptyQuestions = unsubmitted.filter((q) => isAnswerEmpty(q, state.answers))
+    const emptyQuestions = unsubmitted.filter((q) => isAnswerEmpty(q))
     const doSubmitAll = () => {
+      const { answers } = stateRef.current
       debugLog("Submit all", {
         totalQuestions: practiceQuestions.length,
         unsubmittedCount: unsubmitted.length,
@@ -261,7 +265,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       const newAttempts: AppData["attempts"] = []
       for (const question of unsubmitted) {
         const startedAt = startedAtRef.current[question.id] ?? Date.now()
-        const correct = evaluateQuestion(question, state.answers)
+        const correct = evaluateQuestion(question, answers)
         newResults[question.id] = correct
         if (correct) correctCount++
         newAttempts.push({
@@ -269,8 +273,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           listId: activeList.id,
           questionId: question.id,
           answer:
-            state.answers[question.id] ??
-            collectCompositeAnswer(question, state.answers),
+            answers[question.id] ??
+            collectCompositeAnswer(question, answers),
           correct,
           elapsedMs: Math.max(1000, Date.now() - startedAt),
           submittedAt: new Date().toISOString(),
@@ -296,7 +300,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     } else {
       doSubmitAll()
     }
-  }, [state.answers, state.results, practiceQuestions, page, activeList.id, pushToast, showConfirm, t, updateData, isAnswerEmpty])
+  }, [practiceQuestions, page, activeList.id, pushToast, showConfirm, t, updateData, isAnswerEmpty])
 
   const resetAll = useCallback(() => {
     dispatch({ type: "LIST_RESET_FULL" })
