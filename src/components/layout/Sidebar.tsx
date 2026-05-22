@@ -16,30 +16,27 @@ import {
   Trash2,
   Upload,
 } from "lucide-react"
-import type { AppData, QuestionList } from "../../lib/types"
-import type { Page } from "../../hooks/types"
-import { useT } from "../../contexts"
+import { useT, useAppData, useNavigation, useLlmConfig } from "../../contexts"
 
 export function Sidebar(props: {
-  page: Page
-  setPage: (page: Page) => void
-  data: AppData
-  activeList: QuestionList
-  setData: (data: AppData | ((data: AppData) => AppData)) => void
-  createList: () => void
   onQuestionImport: () => void
   onBackupImport: () => void
   onExportList: () => void
   onExportBackup: () => void
   onResetAll: () => void
-  onOpenLlmConfig: () => void
   onOpenDebugDialog: () => void
-  collapsed: boolean
-  onToggleCollapsed: () => void
-  desktopCollapsed: boolean
-  onToggleDesktopCollapsed: () => void
 }) {
   const t = useT()
+  const { data, setData, activeList, createList } = useAppData()
+  const {
+    page,
+    changePage,
+    mobileSidebarCollapsed,
+    setMobileSidebarCollapsed,
+    desktopSidebarCollapsed,
+    setDesktopSidebarCollapsed,
+  } = useNavigation()
+  const { openLlmConfig } = useLlmConfig()
   const { onOpenDebugDialog } = props
   const clickTimesRef = useRef<number[]>([])
 
@@ -55,7 +52,7 @@ export function Sidebar(props: {
 
   return (
     <aside
-      className={`sidebar ${props.collapsed ? "is-collapsed" : ""} ${props.desktopCollapsed ? "desktop-collapsed" : ""}`}
+      className={`sidebar ${mobileSidebarCollapsed ? "is-collapsed" : ""} ${desktopSidebarCollapsed ? "desktop-collapsed" : ""}`}
     >
       <div className="brand">
         <div className="brand-mark" onClick={handleBrandClick}>
@@ -76,43 +73,43 @@ export function Sidebar(props: {
         </a>
         <button
           className="icon-button desktop-sidebar-toggle"
-          title={props.desktopCollapsed ? t("expandSidebar") : t("collapseSidebar")}
-          onClick={props.onToggleDesktopCollapsed}
+          title={desktopSidebarCollapsed ? t("expandSidebar") : t("collapseSidebar")}
+          onClick={() => setDesktopSidebarCollapsed((c) => !c)}
         >
-          {props.desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
+          {desktopSidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
         </button>
         <button
           className="icon-button mobile-sidebar-toggle"
-          title={props.collapsed ? t("expandListPanel") : t("collapseListPanel")}
-          onClick={props.onToggleCollapsed}
+          title={mobileSidebarCollapsed ? t("expandListPanel") : t("collapseListPanel")}
+          onClick={() => setMobileSidebarCollapsed((c) => !c)}
         >
-          {props.collapsed ? <ChevronDown size={17} /> : <ChevronUp size={17} />}
+          {mobileSidebarCollapsed ? <ChevronDown size={17} /> : <ChevronUp size={17} />}
         </button>
       </div>
 
       <div className="sidebar-body">
         <nav className="nav-stack" aria-label="navigation">
           <button
-            className={props.page === "practice" ? "active" : ""}
-            onClick={() => props.setPage("practice")}
+            className={page === "practice" ? "active" : ""}
+            onClick={() => changePage("practice")}
           >
             <BookOpen size={17} /> {t("dashboard")}
           </button>
           <button
-            className={props.page === "manager" ? "active" : ""}
-            onClick={() => props.setPage("manager")}
+            className={page === "manager" ? "active" : ""}
+            onClick={() => changePage("manager")}
           >
             <Edit3 size={17} /> {t("manager")}
           </button>
           <button
-            className={props.page === "llm" ? "active" : ""}
-            onClick={() => props.setPage("llm")}
+            className={page === "llm" ? "active" : ""}
+            onClick={() => changePage("llm")}
           >
             <BrainCircuit size={17} /> {t("llm")}
           </button>
           <button
-            className={props.page === "wrong" ? "active" : ""}
-            onClick={() => props.setPage("wrong")}
+            className={page === "wrong" ? "active" : ""}
+            onClick={() => changePage("wrong")}
           >
             <Shuffle size={17} /> {t("wrong")}
           </button>
@@ -121,16 +118,16 @@ export function Sidebar(props: {
         <div className="sidebar-section">
           <div className="section-title">
             <span>{t("questionList")}</span>
-            <button className="icon-button" title={t("addList")} onClick={props.createList}>
+            <button className="icon-button" title={t("addList")} onClick={createList}>
               <Plus size={16} />
             </button>
           </div>
           <div className="list-stack">
-            {props.data.lists.map((list) => (
+            {data.lists.map((list) => (
               <button
                 key={list.id}
-                className={`list-item ${list.id === props.activeList.id ? "active" : ""}`}
-                onClick={() => props.setData((current) => ({ ...current, activeListId: list.id }))}
+                className={`list-item ${list.id === activeList.id ? "active" : ""}`}
+                onClick={() => setData((current) => ({ ...current, activeListId: list.id }))}
               >
                 <span className="list-item-name">{list.name}</span>
                 <small className="list-item-count">
@@ -142,7 +139,7 @@ export function Sidebar(props: {
         </div>
 
         <div className="sidebar-actions">
-          <button onClick={props.onOpenLlmConfig}>
+          <button onClick={openLlmConfig}>
             <Settings2 size={16} /> {t("llmConfigBtn")}
           </button>
           <button onClick={props.onQuestionImport}>

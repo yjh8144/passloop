@@ -11,25 +11,19 @@ import {
   Trash2,
   Upload,
 } from "lucide-react"
-import type { AppData, QuestionList } from "../../lib/types"
-import type { Page } from "../../hooks/types"
-import { useT } from "../../contexts"
+import { useT, useAppData, useNavigation, useLlmConfig } from "../../contexts"
 
 export function BottomNav(props: {
-  page: Page
-  setPage: (page: Page) => void
-  data: AppData
-  activeList: QuestionList
-  setData: (data: AppData | ((data: AppData) => AppData)) => void
-  createList: () => void
   onQuestionImport: () => void
   onBackupImport: () => void
   onExportList: () => void
   onExportBackup: () => void
   onResetAll: () => void
-  onOpenLlmConfig: () => void
 }) {
   const t = useT()
+  const { data, setData, activeList, createList } = useAppData()
+  const { page, changePage } = useNavigation()
+  const { openLlmConfig } = useLlmConfig()
   const [panelOpen, setPanelOpen] = useState(false)
 
   const close = useCallback(() => setPanelOpen(false), [])
@@ -43,8 +37,8 @@ export function BottomNav(props: {
     return () => document.removeEventListener("keydown", onKey)
   }, [panelOpen, close])
 
-  const navigate = (page: Page) => {
-    props.setPage(page)
+  const navigate = (p: typeof page) => {
+    changePage(p)
     close()
   }
 
@@ -66,7 +60,7 @@ export function BottomNav(props: {
                 className="icon-button"
                 title={t("addList")}
                 onClick={() => {
-                  props.createList()
+                  createList()
                   close()
                 }}
               >
@@ -74,12 +68,12 @@ export function BottomNav(props: {
               </button>
             </div>
             <div className="panel-list-stack">
-              {props.data.lists.map((list) => (
+              {data.lists.map((list) => (
                 <button
                   key={list.id}
-                  className={`panel-list-item ${list.id === props.activeList.id ? "active" : ""}`}
+                  className={`panel-list-item ${list.id === activeList.id ? "active" : ""}`}
                   onClick={() => {
-                    props.setData((current) => ({ ...current, activeListId: list.id }))
+                    setData((current) => ({ ...current, activeListId: list.id }))
                     close()
                   }}
                 >
@@ -96,7 +90,7 @@ export function BottomNav(props: {
               <button
                 className="panel-action-btn"
                 onClick={() => {
-                  props.onOpenLlmConfig()
+                  openLlmConfig()
                   close()
                 }}
               >
@@ -154,14 +148,14 @@ export function BottomNav(props: {
 
       <nav className="bottom-nav" aria-label="navigation">
         <button
-          className={`bottom-nav-btn ${props.page === "practice" ? "active" : ""}`}
+          className={`bottom-nav-btn ${page === "practice" ? "active" : ""}`}
           onClick={() => navigate("practice")}
         >
           <BookOpen size={20} />
           <span>{t("dashboard")}</span>
         </button>
         <button
-          className={`bottom-nav-btn ${props.page === "manager" ? "active" : ""}`}
+          className={`bottom-nav-btn ${page === "manager" ? "active" : ""}`}
           onClick={() => navigate("manager")}
         >
           <Edit3 size={20} />
@@ -180,14 +174,14 @@ export function BottomNav(props: {
         </button>
 
         <button
-          className={`bottom-nav-btn ${props.page === "llm" ? "active" : ""}`}
+          className={`bottom-nav-btn ${page === "llm" ? "active" : ""}`}
           onClick={() => navigate("llm")}
         >
           <BrainCircuit size={20} />
           <span>LLM</span>
         </button>
         <button
-          className={`bottom-nav-btn ${props.page === "wrong" ? "active" : ""}`}
+          className={`bottom-nav-btn ${page === "wrong" ? "active" : ""}`}
           onClick={() => navigate("wrong")}
         >
           <Shuffle size={20} />
