@@ -523,4 +523,20 @@ export const ko: Record<string, string> = {
   jsonNoQuestions: "JSON에서 문제 배열을 찾을 수 없습니다.",
   boolTrue: "맞음",
   boolFalse: "틀림",
+
+  // Offline version
+  offlineVersion: "오프라인 버전",
+  offlineDialogTitle: "오프라인 버전",
+  offlineBuildTitle: "패키징 방식",
+  offlineBuildDesc: "모든 코드, 스타일, 리소스가 단일 .html 파일로 번들됩니다. 서버나 인터넷 연결 없이 더블클릭만으로 브라우저에서 실행됩니다. 온라인 버전과 동일한 기능을 제공합니다.",
+  offlineStorageTitle: "데이터 저장",
+  offlineStorageDesc: "데이터는 브라우저의 localStorage에 저장되며 현재 브라우저에 연결됩니다. 브라우저를 변경하거나 인터넷 사용 기록을 삭제하면 데이터가 손실됩니다. 정기적으로 설정을 내보내 백업하는 것을 권장합니다.",
+  offlineUsageTitle: "사용 방법",
+  offlineUsageStep1: "GitHub Releases에서 .html 파일 다운로드",
+  offlineUsageStep2: "더블클릭하여 브라우저에서 열기",
+  offlineUsageStep3: "사용 시작 (Chrome / Edge / Firefox 권장)",
+  offlineDownloadBtn: "다운로드 페이지로 이동",
+
+  // Export confirm
+  confirmExportBackup: "내보내기 파일에는 모든 문제, 설정, LLM 구성(API 키 포함)이 포함됩니다. 개인정보를 보호하고 신뢰할 수 없는 사람에게 파일을 공유하지 마세요. 내보내시겠습니까?",
 }

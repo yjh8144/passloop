@@ -8,6 +8,7 @@ import {
   Edit3,
   FileJson,
   Github,
+  HardDriveDownload,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
@@ -25,6 +26,7 @@ export function Sidebar(props: {
   onExportBackup: () => void
   onResetAll: () => void
   onOpenDebugDialog: () => void
+  onOpenOfflineDialog: () => void
 }) {
   const t = useT()
   const { data, setData, activeList, createList } = useAppData()
@@ -153,6 +155,9 @@ export function Sidebar(props: {
           </button>
           <button onClick={props.onExportBackup}>
             <FileJson size={16} /> {t("exportBackup")}
+          </button>
+          <button onClick={props.onOpenOfflineDialog}>
+            <HardDriveDownload size={16} /> {t("offlineVersion")}
           </button>
           <button className="danger-outline" onClick={props.onResetAll}>
             <Trash2 size={16} /> {t("clearAllData")}

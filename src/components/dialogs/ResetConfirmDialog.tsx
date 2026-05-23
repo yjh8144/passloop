@@ -55,7 +55,7 @@ export function ResetConfirmDialog({
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
           <button
-            style={{ background: "var(--danger)", color: "#fff", borderColor: "var(--danger)" }}
+            className="danger-button"
             disabled={value.trim() !== keyword}
             onClick={onConfirm}
           >

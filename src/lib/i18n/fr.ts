@@ -533,4 +533,20 @@ export const fr: Record<string, string> = {
   jsonNoQuestions: "Aucun tableau de questions trouvé dans le JSON.",
   boolTrue: "Vrai",
   boolFalse: "Faux",
+
+  // Offline version
+  offlineVersion: "Version hors ligne",
+  offlineDialogTitle: "Version hors ligne",
+  offlineBuildTitle: "Fonctionnement",
+  offlineBuildDesc: "Tout le code, les styles et les ressources sont regroupés dans un seul fichier .html. Aucun serveur ni connexion Internet nécessaire — double-cliquez pour ouvrir dans votre navigateur. Entièrement fonctionnel, identique à la version en ligne.",
+  offlineStorageTitle: "Stockage des données",
+  offlineStorageDesc: "Les données sont stockées dans le localStorage de votre navigateur, liées au navigateur actuel. Changer de navigateur ou effacer les données de navigation entraînera la perte de vos données. Nous recommandons d'exporter régulièrement votre configuration.",
+  offlineUsageTitle: "Utilisation",
+  offlineUsageStep1: "Téléchargez le fichier .html depuis GitHub Releases",
+  offlineUsageStep2: "Double-cliquez pour ouvrir dans votre navigateur",
+  offlineUsageStep3: "Commencez à utiliser (Chrome / Edge / Firefox recommandé)",
+  offlineDownloadBtn: "Page de téléchargement",
+
+  // Export confirm
+  confirmExportBackup: "Le fichier exporté contient toutes vos questions, paramètres et configuration LLM (y compris les clés API). Veuillez protéger votre vie privée et ne pas partager ce fichier avec des personnes non fiables. Continuer ?",
 }

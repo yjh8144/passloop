@@ -13,6 +13,8 @@ import {
   useNavigation,
   PracticeProvider,
   usePracticeContext,
+  useDialog,
+  useT,
 } from "./contexts"
 import { createDefaultData, downloadJson, loadData } from "./lib/storage"
 import { debugLog } from "./lib/debug"
@@ -22,6 +24,7 @@ import { ToastStack } from "./components/ui/ToastStack"
 import { ResetConfirmDialog } from "./components/dialogs/ResetConfirmDialog"
 import { OnboardingDialog } from "./components/dialogs/OnboardingDialog"
 import { DebugDialog } from "./components/dialogs/DebugDialog"
+import { OfflineDialog } from "./components/dialogs/OfflineDialog"
 import { ImportExportDialogs } from "./components/dialogs/ImportExportDialogs"
 import type { ImportExportActions } from "./components/dialogs/ImportExportDialogs"
 import { Sidebar } from "./components/layout/Sidebar"
@@ -65,6 +68,8 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
   } = useAppData()
   const { llmConfig, openLlmConfig, clearLlmConfig: clearLlmConfigCtx } = useLlmConfig()
   const { page, desktopSidebarCollapsed, llmUnsavedRef } = useNavigation()
+  const { showConfirm } = useDialog()
+  const t = useT()
 
   const [editing, setEditing] = useState<Question | null>(null)
   const [resetConfirmDialog, setResetConfirmDialog] = useState(false)
@@ -72,6 +77,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
     return !localStorage.getItem(ONBOARDING_KEY)
   })
   const [showDebugDialog, setShowDebugDialog] = useState(false)
+  const [showOfflineDialog, setShowOfflineDialog] = useState(false)
   const [importActions, setImportActions] = useState<ImportExportActions | null>(null)
 
   return (
@@ -81,9 +87,14 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           onQuestionImport={() => importActions?.openQuestionImport()}
           onBackupImport={() => importActions?.openBackupImport()}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-          onExportBackup={() => downloadJson("passloop-config.json", data)}
+          onExportBackup={() =>
+            showConfirm(t("confirmExportBackup"), () =>
+              downloadJson("passloop-config.json", data)
+            )
+          }
           onResetAll={() => setResetConfirmDialog(true)}
           onOpenDebugDialog={() => setShowDebugDialog(true)}
+          onOpenOfflineDialog={() => setShowOfflineDialog(true)}
         />
 
         <main className="workspace">
@@ -117,7 +128,11 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           onQuestionImport={() => importActions?.openQuestionImport()}
           onBackupImport={() => importActions?.openBackupImport()}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-          onExportBackup={() => downloadJson("passloop-config.json", data)}
+          onExportBackup={() =>
+            showConfirm(t("confirmExportBackup"), () =>
+              downloadJson("passloop-config.json", data)
+            )
+          }
           onResetAll={() => setResetConfirmDialog(true)}
         />
 
@@ -139,6 +154,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           }}
         />
         <DebugDialog open={showDebugDialog} onClose={() => setShowDebugDialog(false)} />
+        <OfflineDialog open={showOfflineDialog} onClose={() => setShowOfflineDialog(false)} />
       </div>
     </PracticeProvider>
   )

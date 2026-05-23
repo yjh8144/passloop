@@ -60,7 +60,7 @@ export function BackupImportDialog({
           <div className="modal-actions">
             <button onClick={() => setStep("choose")}>{t("back")}</button>
             <button
-              style={{ background: "var(--danger)", color: "#fff", borderColor: "var(--danger)" }}
+              className="danger-button"
               disabled={confirmText !== keyword}
               onClick={() => onChoose("overwrite")}
             >

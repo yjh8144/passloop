@@ -523,4 +523,20 @@ export const ja: Record<string, string> = {
   jsonNoQuestions: "JSONに問題配列が見つかりません。",
   boolTrue: "正しい",
   boolFalse: "誤り",
+
+  // Offline version
+  offlineVersion: "オフライン版",
+  offlineDialogTitle: "オフライン版",
+  offlineBuildTitle: "パッケージの仕組み",
+  offlineBuildDesc: "すべてのコード、スタイル、リソースが単一の .html ファイルにバンドルされます。サーバーもインターネット接続も不要で、ダブルクリックするだけでブラウザで動作します。オンライン版と同じ機能を備えています。",
+  offlineStorageTitle: "データ保存",
+  offlineStorageDesc: "データはブラウザの localStorage に保存され、現在のブラウザに紐付けられています。ブラウザを変更したり閲覧データを消去するとデータが失われます。定期的に設定をエクスポートしてバックアップすることをお勧めします。",
+  offlineUsageTitle: "使い方",
+  offlineUsageStep1: "GitHub Releases から .html ファイルをダウンロード",
+  offlineUsageStep2: "ダブルクリックしてブラウザで開く",
+  offlineUsageStep3: "使用開始（Chrome / Edge / Firefox 推奨）",
+  offlineDownloadBtn: "ダウンロードページへ",
+
+  // Export confirm
+  confirmExportBackup: "エクスポートされる設定ファイルには、すべての問題、設定、LLM設定（APIキーを含む）が含まれます。プライバシーを保護し、信頼できない相手にファイルを共有しないでください。エクスポートしますか？",
 }

@@ -405,7 +405,7 @@ export function LlmPage(props: {
             <div className="modal-actions">
               <button onClick={() => setShowOverwriteConfirm(false)}>{t("cancel")}</button>
               <button
-                style={{ background: "var(--accent)", color: "#fff", borderColor: "var(--accent)" }}
+                className="accent-button"
                 onClick={() => {
                   setShowOverwriteConfirm(false)
                   doRunParser()

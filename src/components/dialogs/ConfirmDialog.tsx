@@ -29,7 +29,7 @@ export function ConfirmDialog({
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
           <button
-            style={{ background: "var(--danger)", color: "#fff", borderColor: "var(--danger)" }}
+            className="danger-button"
             onClick={() => {
               state.onConfirm()
               onClose()
@@ -102,7 +102,7 @@ export function PromptDialog({
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
           <button
-            style={{ background: "var(--accent)", color: "#fff", borderColor: "var(--accent)" }}
+            className="accent-button"
             onClick={handleSubmit}
           >
             {t("confirmAction")}

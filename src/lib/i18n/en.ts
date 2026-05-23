@@ -532,4 +532,20 @@ export const en: Record<string, string> = {
   jsonNoQuestions: "No question array found in JSON.",
   boolTrue: "True",
   boolFalse: "False",
+
+  // Offline version
+  offlineVersion: "Offline Version",
+  offlineDialogTitle: "Offline Version",
+  offlineBuildTitle: "How It Works",
+  offlineBuildDesc: "All code, styles, and assets are bundled into a single .html file. No server or internet connection needed — just double-click to open in your browser. Fully functional, same as the online version.",
+  offlineStorageTitle: "Data Storage",
+  offlineStorageDesc: "Data is stored in your browser's localStorage, tied to the current browser. Switching browsers or clearing browsing data will erase your data. We recommend regularly exporting your config as a backup.",
+  offlineUsageTitle: "How to Use",
+  offlineUsageStep1: "Download the .html file from GitHub Releases",
+  offlineUsageStep2: "Double-click to open in your browser",
+  offlineUsageStep3: "Start using (Chrome / Edge / Firefox recommended)",
+  offlineDownloadBtn: "Go to Downloads",
+
+  // Export confirm
+  confirmExportBackup: "The exported config file contains all your questions, settings, and LLM configuration (including API keys). Please protect your privacy and do not share the file with untrusted parties. Proceed?",
 }

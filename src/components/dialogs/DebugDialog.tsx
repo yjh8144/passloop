@@ -32,11 +32,7 @@ export function DebugDialog({ open, onClose }: { open: boolean; onClose: () => v
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
           <button
-            style={{
-              background: debugEnabled ? "var(--danger)" : "var(--accent)",
-              color: "#fff",
-              borderColor: debugEnabled ? "var(--danger)" : "var(--accent)",
-            }}
+            className={debugEnabled ? "danger-button" : "accent-button"}
             onClick={toggleDebug}
           >
             {debugEnabled ? t("disableDebugBtn") : t("enableDebugBtn")}

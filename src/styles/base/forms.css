@@ -30,6 +30,28 @@ button:disabled {
   opacity: 0.55;
 }
 
+.danger-button {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.danger-button:hover:not(:disabled) {
+  border-color: var(--danger);
+  opacity: 0.9;
+}
+
+.accent-button {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.accent-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  opacity: 0.9;
+}
+
 input,
 select,
 textarea {

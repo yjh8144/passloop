@@ -523,4 +523,20 @@ export const zh: Record<string, string> = {
   jsonNoQuestions: "JSON 中没有找到题目数组。",
   boolTrue: "正确",
   boolFalse: "错误",
+
+  // Offline version
+  offlineVersion: "离线版本",
+  offlineDialogTitle: "离线版本",
+  offlineBuildTitle: "打包机制",
+  offlineBuildDesc: "所有代码、样式和资源被打包为单个 .html 文件。无需服务器、无需联网，双击即可在浏览器中运行，功能与在线版完全一致。",
+  offlineStorageTitle: "数据存储",
+  offlineStorageDesc: "数据保存在浏览器的 localStorage 中，与当前浏览器绑定。更换浏览器或清除浏览数据会导致数据丢失，建议定期使用「导出配置」功能进行备份。",
+  offlineUsageTitle: "使用方法",
+  offlineUsageStep1: "从 GitHub Releases 下载 .html 文件",
+  offlineUsageStep2: "双击文件，用浏览器打开",
+  offlineUsageStep3: "开始使用（推荐 Chrome / Edge / Firefox）",
+  offlineDownloadBtn: "前往下载页面",
+
+  // Export confirm
+  confirmExportBackup: "导出配置文件将包含你的所有题目、设置和 LLM 配置信息。请注意保护隐私，不要将导出文件分享给不信任的人。确定导出？",
 }
