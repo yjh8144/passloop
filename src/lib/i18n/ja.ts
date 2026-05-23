@@ -319,6 +319,18 @@ export const ja: Record<string, string> = {
   onlyExplanation: "解説のみ",
   onlyQuestions: "問題のみ",
 
+  // Provider Management
+  providersTab: "プロバイダー",
+  scenariosTab: "シナリオ",
+  providerNameLabel: "名前",
+  providerNamePlaceholder: "プロバイダーの名前を入力",
+  addProvider: "プロバイダーを追加",
+  saveProvider: "保存",
+  noProviders: "プロバイダーが未登録です",
+  parseScenarioLabel: "問題解析",
+  fillScenarioLabel: "解答補充",
+  notAssigned: "未割当",
+
   // LLM Page
   llmPageDesc: "未整理の問題を標準 JSON に変換。解答・解説の補充と直接インポートが可能。",
   selfParseBtn: "セルフ解析",
@@ -340,6 +352,12 @@ export const ja: Record<string, string> = {
   validatePassed: "検証合格、保存しました。",
   overwriteConfirmHeader: "上書き確認",
   overwriteConfirmContent: "右パネルに既存の内容があります。内蔵 LLM 解析で上書きします。続行しますか？",
+  selectParseContentTitle: "コンテンツモード選択",
+  selectParseContentDesc: "AI 解析時に生成する内容を選択してください。",
+  parseAnswerPlusExplanation: "解答 + 解説",
+  parseAnswerOnly: "解答のみ",
+  parseExplanationOnly: "解説のみ",
+  parseQuestionsOnly: "問題のみ",
   confirmOverwriteBtn: "上書き",
   importCurrentList: "現在のリストにインポート",
   newList: "新規リスト",
@@ -539,4 +557,7 @@ export const ja: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup: "エクスポートされる設定ファイルには、すべての問題、設定、LLM設定（APIキーを含む）が含まれます。プライバシーを保護し、信頼できない相手にファイルを共有しないでください。エクスポートしますか？",
+
+  // Debug
+  simulateCrash: "クラッシュをシミュレート",
 }

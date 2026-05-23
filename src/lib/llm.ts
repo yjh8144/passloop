@@ -88,18 +88,21 @@ options 使用 [{"label":"A","text":"选项内容"}]。
 解析字段 explanation 可以为空。`
 
 export async function parseWithLlm(input: string, config: LlmConfig) {
-  const fullText = await streamParseLlm(input, config, () => {})
+  const fullText = await streamParseLlm(input, config, "both", () => {})
   return parseQuestionJson(extractJsonText(fullText))
 }
 
 export async function streamParseLlm(
   input: string,
   config: LlmConfig,
+  mode: "both" | "answer" | "explanation" | "none",
   onChunk: (accumulated: string) => void,
 ): Promise<string> {
+  const fillAnswer = mode === "both" || mode === "answer"
+  const fillExplanation = mode === "both" || mode === "explanation"
   const prompt = `${SYSTEM_PROMPT}
-补充答案：${config.fillAnswer ? "是" : "否"}
-补充解析：${config.fillExplanation ? "是" : "否"}
+补充答案：${fillAnswer ? "是" : "否"}
+补充解析：${fillExplanation ? "是" : "否"}
 
 原始题目：
 ${input}`

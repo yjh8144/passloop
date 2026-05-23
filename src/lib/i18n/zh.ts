@@ -319,6 +319,18 @@ export const zh: Record<string, string> = {
   onlyExplanation: "仅解析",
   onlyQuestions: "仅题目",
 
+  // Provider Management
+  providersTab: "模型提供商",
+  scenariosTab: "场景分配",
+  providerNameLabel: "名称",
+  providerNamePlaceholder: "为此提供商取一个名字",
+  addProvider: "添加提供商",
+  saveProvider: "保存",
+  noProviders: "尚未添加模型提供商",
+  parseScenarioLabel: "题目解析",
+  fillScenarioLabel: "填充答案",
+  notAssigned: "未分配",
+
   // LLM Page
   llmPageDesc: "把未整理题目转换为标准题库 JSON，可补答案、解析并直接导入。",
   selfParseBtn: "自助解析",
@@ -340,6 +352,12 @@ export const zh: Record<string, string> = {
   validatePassed: "校验通过，已保存。",
   overwriteConfirmHeader: "覆盖确认",
   overwriteConfirmContent: "右侧已有解析内容，使用内置 LLM 解析会覆盖当前内容。确定继续吗？",
+  selectParseContentTitle: "选择内容模式",
+  selectParseContentDesc: "选择 AI 解析时生成的内容。",
+  parseAnswerPlusExplanation: "答案 + 解析",
+  parseAnswerOnly: "仅答案",
+  parseExplanationOnly: "仅解析",
+  parseQuestionsOnly: "仅题目",
   confirmOverwriteBtn: "确定覆盖",
   importCurrentList: "导入当前题单",
   newList: "新建题单",
@@ -539,4 +557,7 @@ export const zh: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup: "导出配置文件将包含你的所有题目、设置和 LLM 配置信息。请注意保护隐私，不要将导出文件分享给不信任的人。确定导出？",
+
+  // Debug
+  simulateCrash: "模拟崩溃",
 }

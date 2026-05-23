@@ -329,6 +329,18 @@ export const fr: Record<string, string> = {
   onlyExplanation: "Explication uniquement",
   onlyQuestions: "Questions uniquement",
 
+  // Provider Management
+  providersTab: "Fournisseurs",
+  scenariosTab: "Scénarios",
+  providerNameLabel: "Nom",
+  providerNamePlaceholder: "Nommez ce fournisseur",
+  addProvider: "Ajouter un fournisseur",
+  saveProvider: "Enregistrer",
+  noProviders: "Aucun fournisseur ajouté",
+  parseScenarioLabel: "Analyse de questions",
+  fillScenarioLabel: "Remplir les réponses",
+  notAssigned: "Non assigné",
+
   // LLM Page
   llmPageDesc: "Convertir des questions non formatées en JSON standard. Peut compléter réponses, explications et importer directement.",
   selfParseBtn: "Auto-analyse",
@@ -350,6 +362,12 @@ export const fr: Record<string, string> = {
   validatePassed: "Validation réussie, sauvegardé.",
   overwriteConfirmHeader: "Confirmer l'écrasement",
   overwriteConfirmContent: "Le panneau droit a du contenu existant. L'analyse LLM intégrée l'écrasera. Continuer ?",
+  selectParseContentTitle: "Mode de contenu",
+  selectParseContentDesc: "Choisissez ce que l'IA doit générer lors de l'analyse.",
+  parseAnswerPlusExplanation: "Réponse + Explication",
+  parseAnswerOnly: "Réponse uniquement",
+  parseExplanationOnly: "Explication uniquement",
+  parseQuestionsOnly: "Questions uniquement",
   confirmOverwriteBtn: "Écraser",
   importCurrentList: "Importer dans la liste actuelle",
   newList: "Nouvelle liste",
@@ -549,4 +567,7 @@ export const fr: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup: "Le fichier exporté contient toutes vos questions, paramètres et configuration LLM (y compris les clés API). Veuillez protéger votre vie privée et ne pas partager ce fichier avec des personnes non fiables. Continuer ?",
+
+  // Debug
+  simulateCrash: "Simuler un crash",
 }

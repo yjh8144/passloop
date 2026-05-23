@@ -1,9 +1,10 @@
-import type { AppData, LlmConfig, QuestionList, Settings } from "./types"
+import type { AppData, LlmConfig, LlmMultiConfig, LlmProvider, QuestionList, Settings } from "./types"
 import { createId, normalizeQuestion } from "./question"
 import { debugError } from "./debug"
 
 export const STORAGE_KEY = "passloop.app.v1"
 export const LLM_CONFIG_STORAGE_KEY = "passloop.llm-config.v1"
+export const LLM_MULTI_CONFIG_STORAGE_KEY = "passloop.llm-config.v2"
 
 const now = () => new Date().toISOString()
 
@@ -102,6 +103,88 @@ export function saveLlmConfig(config: LlmConfig) {
 
 export function clearLlmConfig() {
   localStorage.removeItem(LLM_CONFIG_STORAGE_KEY)
+}
+
+export function loadLlmMultiConfig(fallback: LlmMultiConfig): LlmMultiConfig {
+  try {
+    const rawV2 = localStorage.getItem(LLM_MULTI_CONFIG_STORAGE_KEY)
+    if (rawV2) {
+      return normalizeMultiConfig(JSON.parse(rawV2), fallback)
+    }
+    const rawV1 = localStorage.getItem(LLM_CONFIG_STORAGE_KEY)
+    if (rawV1) {
+      const v1 = JSON.parse(rawV1) as Partial<LlmConfig>
+      const migrated = migrateV1ToV2(v1, fallback)
+      saveLlmMultiConfig(migrated)
+      localStorage.removeItem(LLM_CONFIG_STORAGE_KEY)
+      return migrated
+    }
+    return fallback
+  } catch (e) {
+    debugError("loadLlmMultiConfig parse failed", e)
+    return fallback
+  }
+}
+
+export function saveLlmMultiConfig(config: LlmMultiConfig) {
+  localStorage.setItem(LLM_MULTI_CONFIG_STORAGE_KEY, JSON.stringify(config))
+}
+
+export function clearLlmMultiConfig() {
+  localStorage.removeItem(LLM_MULTI_CONFIG_STORAGE_KEY)
+}
+
+function migrateV1ToV2(v1: Partial<LlmConfig>, fallback: LlmMultiConfig): LlmMultiConfig {
+  const provider = isLlmProvider(v1.provider) ? v1.provider : "openai"
+  const timestamp = now()
+  const id = createId()
+  const hasKey = typeof v1.apiKey === "string" && v1.apiKey.trim() !== ""
+
+  const entry: LlmProvider = {
+    id,
+    name: getDefaultProviderName(provider, typeof v1.model === "string" ? v1.model : ""),
+    provider,
+    endpoint: typeof v1.endpoint === "string" ? v1.endpoint : "",
+    apiKey: typeof v1.apiKey === "string" ? v1.apiKey : "",
+    model: typeof v1.model === "string" ? v1.model : "",
+    proxyEnabled: typeof v1.proxyEnabled === "boolean" ? v1.proxyEnabled : true,
+    proxyUrl: typeof v1.proxyUrl === "string" ? v1.proxyUrl : "",
+    proxyKey: typeof v1.proxyKey === "string" ? v1.proxyKey : "",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+
+  return {
+    version: 2,
+    providers: hasKey ? [entry] : [],
+    assignments: hasKey ? { parse: id, fill: id } : { parse: null, fill: null },
+  }
+}
+
+function getDefaultProviderName(provider: string, model: string): string {
+  const label = provider === "openai" ? "OpenAI" : provider === "anthropic" ? "Anthropic" : "Gemini"
+  return model ? `${label} (${model})` : label
+}
+
+function normalizeMultiConfig(source: unknown, fallback: LlmMultiConfig): LlmMultiConfig {
+  if (!source || typeof source !== "object") return fallback
+  const s = source as Partial<LlmMultiConfig>
+  const providers = Array.isArray(s.providers) ? s.providers.filter(isValidProvider) : []
+  const providerIds = new Set(providers.map((p) => p.id))
+  return {
+    version: 2,
+    providers,
+    assignments: {
+      parse: typeof s.assignments?.parse === "string" && providerIds.has(s.assignments.parse) ? s.assignments.parse : null,
+      fill: typeof s.assignments?.fill === "string" && providerIds.has(s.assignments.fill) ? s.assignments.fill : null,
+    },
+  }
+}
+
+function isValidProvider(value: unknown): value is LlmProvider {
+  if (!value || typeof value !== "object") return false
+  const p = value as Partial<LlmProvider>
+  return typeof p.id === "string" && typeof p.provider === "string" && isLlmProvider(p.provider)
 }
 
 function isLlmProvider(value: unknown): value is LlmConfig["provider"] {

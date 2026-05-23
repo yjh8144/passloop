@@ -319,6 +319,18 @@ export const ko: Record<string, string> = {
   onlyExplanation: "해설만",
   onlyQuestions: "문제만",
 
+  // Provider Management
+  providersTab: "제공자",
+  scenariosTab: "시나리오",
+  providerNameLabel: "이름",
+  providerNamePlaceholder: "제공자 이름을 입력하세요",
+  addProvider: "제공자 추가",
+  saveProvider: "저장",
+  noProviders: "등록된 제공자가 없습니다",
+  parseScenarioLabel: "문제 분석",
+  fillScenarioLabel: "답 채우기",
+  notAssigned: "미할당",
+
   // LLM Page
   llmPageDesc: "정리되지 않은 문제를 표준 JSON으로 변환. 답/해설 보충 및 직접 가져오기 가능.",
   selfParseBtn: "자체 분석",
@@ -340,6 +352,12 @@ export const ko: Record<string, string> = {
   validatePassed: "검증 통과, 저장됨.",
   overwriteConfirmHeader: "덮어쓰기 확인",
   overwriteConfirmContent: "오른쪽에 기존 내용이 있습니다. 내장 LLM 분석으로 덮어씁니다. 계속하시겠습니까?",
+  selectParseContentTitle: "콘텐츠 모드 선택",
+  selectParseContentDesc: "AI 분석 시 생성할 내용을 선택하세요.",
+  parseAnswerPlusExplanation: "정답 + 해설",
+  parseAnswerOnly: "정답만",
+  parseExplanationOnly: "해설만",
+  parseQuestionsOnly: "문제만",
   confirmOverwriteBtn: "덮어쓰기",
   importCurrentList: "현재 목록에 가져오기",
   newList: "새 목록",
@@ -539,4 +557,7 @@ export const ko: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup: "내보내기 파일에는 모든 문제, 설정, LLM 구성(API 키 포함)이 포함됩니다. 개인정보를 보호하고 신뢰할 수 없는 사람에게 파일을 공유하지 마세요. 내보내시겠습니까?",
+
+  // Debug
+  simulateCrash: "크래시 시뮬레이션",
 }

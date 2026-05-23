@@ -17,12 +17,20 @@ export function ImportExportDialogs({
 }) {
   const t = useT()
   const { data, setData, activeList, updateActiveList, updateData } = useAppData()
-  const { llmConfig } = useLlmConfig()
+  const { getConfigForScenario } = useLlmConfig()
   const pushToast = usePushToast()
+
+  const proxyConfig = (() => {
+    const cfg = getConfigForScenario("parse")
+    if (cfg && cfg.proxyEnabled) {
+      return { proxyEnabled: true, proxyUrl: cfg.proxyUrl, proxyKey: cfg.proxyKey }
+    }
+    return { proxyEnabled: false, proxyUrl: "", proxyKey: "" }
+  })()
 
   const importExport = useImportExport({
     t,
-    llmConfig,
+    proxyConfig,
     pushToast,
     updateActiveList,
     updateData,

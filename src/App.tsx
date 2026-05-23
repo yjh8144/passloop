@@ -66,7 +66,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
     clearActiveListAttempts,
     addImportedList,
   } = useAppData()
-  const { llmConfig, openLlmConfig, clearLlmConfig: clearLlmConfigCtx } = useLlmConfig()
+  const { clearLlmConfig: clearLlmConfigCtx } = useLlmConfig()
   const { page, desktopSidebarCollapsed, llmUnsavedRef } = useNavigation()
   const { showConfirm } = useDialog()
   const t = useT()
@@ -107,8 +107,6 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
               editing={editing}
               setEditing={setEditing}
               onDeleteList={() => deleteList(activeList.id)}
-              llmConfig={llmConfig}
-              onOpenLlmConfig={openLlmConfig}
             />
           ) : page === "llm" ? (
             <LlmPage
@@ -116,8 +114,6 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
               updateActiveList={updateActiveList}
               addImportedList={addImportedList}
               unsavedRef={llmUnsavedRef}
-              llmConfig={llmConfig}
-              onOpenLlmConfig={openLlmConfig}
             />
           ) : (
             <PracticePage />

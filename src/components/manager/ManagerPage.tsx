@@ -11,14 +11,14 @@ import {
   Trash2,
   X,
 } from "lucide-react"
-import type { LlmConfig, Question, QuestionList } from "../../lib/types"
+import type { Question, QuestionList } from "../../lib/types"
 import { createEmptyQuestion, getTypeLabels } from "../../lib/question"
 import { fillAnswersWithLlm } from "../../lib/llm"
 import { debugLog } from "../../lib/debug"
 import { EmptyState } from "../ui/EmptyState"
 import { QuestionEditor } from "./QuestionEditor"
 import { SelfFillDialog } from "./SelfFillDialog"
-import { useT, usePushToast, useDialog } from "../../contexts"
+import { useT, usePushToast, useDialog, useLlmConfig } from "../../contexts"
 
 export function ManagerPage(props: {
   list: QuestionList
@@ -26,12 +26,11 @@ export function ManagerPage(props: {
   editing: Question | null
   setEditing: (question: Question | null) => void
   onDeleteList: () => void
-  llmConfig: LlmConfig
-  onOpenLlmConfig: () => void
 }) {
   const t = useT()
   const pushToast = usePushToast()
   const { showConfirm } = useDialog()
+  const { getConfigForScenario, openLlmConfig } = useLlmConfig()
   const typeLabelsMap = getTypeLabels(t)
   const [localListName, setLocalListName] = useState(props.list.name)
   const [showFillChoice, setShowFillChoice] = useState(false)
@@ -63,14 +62,20 @@ export function ManagerPage(props: {
   }, [props.editing])
 
   const handleFillAnswers = () => {
-    if (!props.llmConfig.apiKey.trim()) {
-      props.onOpenLlmConfig()
+    const fillConfig = getConfigForScenario("fill")
+    if (!fillConfig || !fillConfig.apiKey.trim()) {
+      openLlmConfig()
       return
     }
     setShowFillChoice(true)
   }
 
   const runFill = async (mode: "answer" | "explanation" | "both") => {
+    const fillConfig = getConfigForScenario("fill")
+    if (!fillConfig) {
+      openLlmConfig()
+      return
+    }
     if (!props.list.questions.length) {
       pushToast("info", t("noQuestionsInList"))
       return
@@ -78,8 +83,8 @@ export function ManagerPage(props: {
     debugLog("LLM fill started", {
       mode,
       questionCount: props.list.questions.length,
-      provider: props.llmConfig.provider,
-      model: props.llmConfig.model,
+      provider: fillConfig.provider,
+      model: fillConfig.model,
     })
     setShowFillChoice(false)
     setFilling(true)
@@ -87,7 +92,7 @@ export function ManagerPage(props: {
     try {
       const updated = await fillAnswersWithLlm(
         props.list.questions,
-        props.llmConfig,
+        fillConfig,
         mode,
         (accumulated) => {
           setFillStreamText(accumulated)

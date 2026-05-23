@@ -1,4 +1,4 @@
-import type { LlmConfig, QuestionType } from "../lib/types"
+import type { LlmConfig, LlmMultiConfig, QuestionType } from "../lib/types"
 
 export const questionTypes: QuestionType[] = [
   "single",
@@ -48,6 +48,12 @@ export const PRESET_PROXIES: Array<{ name: string; url: string; key: string }> =
     key: "19b0451c81fb111df6704051c438c0d868bf661a27e816a287fe5aa28a1a2143",
   },
 ]
+
+export const defaultLlmMultiConfig: LlmMultiConfig = {
+  version: 2,
+  providers: [],
+  assignments: { parse: null, fill: null },
+}
 
 export const ANSWERS_SESSION_KEY = "passloop.session.answers"
 export const INDEX_SESSION_KEY = "passloop.session.index"

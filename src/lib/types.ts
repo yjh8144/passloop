@@ -69,8 +69,37 @@ export interface AppData {
   settings: Settings
 }
 
+export type LlmProviderType = "openai" | "gemini" | "anthropic"
+
+export type LlmScenario = "parse" | "fill"
+
+export interface LlmProvider {
+  id: string
+  name: string
+  provider: LlmProviderType
+  endpoint: string
+  apiKey: string
+  model: string
+  proxyEnabled: boolean
+  proxyUrl: string
+  proxyKey: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LlmScenarioAssignment {
+  parse: string | null
+  fill: string | null
+}
+
+export interface LlmMultiConfig {
+  version: 2
+  providers: LlmProvider[]
+  assignments: LlmScenarioAssignment
+}
+
 export interface LlmConfig {
-  provider: "openai" | "gemini" | "anthropic"
+  provider: LlmProviderType
   endpoint: string
   apiKey: string
   model: string

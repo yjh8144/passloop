@@ -328,6 +328,18 @@ export const en: Record<string, string> = {
   onlyExplanation: "Explanation only",
   onlyQuestions: "Questions only",
 
+  // Provider Management
+  providersTab: "Providers",
+  scenariosTab: "Scenarios",
+  providerNameLabel: "Name",
+  providerNamePlaceholder: "Give this provider a name",
+  addProvider: "Add Provider",
+  saveProvider: "Save",
+  noProviders: "No providers added yet",
+  parseScenarioLabel: "Question Parsing",
+  fillScenarioLabel: "Fill Answers",
+  notAssigned: "Not assigned",
+
   // LLM Page
   llmPageDesc: "Convert unformatted questions to standard JSON. Can fill answers, explanations, and import directly.",
   selfParseBtn: "Self-parse",
@@ -349,6 +361,12 @@ export const en: Record<string, string> = {
   validatePassed: "Validation passed, saved.",
   overwriteConfirmHeader: "Overwrite Confirm",
   overwriteConfirmContent: "Right panel has existing content. Built-in LLM parsing will overwrite it. Continue?",
+  selectParseContentTitle: "Select Content Mode",
+  selectParseContentDesc: "Choose what the AI should generate during parsing.",
+  parseAnswerPlusExplanation: "Answer + Explanation",
+  parseAnswerOnly: "Answer Only",
+  parseExplanationOnly: "Explanation Only",
+  parseQuestionsOnly: "Questions Only",
   confirmOverwriteBtn: "Overwrite",
   importCurrentList: "Import to current list",
   newList: "New list",
@@ -548,4 +566,7 @@ export const en: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup: "The exported config file contains all your questions, settings, and LLM configuration (including API keys). Please protect your privacy and do not share the file with untrusted parties. Proceed?",
+
+  // Debug
+  simulateCrash: "Simulate Crash",
 }

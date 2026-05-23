@@ -3,6 +3,16 @@ import { X } from "lucide-react"
 import { useT } from "../../contexts"
 import { debugLog, isDebugEnabled, setDebugEnabled } from "../../lib/debug"
 
+function CrashTrigger({ label }: { label: string }) {
+  const [crash, setCrash] = useState(false)
+  if (crash) throw new Error("Debug simulated crash")
+  return (
+    <button className="danger-button" onClick={() => setCrash(true)}>
+      {label}
+    </button>
+  )
+}
+
 export function DebugDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT()
   const [debugEnabled, setDebugState] = useState(() => isDebugEnabled())
@@ -30,6 +40,7 @@ export function DebugDialog({ open, onClose }: { open: boolean; onClose: () => v
           {debugEnabled ? t("debugEnabledText") : t("debugDisabledText")}
         </p>
         <div className="modal-actions">
+          {debugEnabled && <CrashTrigger label={t("simulateCrash")} />}
           <button onClick={onClose}>{t("cancel")}</button>
           <button
             className={debugEnabled ? "danger-button" : "accent-button"}

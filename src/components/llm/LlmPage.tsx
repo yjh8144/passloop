@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react"
 import type { MutableRefObject } from "react"
 import {
+  BookOpen,
   Check,
   ChevronRight,
   Copy,
   Download,
   Edit3,
+  FileText,
   Plus,
   Settings2,
   Sparkles,
   Upload,
   X,
 } from "lucide-react"
-import type { LlmConfig, QuestionList } from "../../lib/types"
+import type { QuestionList } from "../../lib/types"
 import { normalizeImportedList, parseQuestionJson } from "../../lib/question"
 import { streamParseLlm, extractJsonText } from "../../lib/llm"
 import { downloadJson } from "../../lib/storage"
@@ -21,20 +23,19 @@ import { Segmented } from "../ui/Segmented"
 import { EmptyState } from "../ui/EmptyState"
 import { SelfGenerateDialog } from "./SelfGenerateDialog"
 import { ParsedQuestionsEditor } from "./ParsedQuestionsEditor"
-import { useT, usePushToast } from "../../contexts"
+import { useT, usePushToast, useLlmConfig } from "../../contexts"
 
 export function LlmPage(props: {
   activeList: QuestionList
   updateActiveList: (recipe: (list: QuestionList) => QuestionList) => void
   addImportedList: (list: QuestionList) => void
   unsavedRef: MutableRefObject<boolean>
-  llmConfig: LlmConfig
-  onOpenLlmConfig: () => void
 }) {
   const t = useT()
   const pushToast = usePushToast()
-  const { unsavedRef, updateActiveList, addImportedList, onOpenLlmConfig } = props
-  const config = props.llmConfig
+  const { getConfigForScenario, openLlmConfig } = useLlmConfig()
+  const { unsavedRef, updateActiveList, addImportedList } = props
+  const config = getConfigForScenario("parse")
   const [rawText, setRawText] = useState("")
   const [parsedList, setParsedList] = useState<QuestionList | null>(null)
   const [parsedJsonText, setParsedJsonText] = useState("")
@@ -49,6 +50,7 @@ export function LlmPage(props: {
   const [manualInput, setManualInput] = useState(false)
   const [manualJsonText, setManualJsonText] = useState("")
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false)
+  const [showParseChoice, setShowParseChoice] = useState(false)
 
   useEffect(() => {
     unsavedRef.current = parsedList !== null
@@ -59,15 +61,24 @@ export function LlmPage(props: {
       pushToast("error", t("pleaseInputRawText"))
       return
     }
+    if (!config) {
+      openLlmConfig()
+      return
+    }
     if ((manualJsonText.trim() || parsedList) && !showOverwriteConfirm) {
       setShowOverwriteConfirm(true)
       return
     }
     setShowOverwriteConfirm(false)
-    doRunParser()
+    setShowParseChoice(true)
   }
 
-  const doRunParser = async () => {
+  const doRunParser = async (mode: "both" | "answer" | "explanation" | "none") => {
+    if (!config) {
+      openLlmConfig()
+      return
+    }
+    setShowParseChoice(false)
     debugLog("LLM parse started", {
       provider: config.provider,
       model: config.model,
@@ -80,7 +91,7 @@ export function LlmPage(props: {
     setManualInput(false)
     setManualJsonText("")
     try {
-      const fullText = await streamParseLlm(rawText, config, (accumulated) => {
+      const fullText = await streamParseLlm(rawText, config, mode, (accumulated) => {
         setStreamingText(accumulated)
       })
       const lists = parseQuestionJson(extractJsonText(fullText))
@@ -171,15 +182,16 @@ export function LlmPage(props: {
             </button>
           </div>
         </div>
-        <button className="llm-config-trigger" onClick={onOpenLlmConfig}>
+        <button className="llm-config-trigger" onClick={openLlmConfig}>
           <Settings2 size={16} />
           <span>
-            {config.provider === "openai"
-              ? t("openAiCompatible")
-              : config.provider === "anthropic"
-                ? "Anthropic"
-                : "Gemini"}{" "}
-            / {config.model || t("modelNotSet")}
+            {config
+              ? `${config.provider === "openai"
+                  ? t("openAiCompatible")
+                  : config.provider === "anthropic"
+                    ? "Anthropic"
+                    : "Gemini"} / ${config.model || t("modelNotSet")}`
+              : t("notAssigned")}
           </span>
           <ChevronRight size={14} />
         </button>
@@ -408,10 +420,37 @@ export function LlmPage(props: {
                 className="accent-button"
                 onClick={() => {
                   setShowOverwriteConfirm(false)
-                  doRunParser()
+                  setShowParseChoice(true)
                 }}
               >
                 {t("confirmOverwriteBtn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showParseChoice && (
+        <div className="modal-overlay" onClick={() => setShowParseChoice(false)}>
+          <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{t("selectParseContentTitle")}</h2>
+              <button className="icon-button" onClick={() => setShowParseChoice(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <p className="modal-desc">{t("selectParseContentDesc")}</p>
+            <div className="fill-choice-grid">
+              <button className="primary-button" onClick={() => doRunParser("both")}>
+                <Sparkles size={17} /> {t("parseAnswerPlusExplanation")}
+              </button>
+              <button onClick={() => doRunParser("answer")}>
+                <Check size={17} /> {t("parseAnswerOnly")}
+              </button>
+              <button onClick={() => doRunParser("explanation")}>
+                <BookOpen size={17} /> {t("parseExplanationOnly")}
+              </button>
+              <button onClick={() => doRunParser("none")}>
+                <FileText size={17} /> {t("parseQuestionsOnly")}
               </button>
             </div>
           </div>

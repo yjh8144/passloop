@@ -1,6 +1,6 @@
 import { useState } from "react"
 import type { ChangeEvent } from "react"
-import type { AppData, LlmConfig, QuestionList, TFunc } from "../lib/types"
+import type { AppData, QuestionList, TFunc } from "../lib/types"
 import {
   createId,
   parseQuestionJson,
@@ -14,9 +14,15 @@ import { fetchViaProxy } from "../lib/llm"
 import { defaultLlmConfig } from "../utils/constants"
 import type { PushToast, UpdateActiveList, UpdateData, SetState } from "./types"
 
+interface ProxyConfig {
+  proxyEnabled: boolean
+  proxyUrl: string
+  proxyKey: string
+}
+
 interface UseImportExportParams {
   t: TFunc
-  llmConfig: LlmConfig
+  proxyConfig: ProxyConfig
   pushToast: PushToast
   updateActiveList: UpdateActiveList
   updateData: UpdateData
@@ -26,7 +32,7 @@ interface UseImportExportParams {
 
 export function useImportExport({
   t,
-  llmConfig,
+  proxyConfig,
   pushToast,
   updateActiveList,
   updateData,
@@ -61,13 +67,13 @@ export function useImportExport({
   }
 
   const handleUrlImport = async (url: string) => {
-    const proxyConfig = {
-      proxyEnabled: llmConfig.proxyEnabled !== false,
-      proxyUrl: (llmConfig.proxyEnabled !== false) ? (llmConfig.proxyUrl || defaultLlmConfig.proxyUrl) : "",
-      proxyKey: (llmConfig.proxyEnabled !== false) ? (llmConfig.proxyKey || defaultLlmConfig.proxyKey) : "",
+    const fetchProxyConfig = {
+      proxyEnabled: proxyConfig.proxyEnabled,
+      proxyUrl: proxyConfig.proxyEnabled ? (proxyConfig.proxyUrl || defaultLlmConfig.proxyUrl) : "",
+      proxyKey: proxyConfig.proxyEnabled ? (proxyConfig.proxyKey || defaultLlmConfig.proxyKey) : "",
     }
     try {
-      const response = await fetchViaProxy(url, proxyConfig)
+      const response = await fetchViaProxy(url, fetchProxyConfig)
       const text = await response.text()
       const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }))
       debugLog("URL import", {
@@ -133,13 +139,13 @@ export function useImportExport({
   }
 
   const handleBackupUrlImport = async (url: string) => {
-    const proxyConfig = {
-      proxyEnabled: llmConfig.proxyEnabled !== false,
-      proxyUrl: (llmConfig.proxyEnabled !== false) ? (llmConfig.proxyUrl || defaultLlmConfig.proxyUrl) : "",
-      proxyKey: (llmConfig.proxyEnabled !== false) ? (llmConfig.proxyKey || defaultLlmConfig.proxyKey) : "",
+    const fetchProxyConfig = {
+      proxyEnabled: proxyConfig.proxyEnabled,
+      proxyUrl: proxyConfig.proxyEnabled ? (proxyConfig.proxyUrl || defaultLlmConfig.proxyUrl) : "",
+      proxyKey: proxyConfig.proxyEnabled ? (proxyConfig.proxyKey || defaultLlmConfig.proxyKey) : "",
     }
     try {
-      const response = await fetchViaProxy(url, proxyConfig)
+      const response = await fetchViaProxy(url, fetchProxyConfig)
       const text = await response.text()
       const imported = normalizeAppData(JSON.parse(text))
       debugLog("Backup URL import parsed", {
