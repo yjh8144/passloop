@@ -1,5 +1,6 @@
 import type { AppData, LlmConfig, QuestionList, Settings } from "./types"
 import { createId, normalizeQuestion } from "./question"
+import { debugError } from "./debug"
 
 export const STORAGE_KEY = "passloop.app.v1"
 export const LLM_CONFIG_STORAGE_KEY = "passloop.llm-config.v1"
@@ -45,7 +46,8 @@ export function loadData(): AppData {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return createDefaultData()
     return normalizeAppData(JSON.parse(raw))
-  } catch {
+  } catch (e) {
+    debugError("loadData parse failed", e)
     return createDefaultData()
   }
 }
@@ -75,7 +77,8 @@ export function loadLlmConfig(fallback: LlmConfig): LlmConfig {
           ? source.fillExplanation
           : fallback.fillExplanation,
     }
-  } catch {
+  } catch (e) {
+    debugError("loadLlmConfig parse failed", e)
     return fallback
   }
 }

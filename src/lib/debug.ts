@@ -17,3 +17,15 @@ export function debugLog(...args: unknown[]) {
     console.log("[PassLoop Debug]", ...args)
   }
 }
+
+export function debugWarn(...args: unknown[]) {
+  if (isDebugEnabled()) {
+    console.warn("[PassLoop Warn]", ...args)
+  }
+}
+
+export function debugError(...args: unknown[]) {
+  if (isDebugEnabled()) {
+    console.error("[PassLoop Error]", ...args)
+  }
+}

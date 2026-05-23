@@ -5,6 +5,7 @@ import { testLlmConnection, fetchModelList } from "../../lib/llm"
 import { providerPlaceholders, defaultLlmConfig, PRESET_PROXIES } from "../../utils/constants"
 import { Segmented } from "../ui/Segmented"
 import { useT, usePushToast } from "../../contexts"
+import { debugError } from "../../lib/debug"
 
 export function LlmConfigModal(props: {
   open: boolean
@@ -86,7 +87,8 @@ export function LlmConfigModal(props: {
       const latency = Math.round(performance.now() - start)
       clearTimeout(timer)
       setProxyStatus((s) => ({ ...s, [url]: { status: "alive", latency } }))
-    } catch {
+    } catch (e) {
+      debugError("testProxy failed", url, e)
       setProxyStatus((s) => ({ ...s, [url]: { status: "dead" } }))
     }
   }

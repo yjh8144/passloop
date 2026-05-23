@@ -1,5 +1,6 @@
 import type { LlmConfig, Question } from "./types"
 import { parseQuestionJson } from "./question"
+import { debugError } from "./debug"
 
 function assertConfigValid(apiKey: string, model: string, endpoint: string): void {
   if (!apiKey) throw new Error("请填写 API Key。")
@@ -146,7 +147,8 @@ async function streamOpenAiCompatible(
       try {
         const parsed = JSON.parse(data)
         return parsed.choices?.[0]?.delta?.content ?? ""
-      } catch {
+      } catch (e) {
+        debugError("OpenAI SSE parse error", data, e)
         return ""
       }
     },
@@ -187,7 +189,8 @@ async function streamGemini(
             ?.map((p: { text?: string }) => p.text ?? "")
             .join("") ?? ""
         )
-      } catch {
+      } catch (e) {
+        debugError("Gemini SSE parse error", data, e)
         return ""
       }
     },
@@ -228,7 +231,8 @@ async function streamAnthropic(
         }
         if (parsed.type === "message_stop") return null
         return ""
-      } catch {
+      } catch (e) {
+        debugError("Anthropic SSE parse error", data, e)
         return ""
       }
     },
@@ -395,7 +399,8 @@ function normalizeModelsEndpoint(endpoint: string) {
     }
     url.pathname = `${path}/models`
     return url.toString()
-  } catch {
+  } catch (e) {
+    debugError("normalizeModelsEndpoint failed", endpoint, e)
     return endpoint
   }
 }
@@ -472,7 +477,8 @@ function normalizeOpenAiChatEndpoint(endpoint: string) {
       return url.toString()
     }
     return url.toString()
-  } catch {
+  } catch (e) {
+    debugError("normalizeChatEndpoint failed", endpoint, e)
     return endpoint
   }
 }

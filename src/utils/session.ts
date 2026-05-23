@@ -1,11 +1,13 @@
 import { ANSWERS_SESSION_KEY, INDEX_SESSION_KEY } from "./constants"
 import type { AnswerMap } from "../hooks/types"
+import { debugError } from "../lib/debug"
 
 export function loadSessionAnswers(): AnswerMap {
   try {
     const raw = sessionStorage.getItem(ANSWERS_SESSION_KEY)
     return raw ? JSON.parse(raw) : {}
-  } catch {
+  } catch (e) {
+    debugError("loadSessionAnswers failed", e)
     return {}
   }
 }
@@ -18,7 +20,8 @@ export function loadSessionIndex(): number {
   try {
     const raw = sessionStorage.getItem(INDEX_SESSION_KEY)
     return raw ? Number(raw) || 0 : 0
-  } catch {
+  } catch (e) {
+    debugError("loadSessionIndex failed", e)
     return 0
   }
 }
