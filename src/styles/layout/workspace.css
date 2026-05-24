@@ -3,10 +3,22 @@
   min-height: 0;
   padding: 18px;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 14px;
   background: var(--bg);
   overflow: hidden;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 12px 0 4px;
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+}
+
+.app-footer a {
+  color: inherit;
+  text-decoration: underline;
 }
 
 @media (max-width: 820px) {

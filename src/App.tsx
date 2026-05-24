@@ -118,6 +118,10 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           ) : (
             <PracticePage />
           )}
+
+          <footer className="app-footer">
+            © 2026 <a href="https://github.com/yjh8144" target="_blank" rel="noopener noreferrer">yjh8144</a>. All rights reserved.
+          </footer>
         </main>
 
         <BottomNav
