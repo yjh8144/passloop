@@ -1,5 +1,7 @@
 # PassLoop
 
+[English](docs/README.en.md) | [日本語](docs/README.ja.md) | [한국어](docs/README.ko.md) | [Français](docs/README.fr.md)
+
 本地轻量化刷题平台。支持题目导入导出、多种练习模式、LLM 辅助解析、错题管理和答题统计。所有数据存储在浏览器 localStorage 中，无需后端服务，开箱即用。
 
 ## 截图预览
