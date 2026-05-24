@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import type { ChangeEvent } from "react"
-import { Download, Loader2, Upload, X } from "lucide-react"
+import { Globe, Loader2, Upload, X } from "lucide-react"
 import { useT } from "../../contexts"
 
 export function ImportSourceDialog({
@@ -58,7 +58,7 @@ export function ImportSourceDialog({
             onClick={() => setUrlMode(true)}
             style={urlMode ? { display: "none" } : undefined}
           >
-            <Download size={16} /> {t("importFromUrl")}
+            <Globe size={16} /> {t("importFromUrl")}
           </button>
         </div>
         {urlMode && (
@@ -103,7 +103,7 @@ export function ImportSourceDialog({
                   </>
                 ) : (
                   <>
-                    <Download size={16} /> {t("import")}
+                    <Globe size={16} /> {t("import")}
                   </>
                 )}
               </button>

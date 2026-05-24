@@ -2,6 +2,12 @@
 
 本地轻量化刷题平台。支持题目导入导出、多种练习模式、LLM 辅助解析、错题管理和答题统计。所有数据存储在浏览器 localStorage 中，无需后端服务，开箱即用。
 
+## 截图预览
+
+![题库管理](docs/screenshot-home.png)
+
+![刷题练习](docs/screenshot-practice.png)
+
 ## 功能特性
 
 ### 刷题练习
@@ -57,19 +63,20 @@
 |------|------|
 | 框架 | React 18 |
 | 语言 | TypeScript |
-| 构建 | Vite 5 |
+| 构建 | Vite 7 |
 | 图标 | Lucide React |
 | 存储 | localStorage |
 | 部署 | 纯静态文件，任意 Web 服务器 |
 
 ## 快速开始
 
-### 环境要求
+### 直接使用（无需安装）
 
-- Node.js >= 18
-- npm >= 9
+从 [Releases](https://github.com/yjh8144/passloop/releases) 下载 `passloop.html`，双击用浏览器打开即可使用。所有功能集成在这一个文件中，无需服务器、无需安装。
 
 ### 本地开发
+
+环境要求：Node.js >= 18、npm >= 9
 
 ```bash
 # 克隆项目
@@ -85,13 +92,21 @@ npm run dev
 
 开发服务器默认监听 `http://localhost:5173`，支持局域网访问。
 
+### 代码检查与格式化
+
+```bash
+npm run lint      # ESLint 检查
+npm run format    # Prettier 格式化
+```
+
 ### 构建生产版本
 
 ```bash
-npm run build
+npm run build          # 常规构建，输出到 dist/
+npm run build:single   # 单文件构建，输出 dist-single/index.html
 ```
 
-产物输出到 `dist/` 目录。
+产物输出到 `dist/` 目录。单文件版本输出到 `dist-single/index.html`，可直接用浏览器打开。
 
 ### 本地预览生产版本
 
@@ -104,6 +119,15 @@ npm run preview
 PassLoop 构建产物为纯静态文件（HTML + CSS + JS），可部署到任何静态托管服务（Vercel、Netlify、GitHub Pages、Cloudflare Pages 等），也可使用 Nginx 或 Docker 自行托管。
 
 构建命令：`npm run build`，输出目录：`dist`。
+
+## CORS 代理
+
+LLM API 存在跨域限制，项目在 `proxy/` 目录提供两种可选代理方案：
+
+- **Cloudflare Workers** — 无服务器，免费额度
+- **Node.js** — 自有 VPS 部署，支持 Docker
+
+详见 [proxy/README.md](proxy/README.md)。
 
 ## 数据说明
 

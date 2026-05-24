@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState } from "react"
 import {
   BookOpen,
-  BrainCircuit,
-  Download,
+  Bot,
   Edit3,
-  FileJson,
+  FileDown,
+  FileUp,
+  FolderDown,
   Plus,
   Settings2,
-  Shuffle,
+  RotateCcw,
   Trash2,
-  Upload,
+  FolderUp,
 } from "lucide-react"
 import { useT, useAppData, useNavigation, useLlmConfig } from "../../contexts"
 
@@ -103,7 +104,7 @@ export function BottomNav(props: {
                   close()
                 }}
               >
-                <Upload size={15} /> {t("importQuestions")}
+                <FileUp size={15} /> {t("importQuestions")}
               </button>
               <button
                 className="panel-action-btn"
@@ -112,7 +113,7 @@ export function BottomNav(props: {
                   close()
                 }}
               >
-                <Upload size={15} /> {t("importBackup")}
+                <FolderUp size={15} /> {t("importBackup")}
               </button>
               <button
                 className="panel-action-btn"
@@ -121,7 +122,7 @@ export function BottomNav(props: {
                   close()
                 }}
               >
-                <Download size={15} /> {t("exportList")}
+                <FileDown size={15} /> {t("exportList")}
               </button>
               <button
                 className="panel-action-btn"
@@ -130,7 +131,7 @@ export function BottomNav(props: {
                   close()
                 }}
               >
-                <FileJson size={15} /> {t("exportBackup")}
+                <FolderDown size={15} /> {t("exportBackup")}
               </button>
               <button
                 className="panel-action-btn danger"
@@ -177,14 +178,14 @@ export function BottomNav(props: {
           className={`bottom-nav-btn ${page === "llm" ? "active" : ""}`}
           onClick={() => navigate("llm")}
         >
-          <BrainCircuit size={20} />
+          <Bot size={20} />
           <span>LLM</span>
         </button>
         <button
           className={`bottom-nav-btn ${page === "wrong" ? "active" : ""}`}
           onClick={() => navigate("wrong")}
         >
-          <Shuffle size={20} />
+          <RotateCcw size={20} />
           <span>{t("wrong")}</span>
         </button>
       </nav>

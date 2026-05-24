@@ -283,7 +283,7 @@ export function LlmPage(props: {
                       }
                     }}
                   >
-                    <Copy size={16} /> {t("createNewList")}
+                    <Plus size={16} /> {t("createNewList")}
                   </button>
                 </>
               ) : (

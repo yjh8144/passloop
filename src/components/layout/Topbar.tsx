@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Languages, Moon, Search, Settings2 } from "lucide-react"
+import { Languages, Palette, Search, Settings2 } from "lucide-react"
 import type { AppData, QuestionList } from "../../lib/types"
 import { ControlPanel } from "../practice/ControlPanel"
 import type { Page } from "../../hooks/types"
@@ -39,7 +39,7 @@ export function Topbar(props: {
       </div>
       <div className="topbar-actions">
         <label className="select-label">
-          <Moon size={16} />
+          <Palette size={16} />
           <select
             value={props.data.settings.theme}
             onChange={(event) =>

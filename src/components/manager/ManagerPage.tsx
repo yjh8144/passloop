@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import {
   BookOpen,
-  BrainCircuit,
   Check,
   Copy,
   Edit3,
@@ -160,10 +159,10 @@ export function ManagerPage(props: {
           </div>
           <div className="stage-tools">
             <button onClick={() => setShowSelfFill(true)}>
-              <Sparkles size={17} /> {t("selfFill")}
+              <Copy size={17} /> {t("selfFill")}
             </button>
             <button onClick={handleFillAnswers} disabled={filling}>
-              <BrainCircuit size={17} /> {filling ? t("filling") : t("llmFill")}
+              <Sparkles size={17} /> {filling ? t("filling") : t("llmFill")}
             </button>
             <button
               className="primary-button"

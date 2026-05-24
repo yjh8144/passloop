@@ -1,21 +1,22 @@
 import { useCallback, useRef } from "react"
 import {
   BookOpen,
-  BrainCircuit,
+  Bot,
   ChevronDown,
   ChevronUp,
-  Download,
   Edit3,
-  FileJson,
+  FileDown,
+  FileUp,
   Github,
   HardDriveDownload,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
   Settings2,
-  Shuffle,
+  RotateCcw,
   Trash2,
-  Upload,
+  FolderDown,
+  FolderUp,
 } from "lucide-react"
 import { useT, useAppData, useNavigation, useLlmConfig } from "../../contexts"
 
@@ -107,13 +108,13 @@ export function Sidebar(props: {
             className={page === "llm" ? "active" : ""}
             onClick={() => changePage("llm")}
           >
-            <BrainCircuit size={17} /> {t("llm")}
+            <Bot size={17} /> {t("llm")}
           </button>
           <button
             className={page === "wrong" ? "active" : ""}
             onClick={() => changePage("wrong")}
           >
-            <Shuffle size={17} /> {t("wrong")}
+            <RotateCcw size={17} /> {t("wrong")}
           </button>
         </nav>
 
@@ -145,16 +146,16 @@ export function Sidebar(props: {
             <Settings2 size={16} /> {t("llmConfigBtn")}
           </button>
           <button onClick={props.onQuestionImport}>
-            <Upload size={16} /> {t("importQuestions")}
+            <FileUp size={16} /> {t("importQuestions")}
           </button>
           <button onClick={props.onBackupImport}>
-            <Upload size={16} /> {t("importBackup")}
+            <FolderUp size={16} /> {t("importBackup")}
           </button>
           <button onClick={props.onExportList}>
-            <Download size={16} /> {t("exportList")}
+            <FileDown size={16} /> {t("exportList")}
           </button>
           <button onClick={props.onExportBackup}>
-            <FileJson size={16} /> {t("exportBackup")}
+            <FolderDown size={16} /> {t("exportBackup")}
           </button>
           <button onClick={props.onOpenOfflineDialog}>
             <HardDriveDownload size={16} /> {t("offlineVersion")}
