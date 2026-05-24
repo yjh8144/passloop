@@ -605,4 +605,5 @@ export const ko: Record<string, string> = {
 
   // Debug
   simulateCrash: "크래시 시뮬레이션",
+  showOnboarding: "가이드 표시",
 }

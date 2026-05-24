@@ -614,4 +614,5 @@ export const en: Record<string, string> = {
 
   // Debug
   simulateCrash: "Simulate Crash",
+  showOnboarding: "Show Onboarding",
 }

@@ -605,4 +605,5 @@ export const zh: Record<string, string> = {
 
   // Debug
   simulateCrash: "模拟崩溃",
+  showOnboarding: "显示引导页",
 }

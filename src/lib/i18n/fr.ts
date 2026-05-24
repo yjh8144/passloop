@@ -615,4 +615,5 @@ export const fr: Record<string, string> = {
 
   // Debug
   simulateCrash: "Simuler un crash",
+  showOnboarding: "Afficher le guide",
 }

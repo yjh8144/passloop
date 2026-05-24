@@ -605,4 +605,5 @@ export const ja: Record<string, string> = {
 
   // Debug
   simulateCrash: "クラッシュをシミュレート",
+  showOnboarding: "ガイドを表示",
 }

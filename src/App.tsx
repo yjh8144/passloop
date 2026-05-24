@@ -149,7 +149,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
             setShowOnboarding(false)
           }}
         />
-        <DebugDialog open={showDebugDialog} onClose={() => setShowDebugDialog(false)} />
+        <DebugDialog open={showDebugDialog} onClose={() => setShowDebugDialog(false)} onShowOnboarding={() => setShowOnboarding(true)} />
         <OfflineDialog open={showOfflineDialog} onClose={() => setShowOfflineDialog(false)} />
       </div>
     </PracticeProvider>
