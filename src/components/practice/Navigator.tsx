@@ -1,7 +1,7 @@
 import type { Question } from "../../lib/types"
 import { debugLog } from "../../lib/debug"
 import type { ResultMap } from "../../hooks/types"
-import { useT } from "../../contexts"
+import { useT, usePracticeContext } from "../../contexts"
 
 export function Navigator(props: {
   questions: Question[]
@@ -13,10 +13,15 @@ export function Navigator(props: {
   allSubmitted?: boolean
 }) {
   const t = useT()
+  const { paperScrollLockRef } = usePracticeContext()
   const handleClick = (index: number) => {
     debugLog("Navigate to question", { index, questionId: props.questions[index]?.id })
     props.setCurrentIndex(index)
     if (props.viewMode === "paper") {
+      window.clearTimeout(paperScrollLockRef.current)
+      paperScrollLockRef.current = window.setTimeout(() => {
+        paperScrollLockRef.current = 0
+      }, 600)
       const el = document.getElementById(`question-${index}`)
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
     }

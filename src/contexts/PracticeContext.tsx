@@ -23,6 +23,7 @@ interface PracticeContextValue {
   currentIndex: number
   setCurrentIndex: SetState<number>
   startedAtRef: MutableRefObject<Record<string, number>>
+  paperScrollLockRef: MutableRefObject<number>
   submitQuestion: (question: Question) => void
   submitAll: () => void
 
@@ -66,6 +67,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   useEffect(() => { stateRef.current = state })
 
   const startedAtRef = useRef<Record<string, number>>({})
+  const paperScrollLockRef = useRef<number>(0)
 
   // --- Persistence ---
   useSessionPersistence(state.answers, state.currentIndex)
@@ -232,6 +234,10 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
             const questionIndex = practiceQuestions.findIndex((q) => q.id === question.id)
             if (questionIndex >= 0 && questionIndex < practiceQuestions.length - 1) {
               window.setTimeout(() => {
+                window.clearTimeout(paperScrollLockRef.current)
+                paperScrollLockRef.current = window.setTimeout(() => {
+                  paperScrollLockRef.current = 0
+                }, 600)
                 document.getElementById(`question-${questionIndex + 1}`)
                   ?.scrollIntoView({ behavior: "smooth", block: "center" })
               }, 500)
@@ -315,6 +321,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       currentIndex: state.currentIndex,
       setCurrentIndex,
       startedAtRef,
+      paperScrollLockRef,
       submitQuestion,
       submitAll,
       wrongSession: state.wrongSession,

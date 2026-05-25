@@ -25,6 +25,7 @@ export function PracticePage() {
     exportWrongList,
     createWrongList,
     startedAtRef,
+    paperScrollLockRef,
   } = usePracticeContext()
 
   const settings = data.settings
@@ -72,6 +73,7 @@ export function PracticePage() {
     const scrollRoot = stage && stage.scrollHeight > stage.clientHeight ? stage : null
     const observer = new IntersectionObserver(
       (entries) => {
+        if (paperScrollLockRef.current) return
         let best: { idx: number; ratio: number } | null = null
         for (const entry of entries) {
           if (!entry.isIntersecting) continue
