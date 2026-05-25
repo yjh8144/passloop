@@ -22,10 +22,15 @@ jobs:
 
       - run: npm run build:single
 
-      - name: Rename output
-        run: mv dist-single/index.html passloop.html
+      - name: Prepare release assets
+        run: |
+          mv dist-single/index.html passloop.html
+          sha256sum passloop.html | awk '{print $1}' > passloop.html.sha256
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
-          files: passloop.html
+          files: |
+            passloop.html
+            passloop.html.sha256
+          generate_release_notes: true
