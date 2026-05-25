@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react"
 import type { MutableRefObject, ReactNode } from "react"
 import { useAppData } from "./AppDataContext"
 import { useNavigation } from "./NavigationContext"
@@ -51,20 +59,16 @@ function createInitialState(): PracticeState {
 export function PracticeProvider({ children }: { children: ReactNode }) {
   const t = useT()
   const { page, setPage } = useNavigation()
-  const {
-    activeList,
-    displayedQuestions,
-    wrongQuestions,
-    data,
-    updateData,
-    resetHandlerRef,
-  } = useAppData()
+  const { activeList, displayedQuestions, wrongQuestions, data, updateData, resetHandlerRef } =
+    useAppData()
   const { showConfirm } = useDialog()
   const pushToast = usePushToast()
 
   const [state, dispatch] = useReducer(practiceReducer, undefined, createInitialState)
   const stateRef = useRef(state)
-  useEffect(() => { stateRef.current = state })
+  useEffect(() => {
+    stateRef.current = state
+  })
 
   const startedAtRef = useRef<Record<string, number>>({})
   const paperScrollLockRef = useRef<number>(0)
@@ -79,7 +83,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   // --- Register reset handler for AppDataContext ---
   const pageRef = useRef(page)
-  useEffect(() => { pageRef.current = page })
+  useEffect(() => {
+    pageRef.current = page
+  })
 
   const handleListReset = useCallback(
     (mode: "full" | "selective", questionIds: string[]) => {
@@ -94,7 +100,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     },
     [setPage],
   )
-  useEffect(() => { resetHandlerRef.current = handleListReset })
+  useEffect(() => {
+    resetHandlerRef.current = handleListReset
+  })
 
   // --- Wrong practice ---
   const practiceQuestions = page === "wrong" ? wrongQuestions : displayedQuestions
@@ -122,7 +130,10 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         setPage("practice")
         return
       }
-      const questionIds = wrongQuestions.flatMap((q) => [q.id, ...q.subQuestions.map((sq) => sq.id)])
+      const questionIds = wrongQuestions.flatMap((q) => [
+        q.id,
+        ...q.subQuestions.map((sq) => sq.id),
+      ])
       debugLog("Wrong practice started (nav)", {
         questionCount: wrongQuestions.length,
         listId: activeList.id,
@@ -179,7 +190,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     (question: Question) => {
       const { results } = stateRef.current
       if (question.id in results) {
-        const allDone = practiceQuestions.length > 0 && practiceQuestions.every((q) => q.id in results)
+        const allDone =
+          practiceQuestions.length > 0 && practiceQuestions.every((q) => q.id in results)
         if (allDone) pushToast("info", t("allQuestionsFinished"))
         return
       }
@@ -204,9 +216,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
               id: createId(),
               listId: activeList.id,
               questionId: question.id,
-              answer:
-                answers[question.id] ??
-                collectCompositeAnswer(question, answers),
+              answer: answers[question.id] ?? collectCompositeAnswer(question, answers),
               correct,
               elapsedMs: Math.max(1000, Date.now() - startedAt),
               submittedAt: new Date().toISOString(),
@@ -216,7 +226,10 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         if (data.settings.revealMode === "end") {
           pushToast("info", t("submittedMsg"))
         } else {
-          pushToast(correct ? "success" : "info", correct ? t("answerCorrect") : t("recordedAsWrong"))
+          pushToast(
+            correct ? "success" : "info",
+            correct ? t("answerCorrect") : t("recordedAsWrong"),
+          )
         }
         if (data.settings.autoNext) {
           if (data.settings.viewMode === "single") {
@@ -238,7 +251,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
                 paperScrollLockRef.current = window.setTimeout(() => {
                   paperScrollLockRef.current = 0
                 }, 600)
-                document.getElementById(`question-${questionIndex + 1}`)
+                document
+                  .getElementById(`question-${questionIndex + 1}`)
                   ?.scrollIntoView({ behavior: "smooth", block: "center" })
               }, 500)
             }
@@ -252,7 +266,17 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         doSubmit()
       }
     },
-    [practiceQuestions, page, activeList.id, data.settings, pushToast, showConfirm, t, updateData, isAnswerEmpty],
+    [
+      practiceQuestions,
+      page,
+      activeList.id,
+      data.settings,
+      pushToast,
+      showConfirm,
+      t,
+      updateData,
+      isAnswerEmpty,
+    ],
   )
 
   const submitAll = useCallback(() => {
@@ -278,9 +302,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           id: createId(),
           listId: activeList.id,
           questionId: question.id,
-          answer:
-            answers[question.id] ??
-            collectCompositeAnswer(question, answers),
+          answer: answers[question.id] ?? collectCompositeAnswer(question, answers),
           correct,
           elapsedMs: Math.max(1000, Date.now() - startedAt),
           submittedAt: new Date().toISOString(),

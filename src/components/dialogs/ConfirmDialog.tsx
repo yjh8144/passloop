@@ -101,10 +101,7 @@ export function PromptDialog({
         />
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
-          <button
-            className="accent-button"
-            onClick={handleSubmit}
-          >
+          <button className="accent-button" onClick={handleSubmit}>
             {t("confirmAction")}
           </button>
         </div>

@@ -258,11 +258,13 @@ export const ja: Record<string, string> = {
   mergeToExisting: "既存データにマージ",
   overwriteCurrentConfig: "現在の設定を上書き",
   confirmOverwriteHeader: "上書き確認",
-  overwriteWarningText: "上書きすると現在のすべてのリスト、記録、設定が削除され、インポート内容に置き換わります。元に戻せません。",
+  overwriteWarningText:
+    "上書きすると現在のすべてのリスト、記録、設定が削除され、インポート内容に置き換わります。元に戻せません。",
   typeConfirmOverwrite: "「上書き確認」と入力して続行：",
   confirmOverwriteKeyword: "上書き確認",
   resetKeyword: "確認",
-  resetWarningText: "ブラウザ内のすべてのリスト、記録、設定が削除されます。復元できません。「確認」と入力して続行。",
+  resetWarningText:
+    "ブラウザ内のすべてのリスト、記録、設定が削除されます。復元できません。「確認」と入力して続行。",
   resetPlaceholderText: "「確認」と入力",
   clearAllDataAction: "すべてのデータを削除",
   githubRepo: "GitHub リポジトリ",
@@ -273,41 +275,56 @@ export const ja: Record<string, string> = {
   obTitleWelcome: "PassLoop へようこそ",
   obPrev: "戻る",
   obNext: "次へ",
-  obWelcome1: "PassLoop はローカルで動作するフロントエンド専用クイズプラットフォームです。すべてのデータはブラウザに保存され、バックエンド不要です。",
+  obWelcome1:
+    "PassLoop はローカルで動作するフロントエンド専用クイズプラットフォームです。すべてのデータはブラウザに保存され、バックエンド不要です。",
   obWelcome2: "6 種類の問題形式に対応：単一選択、複数選択、正誤判定、穴埋め、記述式、複合問題。",
-  obWelcome3: "以下のページで全機能を紹介します。矢印で移動し、いつでも右上の × で閉じて使い始められます。",
+  obWelcome3:
+    "以下のページで全機能を紹介します。矢印で移動し、いつでも右上の × で閉じて使い始められます。",
 
   obTitleList: "リスト管理",
-  obList1: "サイドバーにすべての問題リストが表示されます。クリックでアクティブなリストを切り替えます。",
+  obList1:
+    "サイドバーにすべての問題リストが表示されます。クリックでアクティブなリストを切り替えます。",
   obList2: "+ ボタンで新しい空リストを作成。リスト名をダブルクリックで名前変更。",
   obList3: "「問題管理」ページでリストの削除や説明の編集ができます。",
   obList4: "モバイルでは下部ナビゲーションバーを使用。中央の + ボタンで追加オプションを表示。",
 
   obTitleImport: "問題のインポート",
-  obImport1: "サイドバーの「問題インポート」をクリック。ローカル JSON ファイルのアップロードまたはリモート URL の入力が可能。",
+  obImport1:
+    "サイドバーの「問題インポート」をクリック。ローカル JSON ファイルのアップロードまたはリモート URL の入力が可能。",
   obImport2: "インポート時に「現在のリストに追加」か「新規リスト作成」を選択できます。",
-  obImport3: "「設定インポート」で完全バックアップ（全リスト・記録・設定）を復元。マージまたは上書きモード対応。",
-  obImport4: "JSON 形式：{ \"name\": \"リスト名\", \"questions\": [{ \"title\": \"...\", \"type\": \"single\", \"body\": \"...\", \"options\": [...], \"answer\": [...] }] }",
+  obImport3:
+    "「設定インポート」で完全バックアップ（全リスト・記録・設定）を復元。マージまたは上書きモード対応。",
+  obImport4:
+    'JSON 形式：{ "name": "リスト名", "questions": [{ "title": "...", "type": "single", "body": "...", "options": [...], "answer": [...] }] }',
 
   obTitleManager: "問題管理",
   obManager1: "「問題管理」ページで問題の追加・編集・削除を手動で行えます。",
   obManager2: "各問題にタイトル、問題文、選択肢、正解、解説を設定できます。",
   obManager3: "「LLM 補充」で AI が自動的に解答と解説を生成します（LLM 設定が必要）。",
-  obManager4: "「自助補充」でプロンプトをコピーして外部 AI に送り、返された JSON を貼り付けて取り込みます。",
+  obManager4:
+    "「自助補充」でプロンプトをコピーして外部 AI に送り、返された JSON を貼り付けて取り込みます。",
 
   obTitleLlm: "LLM 解析",
-  obLlm1: "「LLM 解析」ページに未整理テキスト（講義メモ、OCR テキスト等）を貼り付けると、AI が標準クイズ JSON に変換します。",
+  obLlm1:
+    "「LLM 解析」ページに未整理テキスト（講義メモ、OCR テキスト等）を貼り付けると、AI が標準クイズ JSON に変換します。",
   obLlm2: "コンテンツモードを選択：解答+解説、解答のみ、解説のみ、問題のみ。",
-  obLlm3: "「自助解析」モード：生成されたプロンプトを外部 AI（ChatGPT、Claude 等）にコピーし、JSON を貼り付け戻します。",
-  obLlm4: "解析後、現在のリストに直接インポートまたは新規リスト作成。インポート前に結果の編集も可能。",
-  obLlm5: "サイドバーの「LLM 設定」でプロバイダーを追加。OpenAI、Anthropic、Gemini、互換 API に対応。",
+  obLlm3:
+    "「自助解析」モード：生成されたプロンプトを外部 AI（ChatGPT、Claude 等）にコピーし、JSON を貼り付け戻します。",
+  obLlm4:
+    "解析後、現在のリストに直接インポートまたは新規リスト作成。インポート前に結果の編集も可能。",
+  obLlm5:
+    "サイドバーの「LLM 設定」でプロバイダーを追加。OpenAI、Anthropic、Gemini、互換 API に対応。",
 
   obTitlePractice: "練習モード",
-  obPractice1: "「練習台」でリストを選択して開始。「練習」モード（提出して正誤確認）と「暗記」モード（解答を直接表示）。",
+  obPractice1:
+    "「練習台」でリストを選択して開始。「練習」モード（提出して正誤確認）と「暗記」モード（解答を直接表示）。",
   obPractice2: "表示方式：「一問ずつ」で順番に回答、または「一括」で全問まとめて提出。",
-  obPractice3: "右上の設定：並び順（元順序/ランダム/名前順/タイプ順）、回答後自動次へ、解答表示タイミングなど。",
-  obPractice4: "サイドパネルに正答率、平均時間、進捗、誤答数を表示。ナビゲーショングリッドで回答状況を色分け表示。",
-  obPractice5: "全問回答後にまとめダイアログが表示され、全問やり直し、誤答やり直し、誤答を新リストとしてエクスポートが選べます。",
+  obPractice3:
+    "右上の設定：並び順（元順序/ランダム/名前順/タイプ順）、回答後自動次へ、解答表示タイミングなど。",
+  obPractice4:
+    "サイドパネルに正答率、平均時間、進捗、誤答数を表示。ナビゲーショングリッドで回答状況を色分け表示。",
+  obPractice5:
+    "全問回答後にまとめダイアログが表示され、全問やり直し、誤答やり直し、誤答を新リストとしてエクスポートが選べます。",
 
   obTitleWrong: "誤答復習",
   obWrong1: "「誤答セット」をクリックして、間違えた問題の集中練習に入ります。",
@@ -315,7 +332,8 @@ export const ja: Record<string, string> = {
   obWrong3: "誤答ページには独自のセッションタイマーと正答率統計があり、弱点の改善を追跡できます。",
 
   obTitleSettings: "カスタマイズ",
-  obSettings1: "トップバーでテーマ切り替え（7 種：Mint、Paper、Lavender、Ocean、Rose、Night、Nord）。",
+  obSettings1:
+    "トップバーでテーマ切り替え（7 種：Mint、Paper、Lavender、Ocean、Rose、Night、Nord）。",
   obSettings2: "5 言語対応：中国語、English、日本語、한국어、Français。",
   obSettings3: "サイドバーは折りたたみ可能。モバイルでは自動的に下部ナビバーに切り替わります。",
   obSettings4: "オフライン版（単一 HTML ファイル）をダウンロードして、ネットワークなしで使用可能。",
@@ -323,8 +341,10 @@ export const ja: Record<string, string> = {
   obTitleData: "データとバックアップ",
   obData1: "すべてのデータはブラウザの localStorage に保存。キャッシュクリアでデータが消失します。",
   obData2: "「設定エクスポート」で全リスト・記録・設定を JSON ファイルとしてバックアップ。",
-  obData3: "「設定インポート」でバックアップを復元。マージ（既存データ保持）または上書き（全置換）モード。",
-  obData4: "ブラウザデータの削除やデバイス変更前には、定期的にバックアップをエクスポートしてください。",
+  obData3:
+    "「設定インポート」でバックアップを復元。マージ（既存データ保持）または上書き（全置換）モード。",
+  obData4:
+    "ブラウザデータの削除やデバイス変更前には、定期的にバックアップをエクスポートしてください。",
 
   // LLM Config Modal
   llmConfigTitle: "LLM 設定",
@@ -345,12 +365,16 @@ export const ja: Record<string, string> = {
   proxyListAlive: "利用可能",
   proxyListDead: "利用不可",
   corsExplainTitle: "なぜ CORS プロキシが必要ですか？",
-  corsExplain1: "CORS（クロスオリジンリソース共有）はブラウザのセキュリティポリシーです。ウェブページが異なるドメインにリクエストを送る際、ブラウザは対象サーバーがそのオリジンを許可しているか確認します。",
-  corsExplain2: "PassLoop はフロントエンド専用アプリで、LLM リクエストはブラウザから直接送信されます。しかし多くの AI API（OpenAI、Anthropic など）はブラウザからの直接呼び出しを許可せず、CORS エラーを返します。",
-  corsExplain3: "CORS プロキシは中間サーバーで、リクエストを受け取り、ターゲット API に転送し、適切な CORS ヘッダーを付けてレスポンスを返します。",
+  corsExplain1:
+    "CORS（クロスオリジンリソース共有）はブラウザのセキュリティポリシーです。ウェブページが異なるドメインにリクエストを送る際、ブラウザは対象サーバーがそのオリジンを許可しているか確認します。",
+  corsExplain2:
+    "PassLoop はフロントエンド専用アプリで、LLM リクエストはブラウザから直接送信されます。しかし多くの AI API（OpenAI、Anthropic など）はブラウザからの直接呼び出しを許可せず、CORS エラーを返します。",
+  corsExplain3:
+    "CORS プロキシは中間サーバーで、リクエストを受け取り、ターゲット API に転送し、適切な CORS ヘッダーを付けてレスポンスを返します。",
   corsExplain4: "簡単に言うと：",
   corsExplainFlow: "ブラウザ → プロキシ → AI API → プロキシ → ブラウザ",
-  corsExplain5: "デフォルトの公開プロキシを使用するか、安定性とセキュリティのために独自のプライベートプロキシをデプロイできます。",
+  corsExplain5:
+    "デフォルトの公開プロキシを使用するか、安定性とセキュリティのために独自のプライベートプロキシをデプロイできます。",
   viewDeployGuide: "デプロイガイドを見る →",
   understood: "了解",
   connectionSuccess: "接続成功、モデル {0} が利用可能。",
@@ -382,10 +406,12 @@ export const ja: Record<string, string> = {
   parsing: "解析中",
   openAiCompatible: "OpenAI 互換",
   waitingAiResponse: "AI の応答待ち…\n\n推論機能付きモデルは推論完了後に結果が表示されます。",
-  manualJsonHintText: "AI が返した JSON を下に貼り付けるか、JSON ファイルをアップロードし「検証して保存」をクリック。左側の内蔵解析も使用可能。",
+  manualJsonHintText:
+    "AI が返した JSON を下に貼り付けるか、JSON ファイルをアップロードし「検証して保存」をクリック。左側の内蔵解析も使用可能。",
   charCount: "{0} 文字",
   uploadJsonBtn: "JSON アップロード",
-  pasteJsonPlaceholder: "AI が返した JSON を貼り付け...\n\n{\n  \"name\": \"リスト名\",\n  \"questions\": [...]\n}",
+  pasteJsonPlaceholder:
+    'AI が返した JSON を貼り付け...\n\n{\n  "name": "リスト名",\n  "questions": [...]\n}',
   pleaseInputRawText: "先に未整理の問題テキストを貼り付けてください。",
   pleaseInputRawTextFirst: "下の入力欄に問題テキストを貼り付けてください。",
   llmParseComplete: "LLM 解析完了。",
@@ -396,7 +422,8 @@ export const ja: Record<string, string> = {
   validateFewOptions: "検証失敗：第 {0} 問の選択肢が 2 個未満。",
   validatePassed: "検証合格、保存しました。",
   overwriteConfirmHeader: "上書き確認",
-  overwriteConfirmContent: "右パネルに既存の内容があります。内蔵 LLM 解析で上書きします。続行しますか？",
+  overwriteConfirmContent:
+    "右パネルに既存の内容があります。内蔵 LLM 解析で上書きします。続行しますか？",
   selectParseContentTitle: "コンテンツモード選択",
   selectParseContentDesc: "AI 解析時に生成する内容を選択してください。",
   parseAnswerPlusExplanation: "解答 + 解説",
@@ -467,7 +494,8 @@ export const ja: Record<string, string> = {
 
   // Self-fill Dialog
   selfFillHeader: "セルフ補充 解答/解説",
-  selfFillInstruction: "Prompt をコピーして AI に送信し、返された JSON を下に貼り付けてください。検証後、現在のリストに自動適用されます。",
+  selfFillInstruction:
+    "Prompt をコピーして AI に送信し、返された JSON を下に貼り付けてください。検証後、現在のリストに自動適用されます。",
   fillContentLabel: "補充内容：",
   promptWithCount: "Prompt（{0} 問、{1} 文字）",
   longTextWarningText: "1万文字超。TXT ファイルをダウンロードして添付送信を推奨。",
@@ -475,13 +503,16 @@ export const ja: Record<string, string> = {
   validateAndApplyBtn: "検証して適用",
   selfFillJsonEmpty: "AI が返した JSON を貼り付けてください。",
   selfFillJsonInvalid: "JSON フォーマットエラー。AI の出力を完全にコピーしたか確認してください。",
-  selfFillJsonNotArray: "JSON は配列形式である必要があります。例：[{\"id\":\"...\",\"answer\":\"...\"}]",
-  selfFillNoMatch: "一致する問題がありません。JSON の id フィールドが問題 id と一致するか確認してください（全 {0} 問）。",
+  selfFillJsonNotArray: 'JSON は配列形式である必要があります。例：[{"id":"...","answer":"..."}]',
+  selfFillNoMatch:
+    "一致する問題がありません。JSON の id フィールドが問題 id と一致するか確認してください（全 {0} 問）。",
 
   // Self-generate Dialog
   selfGenerateHeader: "セルフ AI 問題 JSON 生成",
-  selfGenerateDescWithRawText: "Prompt に問題テキストが含まれています。コピーまたはダウンロードして AI に送信し、返された JSON を右パネルに貼り付けてください。",
-  selfGenerateDescNoRaw: "生成内容を選択し、下の Prompt をコピーして AI（ChatGPT、Claude、Gemini など）に送信。問題テキストも添えて送り、生成された JSON を解析結果エリアに貼り付け。",
+  selfGenerateDescWithRawText:
+    "Prompt に問題テキストが含まれています。コピーまたはダウンロードして AI に送信し、返された JSON を右パネルに貼り付けてください。",
+  selfGenerateDescNoRaw:
+    "生成内容を選択し、下の Prompt をコピーして AI（ChatGPT、Claude、Gemini など）に送信。問題テキストも添えて送り、生成された JSON を解析結果エリアに貼り付け。",
   selfGenerateContentLabel: "生成内容：",
   answerExplanationQuestionsOpt: "解答 + 解説 + 問題",
   answerQuestionsOpt: "解答 + 問題",
@@ -558,7 +589,8 @@ export const ja: Record<string, string> = {
   wrongListExportDesc: "PassLoopの回答履歴に基づいてエクスポートされた不正解リスト。",
   wrongListCreateDesc: "PassLoopの回答履歴に基づいて生成された不正解リスト。",
   wrongListCreated: "不正解リスト「{0}」を作成しました（{1}問）。",
-  confirmLeaveLlm: "LLM解析結果がエクスポートまたはインポートされていません。ページを離れるとデータが失われます。続行しますか？",
+  confirmLeaveLlm:
+    "LLM解析結果がエクスポートまたはインポートされていません。ページを離れるとデータが失われます。続行しますか？",
   listNamePrompt: "リスト名",
   defaultListName: "リスト {0}",
   confirmDeleteList: "リストを削除すると、問題と回答データも削除されます。続行しますか？",
@@ -569,7 +601,7 @@ export const ja: Record<string, string> = {
   importedToLocal: "ローカルリストにインポートしました。",
   defaultListDesc: "JSONから問題をインポートするか、手動で追加してください。",
   unnamedList: "名前なしリスト",
-  selfFillPlaceholder: "[\\n  {\"id\": \"問題id\", \"answer\": \"A\", \"explanation\": \"...\"}\\n]",
+  selfFillPlaceholder: '[\\n  {"id": "問題id", "answer": "A", "explanation": "..."}\\n]',
 
   // Question types
   typeSingle: "単一選択",
@@ -591,9 +623,11 @@ export const ja: Record<string, string> = {
   offlineVersion: "オフライン版",
   offlineDialogTitle: "オフライン版",
   offlineBuildTitle: "パッケージの仕組み",
-  offlineBuildDesc: "すべてのコード、スタイル、リソースが単一の .html ファイルにバンドルされます。サーバーもインターネット接続も不要で、ダブルクリックするだけでブラウザで動作します。オンライン版と同じ機能を備えています。",
+  offlineBuildDesc:
+    "すべてのコード、スタイル、リソースが単一の .html ファイルにバンドルされます。サーバーもインターネット接続も不要で、ダブルクリックするだけでブラウザで動作します。オンライン版と同じ機能を備えています。",
   offlineStorageTitle: "データ保存",
-  offlineStorageDesc: "データはブラウザの localStorage に保存され、現在のブラウザに紐付けられています。ブラウザを変更したり閲覧データを消去するとデータが失われます。定期的に設定をエクスポートしてバックアップすることをお勧めします。",
+  offlineStorageDesc:
+    "データはブラウザの localStorage に保存され、現在のブラウザに紐付けられています。ブラウザを変更したり閲覧データを消去するとデータが失われます。定期的に設定をエクスポートしてバックアップすることをお勧めします。",
   offlineUsageTitle: "使い方",
   offlineUsageStep1: "GitHub Releases から .html ファイルをダウンロード",
   offlineUsageStep2: "ダブルクリックしてブラウザで開く",
@@ -601,7 +635,8 @@ export const ja: Record<string, string> = {
   offlineDownloadBtn: "ダウンロードページへ",
 
   // Export confirm
-  confirmExportBackup: "エクスポートされる設定ファイルには、すべての問題、設定、LLM設定（APIキーを含む）が含まれます。プライバシーを保護し、信頼できない相手にファイルを共有しないでください。エクスポートしますか？",
+  confirmExportBackup:
+    "エクスポートされる設定ファイルには、すべての問題、設定、LLM設定（APIキーを含む）が含まれます。プライバシーを保護し、信頼できない相手にファイルを共有しないでください。エクスポートしますか？",
 
   // Debug
   simulateCrash: "クラッシュをシミュレート",

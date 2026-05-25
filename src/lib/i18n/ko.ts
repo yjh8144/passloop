@@ -258,12 +258,14 @@ export const ko: Record<string, string> = {
   mergeToExisting: "기존 데이터에 병합",
   overwriteCurrentConfig: "현재 설정 덮어쓰기",
   confirmOverwriteHeader: "덮어쓰기 확인",
-  overwriteWarningText: "덮어쓰기 시 현재 모든 목록, 기록, 설정이 삭제되고 가져온 내용으로 대체됩니다. 되돌릴 수 없습니다.",
-  typeConfirmOverwrite: "\"덮어쓰기 확인\"을 입력하여 계속:",
+  overwriteWarningText:
+    "덮어쓰기 시 현재 모든 목록, 기록, 설정이 삭제되고 가져온 내용으로 대체됩니다. 되돌릴 수 없습니다.",
+  typeConfirmOverwrite: '"덮어쓰기 확인"을 입력하여 계속:',
   confirmOverwriteKeyword: "덮어쓰기 확인",
   resetKeyword: "확인",
-  resetWarningText: "브라우저의 모든 목록, 기록, 설정이 삭제됩니다. 복구 불가. \"확인\"을 입력하여 계속.",
-  resetPlaceholderText: "\"확인\" 입력",
+  resetWarningText:
+    '브라우저의 모든 목록, 기록, 설정이 삭제됩니다. 복구 불가. "확인"을 입력하여 계속.',
+  resetPlaceholderText: '"확인" 입력',
   clearAllDataAction: "모든 데이터 삭제",
   githubRepo: "GitHub 저장소",
   welcomeStarNote: "Star와 피드백 환영합니다.",
@@ -273,46 +275,61 @@ export const ko: Record<string, string> = {
   obTitleWelcome: "PassLoop에 오신 것을 환영합니다",
   obPrev: "이전",
   obNext: "다음",
-  obWelcome1: "PassLoop은 로컬에서 동작하는 프론트엔드 전용 문제 연습 플랫폼입니다. 모든 데이터는 브라우저에 저장되며 백엔드가 필요 없습니다.",
-  obWelcome2: "6가지 문제 유형 지원: 단일 선택, 다중 선택, 참/거짓, 빈칸 채우기, 서술형, 복합 문제.",
-  obWelcome3: "다음 페이지에서 모든 기능을 안내합니다. 화살표로 이동하고, 언제든 오른쪽 상단 ×를 눌러 시작할 수 있습니다.",
+  obWelcome1:
+    "PassLoop은 로컬에서 동작하는 프론트엔드 전용 문제 연습 플랫폼입니다. 모든 데이터는 브라우저에 저장되며 백엔드가 필요 없습니다.",
+  obWelcome2:
+    "6가지 문제 유형 지원: 단일 선택, 다중 선택, 참/거짓, 빈칸 채우기, 서술형, 복합 문제.",
+  obWelcome3:
+    "다음 페이지에서 모든 기능을 안내합니다. 화살표로 이동하고, 언제든 오른쪽 상단 ×를 눌러 시작할 수 있습니다.",
 
   obTitleList: "목록 관리",
   obList1: "사이드바에 모든 문제 목록이 표시됩니다. 클릭하여 활성 목록을 전환합니다.",
   obList2: "+ 버튼으로 새 빈 목록 생성. 목록 이름을 더블클릭하여 이름 변경.",
-  obList3: "\"문제 관리\" 페이지에서 목록 삭제 및 설명 편집이 가능합니다.",
-  obList4: "모바일에서는 하단 내비게이션 바를 사용합니다. 중앙의 + 버튼을 탭하면 추가 옵션이 표시됩니다.",
+  obList3: '"문제 관리" 페이지에서 목록 삭제 및 설명 편집이 가능합니다.',
+  obList4:
+    "모바일에서는 하단 내비게이션 바를 사용합니다. 중앙의 + 버튼을 탭하면 추가 옵션이 표시됩니다.",
 
   obTitleImport: "문제 가져오기",
-  obImport1: "사이드바의 \"문제 가져오기\"를 클릭. 로컬 JSON 파일 업로드 또는 원격 URL 입력으로 가져올 수 있습니다.",
-  obImport2: "가져올 때 \"현재 목록에 추가\" 또는 \"새 목록 생성\"을 선택할 수 있습니다.",
-  obImport3: "\"설정 가져오기\"로 전체 백업(모든 목록, 기록, 설정)을 복원합니다. 병합 또는 덮어쓰기 모드 지원.",
-  obImport4: "JSON 형식: { \"name\": \"목록 이름\", \"questions\": [{ \"title\": \"...\", \"type\": \"single\", \"body\": \"...\", \"options\": [...], \"answer\": [...] }] }",
+  obImport1:
+    '사이드바의 "문제 가져오기"를 클릭. 로컬 JSON 파일 업로드 또는 원격 URL 입력으로 가져올 수 있습니다.',
+  obImport2: '가져올 때 "현재 목록에 추가" 또는 "새 목록 생성"을 선택할 수 있습니다.',
+  obImport3:
+    '"설정 가져오기"로 전체 백업(모든 목록, 기록, 설정)을 복원합니다. 병합 또는 덮어쓰기 모드 지원.',
+  obImport4:
+    'JSON 형식: { "name": "목록 이름", "questions": [{ "title": "...", "type": "single", "body": "...", "options": [...], "answer": [...] }] }',
 
   obTitleManager: "문제 관리",
-  obManager1: "\"문제 관리\" 페이지에서 문제를 수동으로 추가, 편집, 삭제할 수 있습니다.",
+  obManager1: '"문제 관리" 페이지에서 문제를 수동으로 추가, 편집, 삭제할 수 있습니다.',
   obManager2: "각 문제에 제목, 본문, 선택지, 정답, 해설을 설정할 수 있습니다.",
-  obManager3: "\"LLM 보충\"으로 AI가 자동으로 답과 해설을 생성합니다(LLM 설정 필요).",
-  obManager4: "\"자체 보충\"으로 프롬프트를 복사하여 외부 AI에 보내고, 반환된 JSON을 붙여넣어 가져옵니다.",
+  obManager3: '"LLM 보충"으로 AI가 자동으로 답과 해설을 생성합니다(LLM 설정 필요).',
+  obManager4:
+    '"자체 보충"으로 프롬프트를 복사하여 외부 AI에 보내고, 반환된 JSON을 붙여넣어 가져옵니다.',
 
   obTitleLlm: "LLM 분석",
-  obLlm1: "\"LLM 분석\" 페이지에 정리되지 않은 텍스트(강의 노트, OCR 텍스트 등)를 붙여넣으면 AI가 표준 퀴즈 JSON으로 변환합니다.",
+  obLlm1:
+    '"LLM 분석" 페이지에 정리되지 않은 텍스트(강의 노트, OCR 텍스트 등)를 붙여넣으면 AI가 표준 퀴즈 JSON으로 변환합니다.',
   obLlm2: "콘텐츠 모드 선택: 답+해설, 답만, 해설만, 문제만.",
-  obLlm3: "\"자체 분석\" 모드: 생성된 프롬프트를 외부 AI(ChatGPT, Claude 등)에 복사하고, JSON을 다시 붙여넣습니다.",
+  obLlm3:
+    '"자체 분석" 모드: 생성된 프롬프트를 외부 AI(ChatGPT, Claude 등)에 복사하고, JSON을 다시 붙여넣습니다.',
   obLlm4: "분석 후 현재 목록에 직접 가져오기 또는 새 목록 생성. 가져오기 전 결과 편집도 가능.",
-  obLlm5: "사이드바 \"LLM 설정\"에서 제공자 추가. OpenAI, Anthropic, Gemini 및 호환 API 지원.",
+  obLlm5: '사이드바 "LLM 설정"에서 제공자 추가. OpenAI, Anthropic, Gemini 및 호환 API 지원.',
 
   obTitlePractice: "연습 모드",
-  obPractice1: "\"연습대\"에서 목록을 선택하여 시작. \"연습\" 모드(제출 후 정오 확인)와 \"암기\" 모드(답을 바로 표시).",
-  obPractice2: "보기 방식: \"한 문제씩\" 순서대로 답하기, 또는 \"전체\" 한꺼번에 제출.",
-  obPractice3: "우측 상단 설정: 정렬 방식(원래 순서/랜덤/이름순/유형순), 답 후 자동 다음, 답 공개 시점 등.",
-  obPractice4: "사이드 패널에 정답률, 평균 시간, 진행률, 오답 수 표시. 내비게이션 그리드에서 답변 상태를 색상으로 확인.",
-  obPractice5: "모든 문제 완료 후 요약 대화상자 표시. 전체 다시 풀기, 오답 다시 풀기, 오답을 새 목록으로 내보내기 선택 가능.",
+  obPractice1:
+    '"연습대"에서 목록을 선택하여 시작. "연습" 모드(제출 후 정오 확인)와 "암기" 모드(답을 바로 표시).',
+  obPractice2: '보기 방식: "한 문제씩" 순서대로 답하기, 또는 "전체" 한꺼번에 제출.',
+  obPractice3:
+    "우측 상단 설정: 정렬 방식(원래 순서/랜덤/이름순/유형순), 답 후 자동 다음, 답 공개 시점 등.",
+  obPractice4:
+    "사이드 패널에 정답률, 평균 시간, 진행률, 오답 수 표시. 내비게이션 그리드에서 답변 상태를 색상으로 확인.",
+  obPractice5:
+    "모든 문제 완료 후 요약 대화상자 표시. 전체 다시 풀기, 오답 다시 풀기, 오답을 새 목록으로 내보내기 선택 가능.",
 
   obTitleWrong: "오답 복습",
-  obWrong1: "\"오답 세트\"를 클릭하여 틀린 문제의 집중 연습에 들어갑니다.",
+  obWrong1: '"오답 세트"를 클릭하여 틀린 문제의 집중 연습에 들어갑니다.',
   obWrong2: "연습 후 오답을 독립 목록으로 내보내어 반복 복습할 수 있습니다.",
-  obWrong3: "오답 페이지에는 독자적인 세션 타이머와 정답률 통계가 있어 약점 개선을 추적할 수 있습니다.",
+  obWrong3:
+    "오답 페이지에는 독자적인 세션 타이머와 정답률 통계가 있어 약점 개선을 추적할 수 있습니다.",
 
   obTitleSettings: "개인화 설정",
   obSettings1: "상단 바에서 테마 전환(7종: Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
@@ -321,9 +338,10 @@ export const ko: Record<string, string> = {
   obSettings4: "오프라인 버전(단일 HTML 파일)을 다운로드하여 네트워크 없이 사용 가능.",
 
   obTitleData: "데이터 및 백업",
-  obData1: "모든 데이터는 브라우저 localStorage에 저장됩니다. 브라우저 캐시 삭제 시 데이터가 손실됩니다.",
-  obData2: "\"설정 내보내기\"로 모든 목록, 기록, 설정을 JSON 백업 파일로 저장.",
-  obData3: "\"설정 가져오기\"로 백업 복원. 병합(기존 데이터 유지) 또는 덮어쓰기(전체 교체) 모드.",
+  obData1:
+    "모든 데이터는 브라우저 localStorage에 저장됩니다. 브라우저 캐시 삭제 시 데이터가 손실됩니다.",
+  obData2: '"설정 내보내기"로 모든 목록, 기록, 설정을 JSON 백업 파일로 저장.',
+  obData3: '"설정 가져오기"로 백업 복원. 병합(기존 데이터 유지) 또는 덮어쓰기(전체 교체) 모드.',
   obData4: "브라우저 데이터 삭제나 기기 변경 전에 정기적으로 백업을 내보내세요.",
 
   // LLM Config Modal
@@ -345,12 +363,16 @@ export const ko: Record<string, string> = {
   proxyListAlive: "사용 가능",
   proxyListDead: "사용 불가",
   corsExplainTitle: "왜 CORS 프록시가 필요한가요?",
-  corsExplain1: "CORS(교차 출처 리소스 공유)는 브라우저의 보안 정책입니다. 웹페이지가 다른 도메인에 요청을 보낼 때 브라우저는 대상 서버가 해당 출처를 허용하는지 확인합니다.",
-  corsExplain2: "PassLoop은 프론트엔드 전용 앱으로 LLM 요청이 브라우저에서 직접 전송됩니다. 하지만 대부분의 AI API(OpenAI, Anthropic 등)는 브라우저 직접 호출을 허용하지 않아 CORS 오류를 반환합니다.",
-  corsExplain3: "CORS 프록시는 중간 서버로, 요청을 받아 대상 API에 전달하고 적절한 CORS 헤더와 함께 응답을 반환합니다.",
+  corsExplain1:
+    "CORS(교차 출처 리소스 공유)는 브라우저의 보안 정책입니다. 웹페이지가 다른 도메인에 요청을 보낼 때 브라우저는 대상 서버가 해당 출처를 허용하는지 확인합니다.",
+  corsExplain2:
+    "PassLoop은 프론트엔드 전용 앱으로 LLM 요청이 브라우저에서 직접 전송됩니다. 하지만 대부분의 AI API(OpenAI, Anthropic 등)는 브라우저 직접 호출을 허용하지 않아 CORS 오류를 반환합니다.",
+  corsExplain3:
+    "CORS 프록시는 중간 서버로, 요청을 받아 대상 API에 전달하고 적절한 CORS 헤더와 함께 응답을 반환합니다.",
   corsExplain4: "간단히 말하면:",
   corsExplainFlow: "브라우저 → 프록시 → AI API → 프록시 → 브라우저",
-  corsExplain5: "기본 공개 프록시를 사용하거나, 안정성과 보안을 위해 자체 프라이빗 프록시를 배포할 수 있습니다.",
+  corsExplain5:
+    "기본 공개 프록시를 사용하거나, 안정성과 보안을 위해 자체 프라이빗 프록시를 배포할 수 있습니다.",
   viewDeployGuide: "배포 가이드 보기 →",
   understood: "알겠습니다",
   connectionSuccess: "연결 성공, 모델 {0} 사용 가능.",
@@ -382,10 +404,12 @@ export const ko: Record<string, string> = {
   parsing: "분석 중",
   openAiCompatible: "OpenAI 호환",
   waitingAiResponse: "AI 응답 대기…\n\n추론 기능이 있는 모델은 추론 완료 후 결과가 표시됩니다.",
-  manualJsonHintText: "AI가 반환한 JSON을 아래에 붙여넣거나 JSON 파일을 업로드한 후 \"검증 후 저장\"을 클릭하세요. 왼쪽 내장 분석도 사용 가능.",
+  manualJsonHintText:
+    'AI가 반환한 JSON을 아래에 붙여넣거나 JSON 파일을 업로드한 후 "검증 후 저장"을 클릭하세요. 왼쪽 내장 분석도 사용 가능.',
   charCount: "{0}자",
   uploadJsonBtn: "JSON 업로드",
-  pasteJsonPlaceholder: "AI가 반환한 JSON 붙여넣기...\n\n{\n  \"name\": \"목록 이름\",\n  \"questions\": [...]\n}",
+  pasteJsonPlaceholder:
+    'AI가 반환한 JSON 붙여넣기...\n\n{\n  "name": "목록 이름",\n  "questions": [...]\n}',
   pleaseInputRawText: "먼저 정리되지 않은 문제 텍스트를 붙여넣으세요.",
   pleaseInputRawTextFirst: "아래 입력란에 문제 텍스트를 먼저 붙여넣으세요.",
   llmParseComplete: "LLM 분석 완료.",
@@ -396,7 +420,8 @@ export const ko: Record<string, string> = {
   validateFewOptions: "검증 실패: {0}번째 문제의 선택지가 2개 미만입니다.",
   validatePassed: "검증 통과, 저장됨.",
   overwriteConfirmHeader: "덮어쓰기 확인",
-  overwriteConfirmContent: "오른쪽에 기존 내용이 있습니다. 내장 LLM 분석으로 덮어씁니다. 계속하시겠습니까?",
+  overwriteConfirmContent:
+    "오른쪽에 기존 내용이 있습니다. 내장 LLM 분석으로 덮어씁니다. 계속하시겠습니까?",
   selectParseContentTitle: "콘텐츠 모드 선택",
   selectParseContentDesc: "AI 분석 시 생성할 내용을 선택하세요.",
   parseAnswerPlusExplanation: "정답 + 해설",
@@ -412,7 +437,7 @@ export const ko: Record<string, string> = {
   jsonParseSuccess: "JSON 분석 성공.",
   jsonFormatErrorCheck: "JSON 형식 오류. 내용을 확인하세요.",
   waitingForParseTitle: "분석 대기",
-  waitingForParseDesc: "왼쪽 내장 분석 사용 또는 \"자체 분석\"으로 JSON 수동 입력.",
+  waitingForParseDesc: '왼쪽 내장 분석 사용 또는 "자체 분석"으로 JSON 수동 입력.',
 
   // Parsed Questions Editor
   deleteQuestionTitle: "문제 삭제",
@@ -467,7 +492,8 @@ export const ko: Record<string, string> = {
 
   // Self-fill Dialog
   selfFillHeader: "자체 답/해설 보충",
-  selfFillInstruction: "Prompt를 복사하여 AI에 보내고, 반환된 JSON을 아래에 붙여넣으세요. 검증 후 현재 목록에 자동 적용됩니다.",
+  selfFillInstruction:
+    "Prompt를 복사하여 AI에 보내고, 반환된 JSON을 아래에 붙여넣으세요. 검증 후 현재 목록에 자동 적용됩니다.",
   fillContentLabel: "보충 내용:",
   promptWithCount: "Prompt ({0}문제, {1}자)",
   longTextWarningText: "1만 자 초과. TXT 파일로 다운로드하여 첨부 전송을 권장합니다.",
@@ -475,13 +501,16 @@ export const ko: Record<string, string> = {
   validateAndApplyBtn: "검증 후 적용",
   selfFillJsonEmpty: "AI가 반환한 JSON을 붙여넣으세요.",
   selfFillJsonInvalid: "JSON 형식 오류. AI 출력을 완전히 복사했는지 확인하세요.",
-  selfFillJsonNotArray: "JSON은 배열 형식이어야 합니다. 예: [{\"id\":\"...\",\"answer\":\"...\"}]",
-  selfFillNoMatch: "일치하는 문제가 없습니다. JSON의 id 필드가 문제 id와 일치하는지 확인하세요 (총 {0}문제).",
+  selfFillJsonNotArray: 'JSON은 배열 형식이어야 합니다. 예: [{"id":"...","answer":"..."}]',
+  selfFillNoMatch:
+    "일치하는 문제가 없습니다. JSON의 id 필드가 문제 id와 일치하는지 확인하세요 (총 {0}문제).",
 
   // Self-generate Dialog
   selfGenerateHeader: "자체 AI 문제 JSON 생성",
-  selfGenerateDescWithRawText: "Prompt에 문제 텍스트가 포함되어 있습니다. 복사 또는 다운로드하여 AI에 보내고, 반환된 JSON을 오른쪽 패널에 붙여넣으세요.",
-  selfGenerateDescNoRaw: "생성 내용을 선택하고, 아래 Prompt를 복사하여 AI(ChatGPT, Claude, Gemini 등)에 보내세요. 문제 텍스트도 함께 보내고, 생성된 JSON을 분석 결과 영역에 붙여넣으세요.",
+  selfGenerateDescWithRawText:
+    "Prompt에 문제 텍스트가 포함되어 있습니다. 복사 또는 다운로드하여 AI에 보내고, 반환된 JSON을 오른쪽 패널에 붙여넣으세요.",
+  selfGenerateDescNoRaw:
+    "생성 내용을 선택하고, 아래 Prompt를 복사하여 AI(ChatGPT, Claude, Gemini 등)에 보내세요. 문제 텍스트도 함께 보내고, 생성된 JSON을 분석 결과 영역에 붙여넣으세요.",
   selfGenerateContentLabel: "생성 내용:",
   answerExplanationQuestionsOpt: "답 + 해설 + 문제",
   answerQuestionsOpt: "답 + 문제",
@@ -494,7 +523,7 @@ export const ko: Record<string, string> = {
   stepCopyPromptWithText: "위의 Prompt 복사 또는 다운로드, 정리할 문제 텍스트 첨부",
   stepPasteToAi: "AI 대화에 전체 Prompt 붙여넣기",
   stepPasteJson: "AI가 JSON을 반환하면 오른쪽 분석 결과 영역에 붙여넣기",
-  stepValidateAndSave: "\"검증 후 저장\" 클릭하여 가져오기",
+  stepValidateAndSave: '"검증 후 저장" 클릭하여 가져오기',
   closeBtn: "닫기",
 
   // Practice Page
@@ -558,7 +587,8 @@ export const ko: Record<string, string> = {
   wrongListExportDesc: "PassLoop 답변 기록 기반 오답 목록.",
   wrongListCreateDesc: "PassLoop 답변 기록 기반 생성된 오답 목록.",
   wrongListCreated: "오답 목록 「{0}」 생성됨 ({1}문제).",
-  confirmLeaveLlm: "LLM 분석 결과가 내보내기 또는 가져오기되지 않았습니다. 페이지를 떠나면 데이터가 손실됩니다. 계속하시겠습니까?",
+  confirmLeaveLlm:
+    "LLM 분석 결과가 내보내기 또는 가져오기되지 않았습니다. 페이지를 떠나면 데이터가 손실됩니다. 계속하시겠습니까?",
   listNamePrompt: "목록 이름",
   defaultListName: "목록 {0}",
   confirmDeleteList: "목록을 삭제하면 문제와 연습 데이터도 삭제됩니다. 계속하시겠습니까?",
@@ -569,7 +599,7 @@ export const ko: Record<string, string> = {
   importedToLocal: "로컬 목록에 가져왔습니다.",
   defaultListDesc: "JSON에서 문제를 가져오거나 수동으로 추가하세요.",
   unnamedList: "이름 없는 목록",
-  selfFillPlaceholder: "[\\n  {\"id\": \"문제id\", \"answer\": \"A\", \"explanation\": \"...\"}\\n]",
+  selfFillPlaceholder: '[\\n  {"id": "문제id", "answer": "A", "explanation": "..."}\\n]',
 
   // Question types
   typeSingle: "단일 선택",
@@ -591,9 +621,11 @@ export const ko: Record<string, string> = {
   offlineVersion: "오프라인 버전",
   offlineDialogTitle: "오프라인 버전",
   offlineBuildTitle: "패키징 방식",
-  offlineBuildDesc: "모든 코드, 스타일, 리소스가 단일 .html 파일로 번들됩니다. 서버나 인터넷 연결 없이 더블클릭만으로 브라우저에서 실행됩니다. 온라인 버전과 동일한 기능을 제공합니다.",
+  offlineBuildDesc:
+    "모든 코드, 스타일, 리소스가 단일 .html 파일로 번들됩니다. 서버나 인터넷 연결 없이 더블클릭만으로 브라우저에서 실행됩니다. 온라인 버전과 동일한 기능을 제공합니다.",
   offlineStorageTitle: "데이터 저장",
-  offlineStorageDesc: "데이터는 브라우저의 localStorage에 저장되며 현재 브라우저에 연결됩니다. 브라우저를 변경하거나 인터넷 사용 기록을 삭제하면 데이터가 손실됩니다. 정기적으로 설정을 내보내 백업하는 것을 권장합니다.",
+  offlineStorageDesc:
+    "데이터는 브라우저의 localStorage에 저장되며 현재 브라우저에 연결됩니다. 브라우저를 변경하거나 인터넷 사용 기록을 삭제하면 데이터가 손실됩니다. 정기적으로 설정을 내보내 백업하는 것을 권장합니다.",
   offlineUsageTitle: "사용 방법",
   offlineUsageStep1: "GitHub Releases에서 .html 파일 다운로드",
   offlineUsageStep2: "더블클릭하여 브라우저에서 열기",
@@ -601,7 +633,8 @@ export const ko: Record<string, string> = {
   offlineDownloadBtn: "다운로드 페이지로 이동",
 
   // Export confirm
-  confirmExportBackup: "내보내기 파일에는 모든 문제, 설정, LLM 구성(API 키 포함)이 포함됩니다. 개인정보를 보호하고 신뢰할 수 없는 사람에게 파일을 공유하지 마세요. 내보내시겠습니까?",
+  confirmExportBackup:
+    "내보내기 파일에는 모든 문제, 설정, LLM 구성(API 키 포함)이 포함됩니다. 개인정보를 보호하고 신뢰할 수 없는 사람에게 파일을 공유하지 마세요. 내보내시겠습니까?",
 
   // Debug
   simulateCrash: "크래시 시뮬레이션",

@@ -186,11 +186,13 @@ export function LlmPage(props: {
           <Settings2 size={16} />
           <span>
             {config
-              ? `${config.provider === "openai"
-                  ? t("openAiCompatible")
-                  : config.provider === "anthropic"
-                    ? "Anthropic"
-                    : "Gemini"} / ${config.model || t("modelNotSet")}`
+              ? `${
+                  config.provider === "openai"
+                    ? t("openAiCompatible")
+                    : config.provider === "anthropic"
+                      ? "Anthropic"
+                      : "Gemini"
+                } / ${config.model || t("modelNotSet")}`
               : t("notAssigned")}
           </span>
           <ChevronRight size={14} />
@@ -411,9 +413,7 @@ export function LlmPage(props: {
                 <X size={18} />
               </button>
             </div>
-            <p style={{ margin: "8px 0 0", lineHeight: 1.6 }}>
-              {t("overwriteConfirmContent")}
-            </p>
+            <p style={{ margin: "8px 0 0", lineHeight: 1.6 }}>{t("overwriteConfirmContent")}</p>
             <div className="modal-actions">
               <button onClick={() => setShowOverwriteConfirm(false)}>{t("cancel")}</button>
               <button

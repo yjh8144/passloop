@@ -1,14 +1,8 @@
 import { useState } from "react"
 import type { ChangeEvent } from "react"
 import type { AppData, QuestionList, TFunc } from "../lib/types"
-import {
-  createId,
-  parseQuestionJson,
-} from "../lib/question"
-import {
-  normalizeAppData,
-  readFileAsText,
-} from "../lib/storage"
+import { createId, parseQuestionJson } from "../lib/question"
+import { normalizeAppData, readFileAsText } from "../lib/storage"
 import { debugLog } from "../lib/debug"
 import { fetchViaProxy } from "../lib/llm"
 import { defaultLlmConfig } from "../utils/constants"
@@ -69,8 +63,8 @@ export function useImportExport({
   const handleUrlImport = async (url: string) => {
     const fetchProxyConfig = {
       proxyEnabled: proxyConfig.proxyEnabled,
-      proxyUrl: proxyConfig.proxyEnabled ? (proxyConfig.proxyUrl || defaultLlmConfig.proxyUrl) : "",
-      proxyKey: proxyConfig.proxyEnabled ? (proxyConfig.proxyKey || defaultLlmConfig.proxyKey) : "",
+      proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultLlmConfig.proxyUrl : "",
+      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultLlmConfig.proxyKey : "",
     }
     try {
       const response = await fetchViaProxy(url, fetchProxyConfig)
@@ -103,7 +97,8 @@ export function useImportExport({
       }))
       pushToast("success", t("addedToCurrentList", questions.length))
     } else {
-      const name = pendingImportLists.length === 1 ? pendingImportLists[0].name : t("importedListName")
+      const name =
+        pendingImportLists.length === 1 ? pendingImportLists[0].name : t("importedListName")
       debugLog("Import as new list", { name, questionCount: questions.length })
       updateData((current) => {
         const newList: QuestionList = {
@@ -141,8 +136,8 @@ export function useImportExport({
   const handleBackupUrlImport = async (url: string) => {
     const fetchProxyConfig = {
       proxyEnabled: proxyConfig.proxyEnabled,
-      proxyUrl: proxyConfig.proxyEnabled ? (proxyConfig.proxyUrl || defaultLlmConfig.proxyUrl) : "",
-      proxyKey: proxyConfig.proxyEnabled ? (proxyConfig.proxyKey || defaultLlmConfig.proxyKey) : "",
+      proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultLlmConfig.proxyUrl : "",
+      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultLlmConfig.proxyKey : "",
     }
     try {
       const response = await fetchViaProxy(url, fetchProxyConfig)

@@ -10,19 +10,15 @@ type Tab = "providers" | "scenarios"
 
 export function LlmConfigModal(props: { open: boolean; onClose: () => void }) {
   const t = useT()
-  const {
-    providers,
-    addProvider,
-    updateProvider,
-    deleteProvider,
-    assignments,
-    assignProvider,
-  } = useLlmConfig()
+  const { providers, addProvider, updateProvider, deleteProvider, assignments, assignProvider } =
+    useLlmConfig()
 
   const [tab, setTab] = useState<Tab>("providers")
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
-  const [draft, setDraft] = useState<Omit<LlmProvider, "id" | "createdAt" | "updatedAt"> | null>(null)
+  const [draft, setDraft] = useState<Omit<LlmProvider, "id" | "createdAt" | "updatedAt"> | null>(
+    null,
+  )
 
   if (!props.open) return null
 
@@ -131,9 +127,7 @@ export function LlmConfigModal(props: { open: boolean; onClose: () => void }) {
                   {t("parseScenarioLabel")}
                   <select
                     value={assignments.parse || ""}
-                    onChange={(e) =>
-                      assignProvider("parse" as LlmScenario, e.target.value || null)
-                    }
+                    onChange={(e) => assignProvider("parse" as LlmScenario, e.target.value || null)}
                   >
                     <option value="">{t("notAssigned")}</option>
                     {providers.map((p) => (
@@ -147,9 +141,7 @@ export function LlmConfigModal(props: { open: boolean; onClose: () => void }) {
                   {t("fillScenarioLabel")}
                   <select
                     value={assignments.fill || ""}
-                    onChange={(e) =>
-                      assignProvider("fill" as LlmScenario, e.target.value || null)
-                    }
+                    onChange={(e) => assignProvider("fill" as LlmScenario, e.target.value || null)}
                   >
                     <option value="">{t("notAssigned")}</option>
                     {providers.map((p) => (

@@ -35,7 +35,9 @@ export function Topbar(props: {
       )}
       <div className="topbar-meta">
         <span>{props.activeList.name}</span>
-        <span>{props.activeList.questions.length} {t("questionCount")}</span>
+        <span>
+          {props.activeList.questions.length} {t("questionCount")}
+        </span>
       </div>
       <div className="topbar-actions">
         <label className="select-label">

@@ -54,7 +54,14 @@ export function LlmProviderList({ providers, onEdit, onDelete, onAdd }: LlmProvi
   return (
     <div className="provider-list">
       {providers.length === 0 && (
-        <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-muted)", fontSize: 14 }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "24px 0",
+            color: "var(--text-muted)",
+            fontSize: 14,
+          }}
+        >
           {t("noProviders")}
         </div>
       )}

@@ -241,9 +241,12 @@ export const en: Record<string, string> = {
   obTitleWelcome: "Welcome to PassLoop",
   obPrev: "Back",
   obNext: "Next",
-  obWelcome1: "PassLoop is a local, frontend-only quiz platform. All data is stored in your browser — no backend needed.",
-  obWelcome2: "Supports six question types: single choice, multiple choice, true/false, fill-in-the-blank, short answer, and composite.",
-  obWelcome3: "The following pages will walk you through all features. Use the arrows to navigate, or close anytime to start using.",
+  obWelcome1:
+    "PassLoop is a local, frontend-only quiz platform. All data is stored in your browser — no backend needed.",
+  obWelcome2:
+    "Supports six question types: single choice, multiple choice, true/false, fill-in-the-blank, short answer, and composite.",
+  obWelcome3:
+    "The following pages will walk you through all features. Use the arrows to navigate, or close anytime to start using.",
 
   obTitleList: "List Management",
   obList1: "The sidebar shows all your question lists. Click one to switch the active list.",
@@ -252,47 +255,69 @@ export const en: Record<string, string> = {
   obList4: "On mobile, use the bottom navigation bar. Tap the center + button for more options.",
 
   obTitleImport: "Importing Questions",
-  obImport1: "Click \"Import Questions\" in the sidebar. Two methods: upload a local JSON file, or enter a remote URL.",
-  obImport2: "When importing, choose to \"Add to current list\" or \"Create new list\".",
-  obImport3: "\"Import Config\" restores a full backup (all lists, records, and settings), with merge or overwrite modes.",
-  obImport4: "JSON format: { \"name\": \"List name\", \"questions\": [{ \"title\": \"...\", \"type\": \"single\", \"body\": \"...\", \"options\": [...], \"answer\": [...] }] }",
+  obImport1:
+    'Click "Import Questions" in the sidebar. Two methods: upload a local JSON file, or enter a remote URL.',
+  obImport2: 'When importing, choose to "Add to current list" or "Create new list".',
+  obImport3:
+    '"Import Config" restores a full backup (all lists, records, and settings), with merge or overwrite modes.',
+  obImport4:
+    'JSON format: { "name": "List name", "questions": [{ "title": "...", "type": "single", "body": "...", "options": [...], "answer": [...] }] }',
 
   obTitleManager: "Question Bank",
   obManager1: "In the Question Bank page, you can add, edit, and delete questions manually.",
   obManager2: "Set the title, body, options, correct answer, and explanation for each question.",
-  obManager3: "\"LLM Fill\" uses AI to automatically generate answers and explanations (requires LLM configuration).",
-  obManager4: "\"Self Fill\" lets you copy a prompt to your own AI, then paste back the returned JSON.",
+  obManager3:
+    '"LLM Fill" uses AI to automatically generate answers and explanations (requires LLM configuration).',
+  obManager4:
+    '"Self Fill" lets you copy a prompt to your own AI, then paste back the returned JSON.',
 
   obTitleLlm: "LLM Parser",
-  obLlm1: "In the LLM Parser page, paste unformatted text (lecture notes, OCR text, etc.) and AI converts it to standard quiz JSON.",
-  obLlm2: "Choose content mode: answer + explanation, answer only, explanation only, or questions only.",
-  obLlm3: "\"Self Parse\" mode: copy the generated prompt to an external AI (ChatGPT, Claude, etc.), then paste the JSON back.",
-  obLlm4: "After parsing, import directly to the current list or create a new list. You can also edit results before importing.",
-  obLlm5: "Configure providers in the sidebar \"LLM Config\". Supports OpenAI, Anthropic, Gemini, and any compatible API.",
+  obLlm1:
+    "In the LLM Parser page, paste unformatted text (lecture notes, OCR text, etc.) and AI converts it to standard quiz JSON.",
+  obLlm2:
+    "Choose content mode: answer + explanation, answer only, explanation only, or questions only.",
+  obLlm3:
+    '"Self Parse" mode: copy the generated prompt to an external AI (ChatGPT, Claude, etc.), then paste the JSON back.',
+  obLlm4:
+    "After parsing, import directly to the current list or create a new list. You can also edit results before importing.",
+  obLlm5:
+    'Configure providers in the sidebar "LLM Config". Supports OpenAI, Anthropic, Gemini, and any compatible API.',
 
   obTitlePractice: "Practice Mode",
-  obPractice1: "In Practice, select a list to start. Choose \"Practice\" mode (submit to check) or \"Memorize\" mode (answers shown directly).",
-  obPractice2: "Browse modes: \"Single\" for one question at a time, or \"Paper\" to submit all answers at once.",
-  obPractice3: "Top-right settings: sort order (original/random/by name/by type), auto-next after answer, answer reveal timing, etc.",
-  obPractice4: "The side panel shows accuracy, average time, progress, and wrong count. The navigation grid shows answer status by color.",
-  obPractice5: "After completing all questions, a summary dialog appears with options to redo all, redo wrong ones, or export wrong questions as a new list.",
+  obPractice1:
+    'In Practice, select a list to start. Choose "Practice" mode (submit to check) or "Memorize" mode (answers shown directly).',
+  obPractice2:
+    'Browse modes: "Single" for one question at a time, or "Paper" to submit all answers at once.',
+  obPractice3:
+    "Top-right settings: sort order (original/random/by name/by type), auto-next after answer, answer reveal timing, etc.",
+  obPractice4:
+    "The side panel shows accuracy, average time, progress, and wrong count. The navigation grid shows answer status by color.",
+  obPractice5:
+    "After completing all questions, a summary dialog appears with options to redo all, redo wrong ones, or export wrong questions as a new list.",
 
   obTitleWrong: "Wrong Questions Review",
-  obWrong1: "Click \"Wrong Set\" to enter focused review of questions you answered incorrectly.",
+  obWrong1: 'Click "Wrong Set" to enter focused review of questions you answered incorrectly.',
   obWrong2: "After practice, export wrong questions as a standalone list for repeated review.",
-  obWrong3: "The wrong questions page has its own session timer and accuracy stats to track improvement on weak areas.",
+  obWrong3:
+    "The wrong questions page has its own session timer and accuracy stats to track improvement on weak areas.",
 
   obTitleSettings: "Personalization",
-  obSettings1: "The top bar offers theme switching (7 themes: Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
+  obSettings1:
+    "The top bar offers theme switching (7 themes: Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
   obSettings2: "Supports 5 languages: Chinese, English, Japanese, Korean, French.",
-  obSettings3: "The sidebar can be collapsed to save screen space. On mobile, it automatically switches to a bottom navigation bar.",
-  obSettings4: "Download the offline version (single HTML file) to use without any network connection.",
+  obSettings3:
+    "The sidebar can be collapsed to save screen space. On mobile, it automatically switches to a bottom navigation bar.",
+  obSettings4:
+    "Download the offline version (single HTML file) to use without any network connection.",
 
   obTitleData: "Data & Backup",
-  obData1: "All data is stored in browser localStorage. Clearing browser cache will delete all data.",
-  obData2: "\"Export Config\" saves all lists, records, and settings as a JSON backup file.",
-  obData3: "\"Import Config\" restores a backup, with merge (keep existing data) or overwrite (replace all) modes.",
-  obData4: "Export backups regularly, especially before clearing browser data or switching devices.",
+  obData1:
+    "All data is stored in browser localStorage. Clearing browser cache will delete all data.",
+  obData2: '"Export Config" saves all lists, records, and settings as a JSON backup file.',
+  obData3:
+    '"Import Config" restores a backup, with merge (keep existing data) or overwrite (replace all) modes.',
+  obData4:
+    "Export backups regularly, especially before clearing browser data or switching devices.",
 
   // Debug
   debugMode: "Debug Mode",
@@ -313,7 +338,7 @@ export const en: Record<string, string> = {
   confirmTitle: "Confirm",
   confirmAction: "OK",
   totalQuestions: "{0} questions total — where to add?",
-  addToListName: "Add to current list \"{0}\"",
+  addToListName: 'Add to current list "{0}"',
   selectImportSource: "Select source:",
   uploadLocalJsonFile: "Upload local JSON file",
   importFromUrl: "Import JSON from URL",
@@ -324,12 +349,14 @@ export const en: Record<string, string> = {
   mergeToExisting: "Merge with existing data",
   overwriteCurrentConfig: "Overwrite current config",
   confirmOverwriteHeader: "Confirm Overwrite",
-  overwriteWarningText: "Overwriting will delete all current lists, records, and settings, replacing with imported content. This cannot be undone.",
-  typeConfirmOverwrite: "Type \"confirm overwrite\" to continue:",
+  overwriteWarningText:
+    "Overwriting will delete all current lists, records, and settings, replacing with imported content. This cannot be undone.",
+  typeConfirmOverwrite: 'Type "confirm overwrite" to continue:',
   confirmOverwriteKeyword: "confirm overwrite",
   resetKeyword: "confirm",
-  resetWarningText: "This will clear all lists, records, and settings in the browser. This cannot be undone. Type \"confirm\" to continue.",
-  resetPlaceholderText: "Type \"confirm\"",
+  resetWarningText:
+    'This will clear all lists, records, and settings in the browser. This cannot be undone. Type "confirm" to continue.',
+  resetPlaceholderText: 'Type "confirm"',
   clearAllDataAction: "Clear All Data",
   githubRepo: "GitHub Repository",
   welcomeStarNote: "Stars and feedback welcome.",
@@ -354,12 +381,16 @@ export const en: Record<string, string> = {
   proxyListAlive: "Available",
   proxyListDead: "Unavailable",
   corsExplainTitle: "Why do I need a CORS proxy?",
-  corsExplain1: "CORS (Cross-Origin Resource Sharing) is a browser security policy: when a webpage makes requests to a different domain, the browser checks if the target server allows that origin.",
-  corsExplain2: "PassLoop is a frontend-only app. LLM requests are sent directly from the browser. But most AI APIs (OpenAI, Anthropic, etc.) don't allow direct browser calls and will return CORS errors.",
-  corsExplain3: "A CORS proxy is a middleware server that receives your request, forwards it to the target API, and returns the response with proper CORS headers so the browser doesn't block it.",
+  corsExplain1:
+    "CORS (Cross-Origin Resource Sharing) is a browser security policy: when a webpage makes requests to a different domain, the browser checks if the target server allows that origin.",
+  corsExplain2:
+    "PassLoop is a frontend-only app. LLM requests are sent directly from the browser. But most AI APIs (OpenAI, Anthropic, etc.) don't allow direct browser calls and will return CORS errors.",
+  corsExplain3:
+    "A CORS proxy is a middleware server that receives your request, forwards it to the target API, and returns the response with proper CORS headers so the browser doesn't block it.",
   corsExplain4: "In short:",
   corsExplainFlow: "Browser → Proxy → AI API → Proxy → Browser",
-  corsExplain5: "You can use the default public proxy, or deploy your own private proxy for better stability and security.",
+  corsExplain5:
+    "You can use the default public proxy, or deploy your own private proxy for better stability and security.",
   viewDeployGuide: "View deploy guide →",
   understood: "Got it",
   connectionSuccess: "Connection successful, model {0} is available.",
@@ -386,15 +417,19 @@ export const en: Record<string, string> = {
   notAssigned: "Not assigned",
 
   // LLM Page
-  llmPageDesc: "Convert unformatted questions to standard JSON. Can fill answers, explanations, and import directly.",
+  llmPageDesc:
+    "Convert unformatted questions to standard JSON. Can fill answers, explanations, and import directly.",
   selfParseBtn: "Self-parse",
   parsing: "Parsing",
   openAiCompatible: "OpenAI Compatible",
-  waitingAiResponse: "Waiting for AI response...\n\nModels with reasoning capabilities need to complete reasoning before showing results here.",
-  manualJsonHintText: "Paste AI-returned JSON below, or upload a JSON file, then click \"Validate & Save\". You can also use the built-in parser on the left.",
+  waitingAiResponse:
+    "Waiting for AI response...\n\nModels with reasoning capabilities need to complete reasoning before showing results here.",
+  manualJsonHintText:
+    'Paste AI-returned JSON below, or upload a JSON file, then click "Validate & Save". You can also use the built-in parser on the left.',
   charCount: "{0} chars",
   uploadJsonBtn: "Upload JSON",
-  pasteJsonPlaceholder: "Paste AI-returned JSON...\n\n{\n  \"name\": \"List name\",\n  \"questions\": [...]\n}",
+  pasteJsonPlaceholder:
+    'Paste AI-returned JSON...\n\n{\n  "name": "List name",\n  "questions": [...]\n}',
   pleaseInputRawText: "Please paste unformatted question text first.",
   pleaseInputRawTextFirst: "Please paste question text in the input below first.",
   llmParseComplete: "LLM parsing complete.",
@@ -405,7 +440,8 @@ export const en: Record<string, string> = {
   validateFewOptions: "Validation failed: question {0} has fewer than 2 options.",
   validatePassed: "Validation passed, saved.",
   overwriteConfirmHeader: "Overwrite Confirm",
-  overwriteConfirmContent: "Right panel has existing content. Built-in LLM parsing will overwrite it. Continue?",
+  overwriteConfirmContent:
+    "Right panel has existing content. Built-in LLM parsing will overwrite it. Continue?",
   selectParseContentTitle: "Select Content Mode",
   selectParseContentDesc: "Choose what the AI should generate during parsing.",
   parseAnswerPlusExplanation: "Answer + Explanation",
@@ -421,7 +457,8 @@ export const en: Record<string, string> = {
   jsonParseSuccess: "JSON parsed successfully.",
   jsonFormatErrorCheck: "JSON format error. Please check content.",
   waitingForParseTitle: "Waiting",
-  waitingForParseDesc: "Use the built-in parser on the left, or click \"Self-parse\" to paste JSON manually.",
+  waitingForParseDesc:
+    'Use the built-in parser on the left, or click "Self-parse" to paste JSON manually.',
 
   // Parsed Questions Editor
   deleteQuestionTitle: "Delete question",
@@ -476,21 +513,26 @@ export const en: Record<string, string> = {
 
   // Self-fill Dialog
   selfFillHeader: "Self-fill Answers/Explanations",
-  selfFillInstruction: "Copy the prompt and send to your AI. Paste the returned JSON below. It will be applied to the current list after validation.",
+  selfFillInstruction:
+    "Copy the prompt and send to your AI. Paste the returned JSON below. It will be applied to the current list after validation.",
   fillContentLabel: "Fill content:",
   promptWithCount: "Prompt ({0} questions, {1} chars)",
-  longTextWarningText: "Content exceeds 10k characters. Consider downloading as TXT and sending as an attachment.",
+  longTextWarningText:
+    "Content exceeds 10k characters. Consider downloading as TXT and sending as an attachment.",
   pasteOrUploadAiJson: "Paste or upload AI-returned JSON",
   validateAndApplyBtn: "Validate & Apply",
   selfFillJsonEmpty: "Please paste AI-returned JSON.",
   selfFillJsonInvalid: "JSON format error. Please check if you copied the full AI output.",
-  selfFillJsonNotArray: "JSON should be an array, e.g. [{\"id\":\"...\",\"answer\":\"...\"}].",
-  selfFillNoMatch: "No questions matched. Please verify the id fields match the question ids ({0} questions total).",
+  selfFillJsonNotArray: 'JSON should be an array, e.g. [{"id":"...","answer":"..."}].',
+  selfFillNoMatch:
+    "No questions matched. Please verify the id fields match the question ids ({0} questions total).",
 
   // Self-generate Dialog
   selfGenerateHeader: "Self-generate Question JSON",
-  selfGenerateDescWithRawText: "Prompt includes your question text. Copy or download and send directly to your AI, then paste the returned JSON in the right panel.",
-  selfGenerateDescNoRaw: "Select content to generate. Copy the prompt below and send to your AI (ChatGPT, Claude, Gemini, etc.), include question text, then paste the generated JSON in the parse result area.",
+  selfGenerateDescWithRawText:
+    "Prompt includes your question text. Copy or download and send directly to your AI, then paste the returned JSON in the right panel.",
+  selfGenerateDescNoRaw:
+    "Select content to generate. Copy the prompt below and send to your AI (ChatGPT, Claude, Gemini, etc.), include question text, then paste the generated JSON in the parse result area.",
   selfGenerateContentLabel: "Generate content:",
   answerExplanationQuestionsOpt: "Answer + Explanation + Questions",
   answerQuestionsOpt: "Answer + Questions",
@@ -503,7 +545,7 @@ export const en: Record<string, string> = {
   stepCopyPromptWithText: "Copy or download the prompt above, and attach the question text",
   stepPasteToAi: "Paste the full prompt in your AI conversation",
   stepPasteJson: "After AI returns JSON, paste it in the right panel",
-  stepValidateAndSave: "Click \"Validate & Save\" to import into a list",
+  stepValidateAndSave: 'Click "Validate & Save" to import into a list',
   closeBtn: "Close",
 
   // Practice Page
@@ -557,7 +599,7 @@ export const en: Record<string, string> = {
   urlImportFailed: "URL import failed.",
   addedToCurrentList: "Added {0} questions to current list.",
   importedListName: "Imported List",
-  createdNewList: "Created new list \"{0}\" with {1} questions.",
+  createdNewList: 'Created new list "{0}" with {1} questions.',
   invalidBackupFile: "File is not a valid PassLoop config.",
   urlBackupImportFailed: "URL config import failed.",
   backupOverwritten: "Config overwritten and restored.",
@@ -566,19 +608,20 @@ export const en: Record<string, string> = {
   wrongListSuffix: "{0} - Wrong",
   wrongListExportDesc: "Wrong questions exported from PassLoop based on attempt history.",
   wrongListCreateDesc: "Wrong questions generated from PassLoop based on attempt history.",
-  wrongListCreated: "Created wrong list \"{0}\" with {1} questions.",
-  confirmLeaveLlm: "LLM results have not been exported or imported. Data will be lost if you leave. Continue?",
+  wrongListCreated: 'Created wrong list "{0}" with {1} questions.',
+  confirmLeaveLlm:
+    "LLM results have not been exported or imported. Data will be lost if you leave. Continue?",
   listNamePrompt: "List name",
   defaultListName: "List {0}",
   confirmDeleteList: "Deleting a list also removes its questions and attempt data. Continue?",
   defaultList: "Default List",
   listDeleted: "List deleted.",
-  confirmClearAttempts: "Clear all attempt data for \"{0}\"? Questions will be kept.",
+  confirmClearAttempts: 'Clear all attempt data for "{0}"? Questions will be kept.',
   attemptsCleared: "Attempt data cleared for current list.",
   importedToLocal: "Imported to local list.",
   defaultListDesc: "Import questions from JSON or add manually.",
   unnamedList: "Unnamed List",
-  selfFillPlaceholder: "[\\n  {\"id\": \"question-id\", \"answer\": \"A\", \"explanation\": \"...\"}\\n]",
+  selfFillPlaceholder: '[\\n  {"id": "question-id", "answer": "A", "explanation": "..."}\\n]',
 
   // Question types
   typeSingle: "Single Choice",
@@ -600,9 +643,11 @@ export const en: Record<string, string> = {
   offlineVersion: "Offline Version",
   offlineDialogTitle: "Offline Version",
   offlineBuildTitle: "How It Works",
-  offlineBuildDesc: "All code, styles, and assets are bundled into a single .html file. No server or internet connection needed — just double-click to open in your browser. Fully functional, same as the online version.",
+  offlineBuildDesc:
+    "All code, styles, and assets are bundled into a single .html file. No server or internet connection needed — just double-click to open in your browser. Fully functional, same as the online version.",
   offlineStorageTitle: "Data Storage",
-  offlineStorageDesc: "Data is stored in your browser's localStorage, tied to the current browser. Switching browsers or clearing browsing data will erase your data. We recommend regularly exporting your config as a backup.",
+  offlineStorageDesc:
+    "Data is stored in your browser's localStorage, tied to the current browser. Switching browsers or clearing browsing data will erase your data. We recommend regularly exporting your config as a backup.",
   offlineUsageTitle: "How to Use",
   offlineUsageStep1: "Download the .html file from GitHub Releases",
   offlineUsageStep2: "Double-click to open in your browser",
@@ -610,7 +655,8 @@ export const en: Record<string, string> = {
   offlineDownloadBtn: "Go to Downloads",
 
   // Export confirm
-  confirmExportBackup: "The exported config file contains all your questions, settings, and LLM configuration (including API keys). Please protect your privacy and do not share the file with untrusted parties. Proceed?",
+  confirmExportBackup:
+    "The exported config file contains all your questions, settings, and LLM configuration (including API keys). Please protect your privacy and do not share the file with untrusted parties. Proceed?",
 
   // Debug
   simulateCrash: "Simulate Crash",

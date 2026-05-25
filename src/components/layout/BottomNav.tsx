@@ -79,7 +79,9 @@ export function BottomNav(props: {
                   }}
                 >
                   <span>{list.name}</span>
-                  <span className="panel-list-item-count">{list.questions.length} {t("questionCount")}</span>
+                  <span className="panel-list-item-count">
+                    {list.questions.length} {t("questionCount")}
+                  </span>
                 </button>
               ))}
             </div>

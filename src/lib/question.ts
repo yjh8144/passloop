@@ -235,9 +235,7 @@ export function getListStats(list: QuestionList, attempts: AttemptRecord[]) {
     lastAttemptByQuestion.set(attempt.questionId, attempt.correct)
   }
   const wrongQuestionIds = new Set(
-    [...lastAttemptByQuestion.entries()]
-      .filter(([, wasCorrect]) => !wasCorrect)
-      .map(([id]) => id),
+    [...lastAttemptByQuestion.entries()].filter(([, wasCorrect]) => !wasCorrect).map(([id]) => id),
   )
   const attemptedQuestionIds = new Set(related.map((attempt) => attempt.questionId))
   const avgTime = submitted

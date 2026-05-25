@@ -104,16 +104,10 @@ export function Sidebar(props: {
           >
             <Edit3 size={17} /> {t("manager")}
           </button>
-          <button
-            className={page === "llm" ? "active" : ""}
-            onClick={() => changePage("llm")}
-          >
+          <button className={page === "llm" ? "active" : ""} onClick={() => changePage("llm")}>
             <Bot size={17} /> {t("llm")}
           </button>
-          <button
-            className={page === "wrong" ? "active" : ""}
-            onClick={() => changePage("wrong")}
-          >
+          <button className={page === "wrong" ? "active" : ""} onClick={() => changePage("wrong")}>
             <RotateCcw size={17} /> {t("wrong")}
           </button>
         </nav>
@@ -165,7 +159,6 @@ export function Sidebar(props: {
           </button>
         </div>
       </div>
-
     </aside>
   )
 }

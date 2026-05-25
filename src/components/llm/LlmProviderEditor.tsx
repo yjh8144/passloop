@@ -14,7 +14,13 @@ interface LlmProviderEditorProps {
   isNew?: boolean
 }
 
-export function LlmProviderEditor({ provider, onChange, onSave, onCancel, isNew }: LlmProviderEditorProps) {
+export function LlmProviderEditor({
+  provider,
+  onChange,
+  onSave,
+  onCancel,
+  isNew,
+}: LlmProviderEditorProps) {
   const t = useT()
   const pushToast = usePushToast()
   const [showApiKey, setShowApiKey] = useState(false)
@@ -33,7 +39,9 @@ export function LlmProviderEditor({ provider, onChange, onSave, onCancel, isNew 
   const [testing, setTesting] = useState(false)
   const [modelList, setModelList] = useState<string[]>([])
   const [fetchingModels, setFetchingModels] = useState(false)
-  const [proxyStatus, setProxyStatus] = useState<Record<string, { status: "idle" | "testing" | "alive" | "dead"; latency?: number }>>({})
+  const [proxyStatus, setProxyStatus] = useState<
+    Record<string, { status: "idle" | "testing" | "alive" | "dead"; latency?: number }>
+  >({})
 
   useEffect(() => {
     if (!modelDropdownOpen) return
@@ -282,7 +290,10 @@ export function LlmProviderEditor({ provider, onChange, onSave, onCancel, isNew 
             </button>
           </div>
         </label>
-        <label className="field-label wide" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <label
+          className="field-label wide"
+          style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8 }}
+        >
           <input
             type="checkbox"
             checked={provider.proxyEnabled}
@@ -292,7 +303,10 @@ export function LlmProviderEditor({ provider, onChange, onSave, onCancel, isNew 
           <span>{t("proxyToggleLabel")}</span>
         </label>
         {!provider.proxyEnabled && (
-          <div className="field-label wide" style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -8 }}>
+          <div
+            className="field-label wide"
+            style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -8 }}
+          >
             {t("proxyDisabledHint")}
           </div>
         )}
@@ -395,7 +409,11 @@ export function LlmProviderEditor({ provider, onChange, onSave, onCancel, isNew 
           </div>
         </label>
         <div className="field-label">
-          <button className="test-button" onClick={runTest} disabled={testing || !provider.apiKey.trim()}>
+          <button
+            className="test-button"
+            onClick={runTest}
+            disabled={testing || !provider.apiKey.trim()}
+          >
             {testing ? t("testing") : t("testConnection")}
           </button>
         </div>
@@ -440,9 +458,7 @@ export function LlmProviderEditor({ provider, onChange, onSave, onCancel, isNew 
                 <br />
                 <span style={{ color: "var(--text-muted)" }}>{t("corsExplainFlow")}</span>
               </p>
-              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
-                {t("corsExplain5")}
-              </p>
+              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t("corsExplain5")}</p>
               <p style={{ marginTop: 12 }}>
                 <a
                   href="https://github.com/yjh8144/passloop/tree/main/proxy"
@@ -526,7 +542,8 @@ export function LlmProviderEditor({ provider, onChange, onSave, onCancel, isNew 
                     <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                       {status === "alive" && (
                         <span style={{ fontSize: 12, color: "#22c55e" }}>
-                          {t("proxyListAlive")}{info.latency != null ? ` ${info.latency}ms` : ""}
+                          {t("proxyListAlive")}
+                          {info.latency != null ? ` ${info.latency}ms` : ""}
                         </span>
                       )}
                       {status === "dead" && (

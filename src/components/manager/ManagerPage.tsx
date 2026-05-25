@@ -1,15 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import {
-  BookOpen,
-  Check,
-  Copy,
-  Edit3,
-  FileEdit,
-  Plus,
-  Sparkles,
-  Trash2,
-  X,
-} from "lucide-react"
+import { BookOpen, Check, Copy, Edit3, FileEdit, Plus, Sparkles, Trash2, X } from "lucide-react"
 import type { Question, QuestionList } from "../../lib/types"
 import { createEmptyQuestion, getTypeLabels } from "../../lib/question"
 import { fillAnswersWithLlm } from "../../lib/llm"
@@ -223,9 +213,7 @@ export function ManagerPage(props: {
         {filling ? (
           <div className="fill-stream-panel">
             <h2>{t("llmFillingStatus")}</h2>
-            <pre className="streaming-preview">
-              {fillStreamText || t("waitingAiResponse")}
-            </pre>
+            <pre className="streaming-preview">{fillStreamText || t("waitingAiResponse")}</pre>
           </div>
         ) : props.editing ? (
           <QuestionEditor
@@ -238,7 +226,11 @@ export function ManagerPage(props: {
         )}
       </aside>
 
-      <button className="editor-fab" onClick={() => setEditorFloatOpen(true)} title={t("editorTitle")}>
+      <button
+        className="editor-fab"
+        onClick={() => setEditorFloatOpen(true)}
+        title={t("editorTitle")}
+      >
         <FileEdit size={22} />
       </button>
       <div
@@ -265,9 +257,7 @@ export function ManagerPage(props: {
           {filling ? (
             <div className="fill-stream-panel">
               <h2>{t("llmFillingStatus")}</h2>
-              <pre className="streaming-preview">
-                {fillStreamText || t("waitingAiResponse")}
-              </pre>
+              <pre className="streaming-preview">{fillStreamText || t("waitingAiResponse")}</pre>
             </div>
           ) : props.editing ? (
             <QuestionEditor

@@ -1,4 +1,11 @@
-import type { AppData, LlmConfig, LlmMultiConfig, LlmProvider, QuestionList, Settings } from "./types"
+import type {
+  AppData,
+  LlmConfig,
+  LlmMultiConfig,
+  LlmProvider,
+  QuestionList,
+  Settings,
+} from "./types"
 import { createId, normalizeQuestion } from "./question"
 import { debugError } from "./debug"
 
@@ -175,8 +182,14 @@ function normalizeMultiConfig(source: unknown, fallback: LlmMultiConfig): LlmMul
     version: 2,
     providers,
     assignments: {
-      parse: typeof s.assignments?.parse === "string" && providerIds.has(s.assignments.parse) ? s.assignments.parse : null,
-      fill: typeof s.assignments?.fill === "string" && providerIds.has(s.assignments.fill) ? s.assignments.fill : null,
+      parse:
+        typeof s.assignments?.parse === "string" && providerIds.has(s.assignments.parse)
+          ? s.assignments.parse
+          : null,
+      fill:
+        typeof s.assignments?.fill === "string" && providerIds.has(s.assignments.fill)
+          ? s.assignments.fill
+          : null,
     },
   }
 }

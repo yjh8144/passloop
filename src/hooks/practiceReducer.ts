@@ -102,7 +102,10 @@ export function practiceReducer(state: PracticeState, action: PracticeAction): P
 
     case "TICK_TIMER":
       return state.wrongSession
-        ? { ...state, wrongSession: { ...state.wrongSession, elapsedSeconds: action.elapsedSeconds } }
+        ? {
+            ...state,
+            wrongSession: { ...state.wrongSession, elapsedSeconds: action.elapsedSeconds },
+          }
         : state
 
     case "LIST_RESET_FULL":
@@ -115,7 +118,13 @@ export function practiceReducer(state: PracticeState, action: PracticeAction): P
         delete nextAnswers[id]
         delete nextResults[id]
       }
-      return { ...state, answers: nextAnswers, results: nextResults, currentIndex: 0, wrongSession: null }
+      return {
+        ...state,
+        answers: nextAnswers,
+        results: nextResults,
+        currentIndex: 0,
+        wrongSession: null,
+      }
     }
 
     case "CLAMP_INDEX":

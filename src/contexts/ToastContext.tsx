@@ -4,7 +4,13 @@ import type { PushToast } from "../hooks/types"
 
 const ToastContext = createContext<PushToast | null>(null)
 
-export function ToastProvider({ pushToast, children }: { pushToast: PushToast; children: ReactNode }) {
+export function ToastProvider({
+  pushToast,
+  children,
+}: {
+  pushToast: PushToast
+  children: ReactNode
+}) {
   return <ToastContext.Provider value={pushToast}>{children}</ToastContext.Provider>
 }
 

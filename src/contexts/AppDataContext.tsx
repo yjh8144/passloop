@@ -132,9 +132,7 @@ export function AppDataProvider({
         debugLog("Delete list", { id })
         updateData((current) => {
           const remaining = current.lists.filter((list) => list.id !== id)
-          const lists = remaining.length
-            ? remaining
-            : [createEmptyQuestionList(t("defaultList"))]
+          const lists = remaining.length ? remaining : [createEmptyQuestionList(t("defaultList"))]
           return {
             ...current,
             lists,

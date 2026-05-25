@@ -41,8 +41,7 @@ export function PracticePage() {
     }
   }, [activeQuestion, startedAtRef])
 
-  const allSubmitted =
-    questions.length > 0 && questions.every((q) => q.id in results)
+  const allSubmitted = questions.length > 0 && questions.every((q) => q.id in results)
   const correctCount = questions.filter((q) => results[q.id] === true).length
   const wrongCount = questions.filter((q) => results[q.id] === false).length
 
@@ -135,9 +134,7 @@ export function PracticePage() {
           practiceMode={settings.practiceMode}
           onSubmit={() => submitQuestion(activeQuestion)}
           onNext={
-            currentIndex < questions.length - 1
-              ? () => setCurrentIndex((i) => i + 1)
-              : undefined
+            currentIndex < questions.length - 1 ? () => setCurrentIndex((i) => i + 1) : undefined
           }
           hideSubmit={settings.submitMode === "paper"}
           revealMode={settings.revealMode}
@@ -152,9 +149,7 @@ export function PracticePage() {
         <div className="stage-header">
           <div>
             <h1>{page === "wrong" ? t("wrongPracticeTitle") : t("practiceTitle")}</h1>
-            <p>
-              {settings.practiceMode === "memorize" ? t("memorizeHint") : t("practiceHint")}
-            </p>
+            <p>{settings.practiceMode === "memorize" ? t("memorizeHint") : t("practiceHint")}</p>
           </div>
           <div className="stage-tools">
             {settings.viewMode === "single" && (
@@ -172,9 +167,7 @@ export function PracticePage() {
                 <button
                   className="icon-button"
                   onClick={() =>
-                    setCurrentIndex((index) =>
-                      Math.min(index + 1, questions.length - 1),
-                    )
+                    setCurrentIndex((index) => Math.min(index + 1, questions.length - 1))
                   }
                   disabled={currentIndex >= questions.length - 1}
                 >

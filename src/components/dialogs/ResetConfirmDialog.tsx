@@ -40,9 +40,7 @@ export function ResetConfirmDialog({
             <X size={18} />
           </button>
         </div>
-        <p style={{ margin: "8px 0 12px", lineHeight: 1.6 }}>
-          {t("resetWarningText")}
-        </p>
+        <p style={{ margin: "8px 0 12px", lineHeight: 1.6 }}>{t("resetWarningText")}</p>
         <input
           ref={inputRef}
           value={value}
@@ -54,11 +52,7 @@ export function ResetConfirmDialog({
         />
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
-          <button
-            className="danger-button"
-            disabled={value.trim() !== keyword}
-            onClick={onConfirm}
-          >
+          <button className="danger-button" disabled={value.trim() !== keyword} onClick={onConfirm}>
             {t("clearAllDataAction")}
           </button>
         </div>

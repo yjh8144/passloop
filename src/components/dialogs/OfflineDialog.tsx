@@ -16,9 +16,7 @@ export function OfflineDialog({ open, onClose }: { open: boolean; onClose: () =>
         </div>
         <div style={{ lineHeight: 1.8, fontSize: "0.95rem" }}>
           <h4 style={{ margin: "0 0 4px" }}>{t("offlineBuildTitle")}</h4>
-          <p style={{ margin: "0 0 14px", color: "var(--text-muted)" }}>
-            {t("offlineBuildDesc")}
-          </p>
+          <p style={{ margin: "0 0 14px", color: "var(--text-muted)" }}>{t("offlineBuildDesc")}</p>
 
           <h4 style={{ margin: "0 0 4px" }}>{t("offlineStorageTitle")}</h4>
           <p style={{ margin: "0 0 14px", color: "var(--text-muted)" }}>

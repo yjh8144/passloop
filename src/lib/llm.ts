@@ -135,14 +135,18 @@ async function streamOpenAiCompatible(
     temperature: 0.2,
     stream: true,
   }
-  const response = await fetchWithProxyFallback(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
+  const response = await fetchWithProxyFallback(
+    endpoint,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify(body),
     },
-    body: JSON.stringify(body),
-  }, config)
+    config,
+  )
   return readSSEStream(
     response,
     (data) => {
@@ -172,16 +176,20 @@ async function streamGemini(
   const endpoint = baseEndpoint.includes("streamGenerateContent")
     ? baseEndpoint
     : baseEndpoint.replace(":generateContent", ":streamGenerateContent").replace(/\?/, "?alt=sse&")
-  const response = await fetchWithProxyFallback(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetchWithProxyFallback(
+    endpoint,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
+      }),
     },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
-    }),
-  }, config)
+    config,
+  )
   return readSSEStream(
     response,
     (data) => {
@@ -209,21 +217,25 @@ async function streamAnthropic(
   const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages"
   const model = config.model.trim() || "claude-sonnet-4-20250514"
   assertConfigValid(config.apiKey, model, endpoint)
-  const response = await fetchWithProxyFallback(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": config.apiKey,
-      "anthropic-version": "2023-06-01",
+  const response = await fetchWithProxyFallback(
+    endpoint,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": config.apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 8000,
+        temperature: 0.2,
+        stream: true,
+        messages: [{ role: "user", content: prompt }],
+      }),
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: 8000,
-      temperature: 0.2,
-      stream: true,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  }, config)
+    config,
+  )
   return readSSEStream(
     response,
     (data) => {
@@ -361,9 +373,13 @@ export async function fetchModelList(config: LlmConfig): Promise<string[]> {
     const baseUrl = config.endpoint.trim()
       ? config.endpoint.trim().replace(/\/models.*$/, "")
       : "https://generativelanguage.googleapis.com/v1beta"
-    const response = await fetchWithProxyFallback(`${baseUrl}/models?key=${config.apiKey}`, {
-      headers: {},
-    }, config)
+    const response = await fetchWithProxyFallback(
+      `${baseUrl}/models?key=${config.apiKey}`,
+      {
+        headers: {},
+      },
+      config,
+    )
     const payload = await response.json()
     return (payload.models ?? [])
       .map((m: { name?: string }) => (m.name ?? "").replace(/^models\//, ""))
@@ -371,11 +387,15 @@ export async function fetchModelList(config: LlmConfig): Promise<string[]> {
   }
   const raw = config.endpoint.trim() || "https://api.openai.com/v1"
   const base = normalizeModelsEndpoint(raw)
-  const response = await fetchWithProxyFallback(base, {
-    headers: {
-      Authorization: `Bearer ${config.apiKey}`,
+  const response = await fetchWithProxyFallback(
+    base,
+    {
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+      },
     },
-  }, config)
+    config,
+  )
   const payload = await response.json()
   return (payload.data ?? [])
     .map((m: { id?: string }) => m.id ?? "")
@@ -415,35 +435,43 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
       config.endpoint.trim() ||
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey}`
     assertConfigValid(config.apiKey, model, endpoint)
-    await fetchWithProxyFallback(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    await fetchWithProxyFallback(
+      endpoint,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: "hi" }] }],
+          generationConfig: { maxOutputTokens: 10 },
+        }),
       },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: "hi" }] }],
-        generationConfig: { maxOutputTokens: 10 },
-      }),
-    }, config)
+      config,
+    )
     return model
   }
   if (config.provider === "anthropic") {
     const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages"
     const model = config.model.trim() || "claude-sonnet-4-20250514"
     assertConfigValid(config.apiKey, model, endpoint)
-    await fetchWithProxyFallback(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": config.apiKey,
-        "anthropic-version": "2023-06-01",
+    await fetchWithProxyFallback(
+      endpoint,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": config.apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 10,
+          messages: [{ role: "user", content: "hi" }],
+        }),
       },
-      body: JSON.stringify({
-        model,
-        max_tokens: 10,
-        messages: [{ role: "user", content: "hi" }],
-      }),
-    }, config)
+      config,
+    )
     return model
   }
   const endpoint = normalizeOpenAiChatEndpoint(
@@ -451,18 +479,22 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
   )
   const model = config.model.trim() || "gpt-4.1-mini"
   assertConfigValid(config.apiKey, model, endpoint)
-  await fetchWithProxyFallback(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
+  await fetchWithProxyFallback(
+    endpoint,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: "hi" }],
+        max_tokens: 10,
+      }),
     },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: "hi" }],
-      max_tokens: 10,
-    }),
-  }, config)
+    config,
+  )
   return model
 }
 

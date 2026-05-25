@@ -1,6 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import type { ReactNode } from "react"
-import type { LlmConfig, LlmMultiConfig, LlmProvider, LlmScenario, LlmScenarioAssignment } from "../lib/types"
+import type {
+  LlmConfig,
+  LlmMultiConfig,
+  LlmProvider,
+  LlmScenario,
+  LlmScenarioAssignment,
+} from "../lib/types"
 import { loadLlmMultiConfig, saveLlmMultiConfig, clearLlmMultiConfig } from "../lib/storage"
 import { defaultLlmMultiConfig } from "../utils/constants"
 import { createId } from "../lib/question"
@@ -36,7 +42,12 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
   const addProvider = useCallback(
     (data: Omit<LlmProvider, "id" | "createdAt" | "updatedAt">): LlmProvider => {
       const timestamp = new Date().toISOString()
-      const provider: LlmProvider = { ...data, id: createId(), createdAt: timestamp, updatedAt: timestamp }
+      const provider: LlmProvider = {
+        ...data,
+        id: createId(),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
       setMultiConfig((prev) => {
         const next = { ...prev, providers: [...prev.providers, provider] }
         if (!prev.assignments.parse) next.assignments = { ...next.assignments, parse: provider.id }

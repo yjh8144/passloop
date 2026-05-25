@@ -124,7 +124,14 @@ export class ErrorBoundary extends Component<Props, State> {
           <h2 style={{ margin: "0 0 12px", fontSize: 20, textAlign: "center" }}>
             出错了 / Something went wrong
           </h2>
-          <p style={{ color: "var(--muted, #666)", fontSize: 14, margin: "0 0 16px", textAlign: "center" }}>
+          <p
+            style={{
+              color: "var(--muted, #666)",
+              fontSize: 14,
+              margin: "0 0 16px",
+              textAlign: "center",
+            }}
+          >
             应用遇到了意外错误，请尝试重新加载页面。
             <br />
             The app encountered an unexpected error. Please try reloading.

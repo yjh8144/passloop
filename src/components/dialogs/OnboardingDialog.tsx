@@ -2,13 +2,7 @@ import { useState } from "react"
 import { Github, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useT } from "../../contexts"
 
-export function OnboardingDialog({
-  open,
-  onClose,
-}: {
-  open: boolean
-  onClose: () => void
-}) {
+export function OnboardingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT()
   const [step, setStep] = useState(0)
 

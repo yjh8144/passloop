@@ -13,7 +13,15 @@ function CrashTrigger({ label }: { label: string }) {
   )
 }
 
-export function DebugDialog({ open, onClose, onShowOnboarding }: { open: boolean; onClose: () => void; onShowOnboarding?: () => void }) {
+export function DebugDialog({
+  open,
+  onClose,
+  onShowOnboarding,
+}: {
+  open: boolean
+  onClose: () => void
+  onShowOnboarding?: () => void
+}) {
   const t = useT()
   const [debugEnabled, setDebugState] = useState(() => isDebugEnabled())
 
@@ -42,7 +50,12 @@ export function DebugDialog({ open, onClose, onShowOnboarding }: { open: boolean
         <div className="modal-actions">
           {debugEnabled && <CrashTrigger label={t("simulateCrash")} />}
           {debugEnabled && onShowOnboarding && (
-            <button onClick={() => { onShowOnboarding(); onClose() }}>
+            <button
+              onClick={() => {
+                onShowOnboarding()
+                onClose()
+              }}
+            >
               {t("showOnboarding")}
             </button>
           )}

@@ -88,9 +88,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           onBackupImport={() => importActions?.openBackupImport()}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
           onExportBackup={() =>
-            showConfirm(t("confirmExportBackup"), () =>
-              downloadJson("passloop-config.json", data)
-            )
+            showConfirm(t("confirmExportBackup"), () => downloadJson("passloop-config.json", data))
           }
           onResetAll={() => setResetConfirmDialog(true)}
           onOpenDebugDialog={() => setShowDebugDialog(true)}
@@ -120,7 +118,11 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           )}
 
           <footer className="app-footer">
-            © 2026 <a href="https://github.com/yjh8144" target="_blank" rel="noopener noreferrer">yjh8144</a>. All rights reserved. <span className="app-version">v1.0.1</span>
+            © 2026{" "}
+            <a href="https://github.com/yjh8144" target="_blank" rel="noopener noreferrer">
+              yjh8144
+            </a>
+            . All rights reserved. <span className="app-version">v1.0.1</span>
           </footer>
         </main>
 
@@ -129,9 +131,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           onBackupImport={() => importActions?.openBackupImport()}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
           onExportBackup={() =>
-            showConfirm(t("confirmExportBackup"), () =>
-              downloadJson("passloop-config.json", data)
-            )
+            showConfirm(t("confirmExportBackup"), () => downloadJson("passloop-config.json", data))
           }
           onResetAll={() => setResetConfirmDialog(true)}
         />
@@ -153,7 +153,11 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
             setShowOnboarding(false)
           }}
         />
-        <DebugDialog open={showDebugDialog} onClose={() => setShowDebugDialog(false)} onShowOnboarding={() => setShowOnboarding(true)} />
+        <DebugDialog
+          open={showDebugDialog}
+          onClose={() => setShowDebugDialog(false)}
+          onShowOnboarding={() => setShowOnboarding(true)}
+        />
         <OfflineDialog open={showOfflineDialog} onClose={() => setShowOfflineDialog(false)} />
       </div>
     </PracticeProvider>
@@ -204,4 +208,3 @@ function ResetConfirmConnected({
     />
   )
 }
-

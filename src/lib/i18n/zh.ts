@@ -246,7 +246,8 @@ export const zh: Record<string, string> = {
   obImport1: "点击侧边栏「导入题目」，支持两种方式：上传本地 JSON 文件，或输入远程 URL 在线导入。",
   obImport2: "导入时可选择「添加到当前题单」或「创建新题单」。",
   obImport3: "「导入配置」可导入完整备份（含所有题单、记录和设置），支持合并或覆盖模式。",
-  obImport4: "JSON 格式参考：{ \"name\": \"题单名\", \"questions\": [{ \"title\": \"...\", \"type\": \"single\", \"body\": \"...\", \"options\": [...], \"answer\": [...] }] }",
+  obImport4:
+    'JSON 格式参考：{ "name": "题单名", "questions": [{ "title": "...", "type": "single", "body": "...", "options": [...], "answer": [...] }] }',
 
   obTitleManager: "题库管理",
   obManager1: "在「题库管理」页面可手动新增、编辑、删除题目。",
@@ -255,17 +256,23 @@ export const zh: Record<string, string> = {
   obManager4: "「自助补充」可复制 Prompt 发给你自己的 AI，再将返回的 JSON 粘贴导入。",
 
   obTitleLlm: "LLM 解析",
-  obLlm1: "在「LLM 解析」页面粘贴未整理的题目文本（如课件、截图 OCR、笔记），AI 会将其转换为标准题库 JSON。",
+  obLlm1:
+    "在「LLM 解析」页面粘贴未整理的题目文本（如课件、截图 OCR、笔记），AI 会将其转换为标准题库 JSON。",
   obLlm2: "支持选择内容模式：答案+解析、仅答案、仅解析或仅题目。",
-  obLlm3: "「自助解析」模式：复制生成的 Prompt 发给外部 AI（ChatGPT、Claude 等），再将 JSON 粘贴回来。",
+  obLlm3:
+    "「自助解析」模式：复制生成的 Prompt 发给外部 AI（ChatGPT、Claude 等），再将 JSON 粘贴回来。",
   obLlm4: "解析完成后可直接导入当前题单或创建新题单，也可手动编辑解析结果再导入。",
-  obLlm5: "使用前需在侧边栏「LLM 配置」中添加提供商，支持 OpenAI、Anthropic、Gemini 及任意兼容接口。",
+  obLlm5:
+    "使用前需在侧边栏「LLM 配置」中添加提供商，支持 OpenAI、Anthropic、Gemini 及任意兼容接口。",
 
   obTitlePractice: "刷题练习",
-  obPractice1: "在「刷题台」选择题单即可开始刷题，支持「刷题模式」（提交后判对错）和「背题模式」（直接展示答案）。",
+  obPractice1:
+    "在「刷题台」选择题单即可开始刷题，支持「刷题模式」（提交后判对错）和「背题模式」（直接展示答案）。",
   obPractice2: "浏览方式：「单题」逐题作答，或「整卷」一次性提交全部答案。",
-  obPractice3: "右上角设置可切换：排序方式（原顺序/随机/按名称/按题型）、答后自动下一题、答案揭示时机等。",
-  obPractice4: "侧边统计面板显示正确率、平均用时、进度和错题数量，快捷导航网格可按颜色查看作答状态。",
+  obPractice3:
+    "右上角设置可切换：排序方式（原顺序/随机/按名称/按题型）、答后自动下一题、答案揭示时机等。",
+  obPractice4:
+    "侧边统计面板显示正确率、平均用时、进度和错题数量，快捷导航网格可按颜色查看作答状态。",
   obPractice5: "全部作答完成后弹出统计弹窗，可选择重做全部、重做错题或将错题导出为新题单。",
 
   obTitleWrong: "错题重练",
@@ -315,11 +322,13 @@ export const zh: Record<string, string> = {
   mergeToExisting: "合并到现有数据",
   overwriteCurrentConfig: "覆盖当前配置",
   confirmOverwriteHeader: "确认覆盖",
-  overwriteWarningText: "覆盖将删除当前所有题单、刷题记录和设置，替换为导入文件中的内容。此操作不可撤销。",
+  overwriteWarningText:
+    "覆盖将删除当前所有题单、刷题记录和设置，替换为导入文件中的内容。此操作不可撤销。",
   typeConfirmOverwrite: "请输入「确认覆盖」以继续：",
   confirmOverwriteKeyword: "确认覆盖",
   resetKeyword: "确认",
-  resetWarningText: "此操作会清空浏览器中的所有题单、答题记录和配置，且不可恢复。请输入「确认」以继续。",
+  resetWarningText:
+    "此操作会清空浏览器中的所有题单、答题记录和配置，且不可恢复。请输入「确认」以继续。",
   resetPlaceholderText: "请输入「确认」",
   clearAllDataAction: "清除所有数据",
   githubRepo: "GitHub 仓库",
@@ -345,9 +354,12 @@ export const zh: Record<string, string> = {
   proxyListAlive: "可用",
   proxyListDead: "不可用",
   corsExplainTitle: "为什么需要 CORS 代理？",
-  corsExplain1: "CORS（跨源资源共享）是浏览器的一项安全策略：当网页向不同域名的服务器发送请求时，浏览器会检查目标服务器是否允许此来源访问。",
-  corsExplain2: "PassLoop 是纯前端应用，LLM 请求直接从浏览器发出。但大多数 AI 接口（OpenAI、Anthropic 等）不允许浏览器直接调用，会返回 CORS 错误。",
-  corsExplain3: "CORS 代理是一个中间服务器，它接收你的请求、转发给目标 API，再把响应返回给浏览器，同时添加允许跨域的响应头。这样浏览器就不会拦截了。",
+  corsExplain1:
+    "CORS（跨源资源共享）是浏览器的一项安全策略：当网页向不同域名的服务器发送请求时，浏览器会检查目标服务器是否允许此来源访问。",
+  corsExplain2:
+    "PassLoop 是纯前端应用，LLM 请求直接从浏览器发出。但大多数 AI 接口（OpenAI、Anthropic 等）不允许浏览器直接调用，会返回 CORS 错误。",
+  corsExplain3:
+    "CORS 代理是一个中间服务器，它接收你的请求、转发给目标 API，再把响应返回给浏览器，同时添加允许跨域的响应头。这样浏览器就不会拦截了。",
   corsExplain4: "简单来说：",
   corsExplainFlow: "浏览器 → 代理服务器 → AI 接口 → 代理服务器 → 浏览器",
   corsExplain5: "你可以使用默认提供的公共代理，也可以自行部署私有代理以获得更好的稳定性和安全性。",
@@ -381,11 +393,14 @@ export const zh: Record<string, string> = {
   selfParseBtn: "自助解析",
   parsing: "解析中",
   openAiCompatible: "OpenAI 兼容",
-  waitingAiResponse: "等待 AI 响应…\n\n有推理功能的模型需要等待推理完成后，才能在此处显示解析结果。",
-  manualJsonHintText: "将 AI 返回的 JSON 粘贴到下方，或上传 JSON 文件，然后点击「校验并保存」。你也可以继续使用左侧内置解析。",
+  waitingAiResponse:
+    "等待 AI 响应…\n\n有推理功能的模型需要等待推理完成后，才能在此处显示解析结果。",
+  manualJsonHintText:
+    "将 AI 返回的 JSON 粘贴到下方，或上传 JSON 文件，然后点击「校验并保存」。你也可以继续使用左侧内置解析。",
   charCount: "{0} 字",
   uploadJsonBtn: "上传 JSON",
-  pasteJsonPlaceholder: "粘贴 AI 返回的 JSON...\n\n{\n  \"name\": \"题单名称\",\n  \"questions\": [...]\n}",
+  pasteJsonPlaceholder:
+    '粘贴 AI 返回的 JSON...\n\n{\n  "name": "题单名称",\n  "questions": [...]\n}',
   pleaseInputRawText: "请先粘贴未整理题目文本。",
   pleaseInputRawTextFirst: "请先在下方输入框中粘贴题目文本。",
   llmParseComplete: "LLM 解析完成。",
@@ -467,7 +482,8 @@ export const zh: Record<string, string> = {
 
   // Self-fill Dialog
   selfFillHeader: "自助补充答案/解析",
-  selfFillInstruction: "复制 Prompt 发给你的 AI，将返回的 JSON 粘贴到下方，校验通过后会自动应用到当前题单。",
+  selfFillInstruction:
+    "复制 Prompt 发给你的 AI，将返回的 JSON 粘贴到下方，校验通过后会自动应用到当前题单。",
   fillContentLabel: "补充内容：",
   promptWithCount: "Prompt（含当前题单 {0} 题，{1} 字）",
   longTextWarningText: "内容较长（超过 1 万字），建议下载 TXT 文件后以附件形式发送给 AI。",
@@ -475,13 +491,15 @@ export const zh: Record<string, string> = {
   validateAndApplyBtn: "校验并应用",
   selfFillJsonEmpty: "请粘贴 AI 返回的 JSON。",
   selfFillJsonInvalid: "JSON 格式错误，请检查是否完整复制了 AI 的输出。",
-  selfFillJsonNotArray: "JSON 应为数组格式，如 [{\"id\":\"...\",\"answer\":\"...\"}]。",
+  selfFillJsonNotArray: 'JSON 应为数组格式，如 [{"id":"...","answer":"..."}]。',
   selfFillNoMatch: "未匹配到任何题目。请确认 JSON 中的 id 字段与题目 id 一致（共 {0} 题）。",
 
   // Self-generate Dialog
   selfGenerateHeader: "自助 AI 生成题目 JSON",
-  selfGenerateDescWithRawText: "Prompt 已包含你输入的题目文本。复制或下载后直接发给你的 AI，将返回的 JSON 粘贴到右侧解析结果区域。",
-  selfGenerateDescNoRaw: "选择生成内容，复制下方 Prompt 发送给你的 AI（ChatGPT、Claude、Gemini 等），将题目文本一并发送，然后把生成的 JSON 粘贴到解析结果区域导入。",
+  selfGenerateDescWithRawText:
+    "Prompt 已包含你输入的题目文本。复制或下载后直接发给你的 AI，将返回的 JSON 粘贴到右侧解析结果区域。",
+  selfGenerateDescNoRaw:
+    "选择生成内容，复制下方 Prompt 发送给你的 AI（ChatGPT、Claude、Gemini 等），将题目文本一并发送，然后把生成的 JSON 粘贴到解析结果区域导入。",
   selfGenerateContentLabel: "生成内容：",
   answerExplanationQuestionsOpt: "答案 + 解析 + 题目",
   answerQuestionsOpt: "答案 + 题目",
@@ -569,7 +587,7 @@ export const zh: Record<string, string> = {
   importedToLocal: "已导入到本地题单。",
   defaultListDesc: "从 JSON 导入题目，或手动新增题目。",
   unnamedList: "未命名题单",
-  selfFillPlaceholder: "[\\n  {\"id\": \"题目id\", \"answer\": \"A\", \"explanation\": \"...\"}\\n]",
+  selfFillPlaceholder: '[\\n  {"id": "题目id", "answer": "A", "explanation": "..."}\\n]',
 
   // Question types
   typeSingle: "单选",
@@ -591,9 +609,11 @@ export const zh: Record<string, string> = {
   offlineVersion: "离线版本",
   offlineDialogTitle: "离线版本",
   offlineBuildTitle: "打包机制",
-  offlineBuildDesc: "所有代码、样式和资源被打包为单个 .html 文件。无需服务器、无需联网，双击即可在浏览器中运行，功能与在线版完全一致。",
+  offlineBuildDesc:
+    "所有代码、样式和资源被打包为单个 .html 文件。无需服务器、无需联网，双击即可在浏览器中运行，功能与在线版完全一致。",
   offlineStorageTitle: "数据存储",
-  offlineStorageDesc: "数据保存在浏览器的 localStorage 中，与当前浏览器绑定。更换浏览器或清除浏览数据会导致数据丢失，建议定期使用「导出配置」功能进行备份。",
+  offlineStorageDesc:
+    "数据保存在浏览器的 localStorage 中，与当前浏览器绑定。更换浏览器或清除浏览数据会导致数据丢失，建议定期使用「导出配置」功能进行备份。",
   offlineUsageTitle: "使用方法",
   offlineUsageStep1: "从 GitHub Releases 下载 .html 文件",
   offlineUsageStep2: "双击文件，用浏览器打开",
@@ -601,7 +621,8 @@ export const zh: Record<string, string> = {
   offlineDownloadBtn: "前往下载页面",
 
   // Export confirm
-  confirmExportBackup: "导出配置文件将包含你的所有题目、设置和 LLM 配置信息。请注意保护隐私，不要将导出文件分享给不信任的人。确定导出？",
+  confirmExportBackup:
+    "导出配置文件将包含你的所有题目、设置和 LLM 配置信息。请注意保护隐私，不要将导出文件分享给不信任的人。确定导出？",
 
   // Debug
   simulateCrash: "模拟崩溃",
