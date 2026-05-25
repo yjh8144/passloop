@@ -120,7 +120,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           )}
 
           <footer className="app-footer">
-            © 2026 <a href="https://github.com/yjh8144" target="_blank" rel="noopener noreferrer">yjh8144</a>. All rights reserved.
+            © 2026 <a href="https://github.com/yjh8144" target="_blank" rel="noopener noreferrer">yjh8144</a>. All rights reserved. <span className="app-version">v1.0.1</span>
           </footer>
         </main>
 
