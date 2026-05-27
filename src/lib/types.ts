@@ -1,4 +1,4 @@
-export type QuestionType = "single" | "multiple" | "boolean" | "blank" | "short" | "composite"
+export type QuestionType = "single" | "multiple" | "boolean" | "blank" | "short"
 
 export type SortMode = "manual" | "random" | "name" | "type"
 export type ViewMode = "single" | "paper"
@@ -23,7 +23,6 @@ export interface Question {
   answer: string | string[]
   explanation: string
   hint?: string
-  subQuestions: Question[]
   createdAt: string
   updatedAt: string
 }

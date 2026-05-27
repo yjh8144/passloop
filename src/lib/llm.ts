@@ -83,7 +83,7 @@ export async function fetchViaProxy(
 const SYSTEM_PROMPT = `你是题库整理助手。请把用户提供的未整理题目转换为 PassLoop 标准 JSON。
 只返回 JSON，不要 Markdown。
 输出结构为：{"name":"题单名称","description":"","questions":[...]}。
-每题字段：type(single|multiple|boolean|blank|short|composite), title, prompt, options, answer, explanation, hint, subQuestions。
+每题字段：type(single|multiple|boolean|blank|short), title, prompt, options, answer, explanation, hint。
 options 使用 [{"label":"A","text":"选项内容"}]。
 解析字段 explanation 可以为空。`
 

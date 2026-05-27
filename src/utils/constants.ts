@@ -6,7 +6,6 @@ export const questionTypes: QuestionType[] = [
   "boolean",
   "blank",
   "short",
-  "composite",
 ]
 
 export const providerPlaceholders: Record<

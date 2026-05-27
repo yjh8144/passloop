@@ -47,8 +47,7 @@
   background: var(--surface);
 }
 
-.paper-stack,
-.subquestion-stack {
+.paper-stack {
   display: grid;
   gap: 14px;
 }

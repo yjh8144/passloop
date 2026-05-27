@@ -46,7 +46,6 @@ export const fr: Record<string, string> = {
   incorrect: "Incorrect",
   hint: "Indice",
   inputAnswer: "Entrez votre réponse",
-  compositeInput: "Entrez la réponse composite",
   practiceSettings: "Paramètres",
   eachSubmit: "Par question",
   paperSubmit: "Tout à la fois",
@@ -106,7 +105,6 @@ export const fr: Record<string, string> = {
   prompt: "Énoncé",
   options: "Options",
   answerSepHint: "Réponse (utiliser | pour multiple/blancs)",
-  subQuestions: "Sous-questions",
 
   // Self-fill dialog
   selfFillTitle: "Auto-complétion réponses/explications",
@@ -290,7 +288,7 @@ export const fr: Record<string, string> = {
   obWelcome1:
     "PassLoop est une plateforme de quiz locale, entièrement frontend. Toutes les données sont stockées dans votre navigateur — aucun backend requis.",
   obWelcome2:
-    "Six types de questions pris en charge : choix unique, choix multiple, vrai/faux, texte à trous, réponse courte et composite.",
+    "Cinq types de questions pris en charge : choix unique, choix multiple, vrai/faux, texte à trous et réponse courte.",
   obWelcome3:
     "Les pages suivantes présentent toutes les fonctionnalités. Naviguez avec les flèches, ou fermez à tout moment pour commencer.",
 
@@ -485,7 +483,6 @@ export const fr: Record<string, string> = {
   answerLabel: "Réponse",
   answerSepLabel: "Réponse (| pour séparer)",
   explanationLabel: "Explication",
-  subQuestionsLabel: "Sous-questions",
   addQuestionBtnText: "Ajouter une question",
 
   // Manager Page
@@ -523,7 +520,6 @@ export const fr: Record<string, string> = {
   // Question Editor
   editQuestionTitle: "Modifier la question",
   questionTypeLabel: "Type",
-  subQuestionTitle: "Titre de la sous-question",
 
   // Self-fill Dialog
   selfFillHeader: "Auto-complétion réponses/explications",
@@ -645,7 +641,6 @@ export const fr: Record<string, string> = {
   typeBoolean: "Vrai/Faux",
   typeBlank: "Texte à trous",
   typeShort: "Réponse courte",
-  typeComposite: "Composite",
 
   // question.ts fallbacks
   newQuestion: "Nouvelle question",

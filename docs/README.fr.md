@@ -25,7 +25,7 @@ Plateforme locale et légère de quiz. Supporte l'import/export de questions, pl
 
 ### Types de questions
 
-- Choix unique, choix multiple, vrai/faux, texte à trous, réponse courte, composite (avec sous-questions)
+- Choix unique, choix multiple, vrai/faux, texte à trous, réponse courte
 
 ### Gestion de la banque de questions
 

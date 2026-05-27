@@ -154,10 +154,7 @@ export function AppDataProvider({
         ...current,
         attempts: current.attempts.filter((attempt) => attempt.listId !== activeList.id),
       }))
-      const questionIds = activeList.questions.flatMap((q) => [
-        q.id,
-        ...q.subQuestions.map((sq) => sq.id),
-      ])
+      const questionIds = activeList.questions.map((q) => q.id)
       resetHandlerRef.current?.("selective", questionIds)
       pushToast("success", t("attemptsCleared"))
     })

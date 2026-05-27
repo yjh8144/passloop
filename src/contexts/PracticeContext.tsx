@@ -17,7 +17,7 @@ import { practiceReducer } from "../hooks/practiceReducer"
 import type { PracticeState, WrongSession } from "../hooks/practiceReducer"
 import { useSessionPersistence } from "../hooks/useSessionPersistence"
 import { useWrongPractice } from "../hooks/useWrongPractice"
-import { evaluateQuestion, collectCompositeAnswer } from "../utils/evaluate"
+import { evaluateQuestion } from "../utils/evaluate"
 import { createId } from "../lib/question"
 import { debugLog } from "../lib/debug"
 import { loadSessionAnswers, loadSessionIndex } from "../utils/session"
@@ -130,10 +130,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         setPage("practice")
         return
       }
-      const questionIds = wrongQuestions.flatMap((q) => [
-        q.id,
-        ...q.subQuestions.map((sq) => sq.id),
-      ])
+      const questionIds = wrongQuestions.map((q) => q.id)
       debugLog("Wrong practice started (nav)", {
         questionCount: wrongQuestions.length,
         listId: activeList.id,
@@ -168,18 +165,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   // --- Submission logic ---
   const isAnswerEmpty = useCallback((question: Question): boolean => {
     const answers = stateRef.current.answers
-    if (question.type === "composite") {
-      if (!question.subQuestions.length) {
-        const val = answers[question.id]
-        return !val || (typeof val === "string" && !val.trim())
-      }
-      return question.subQuestions.some((sq) => {
-        const v = answers[sq.id]
-        if (v === undefined || v === null) return true
-        if (Array.isArray(v)) return v.length === 0 || v.every((s) => !s.trim())
-        return typeof v === "string" && !v.trim()
-      })
-    }
     const val = answers[question.id]
     if (val === undefined || val === null) return true
     if (Array.isArray(val)) return val.length === 0 || val.every((s) => !s.trim())
@@ -216,7 +201,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
               id: createId(),
               listId: activeList.id,
               questionId: question.id,
-              answer: answers[question.id] ?? collectCompositeAnswer(question, answers),
+              answer: answers[question.id] ?? "",
               correct,
               elapsedMs: Math.max(1000, Date.now() - startedAt),
               submittedAt: new Date().toISOString(),
@@ -302,7 +287,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           id: createId(),
           listId: activeList.id,
           questionId: question.id,
-          answer: answers[question.id] ?? collectCompositeAnswer(question, answers),
+          answer: answers[question.id] ?? "",
           correct,
           elapsedMs: Math.max(1000, Date.now() - startedAt),
           submittedAt: new Date().toISOString(),

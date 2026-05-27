@@ -46,7 +46,6 @@ export const ja: Record<string, string> = {
   incorrect: "不正解",
   hint: "ヒント",
   inputAnswer: "答えを入力",
-  compositeInput: "総合問題の答えを入力",
   practiceSettings: "設定",
   eachSubmit: "一問ずつ",
   paperSubmit: "一括提出",
@@ -106,7 +105,6 @@ export const ja: Record<string, string> = {
   prompt: "問題文",
   options: "選択肢",
   answerSepHint: "答え（複数/空欄は | で区切る）",
-  subQuestions: "小問",
 
   // Self-fill dialog
   selfFillTitle: "自助 答え/解説補充",
@@ -277,7 +275,7 @@ export const ja: Record<string, string> = {
   obNext: "次へ",
   obWelcome1:
     "PassLoop はローカルで動作するフロントエンド専用クイズプラットフォームです。すべてのデータはブラウザに保存され、バックエンド不要です。",
-  obWelcome2: "6 種類の問題形式に対応：単一選択、複数選択、正誤判定、穴埋め、記述式、複合問題。",
+  obWelcome2: "5 種類の問題形式に対応：単一選択、複数選択、正誤判定、穴埋め、記述式。",
   obWelcome3:
     "以下のページで全機能を紹介します。矢印で移動し、いつでも右上の × で閉じて使い始められます。",
 
@@ -454,7 +452,6 @@ export const ja: Record<string, string> = {
   answerLabel: "解答",
   answerSepLabel: "解答（| で区切り）",
   explanationLabel: "解説",
-  subQuestionsLabel: "子問題",
   addQuestionBtnText: "問題を追加",
 
   // Manager Page
@@ -490,7 +487,6 @@ export const ja: Record<string, string> = {
   // Question Editor
   editQuestionTitle: "問題を編集",
   questionTypeLabel: "問題タイプ",
-  subQuestionTitle: "子問題タイトル",
 
   // Self-fill Dialog
   selfFillHeader: "セルフ補充 解答/解説",
@@ -609,7 +605,6 @@ export const ja: Record<string, string> = {
   typeBoolean: "正誤",
   typeBlank: "穴埋め",
   typeShort: "記述",
-  typeComposite: "総合",
 
   // question.ts fallbacks
   newQuestion: "新しい問題",

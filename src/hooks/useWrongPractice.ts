@@ -54,7 +54,7 @@ export function useWrongPractice({
       questionCount: wrongQuestions.length,
       listId: activeList.id,
     })
-    const questionIds = wrongQuestions.flatMap((q) => [q.id, ...q.subQuestions.map((sq) => sq.id)])
+    const questionIds = wrongQuestions.map((q) => q.id)
     dispatch({
       type: "START_WRONG_PRACTICE",
       sessionId: createId(),

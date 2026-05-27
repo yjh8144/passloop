@@ -46,7 +46,6 @@ export const zh: Record<string, string> = {
   incorrect: "错误",
   hint: "提示",
   inputAnswer: "输入你的答案",
-  compositeInput: "输入综合题作答",
   practiceSettings: "刷题设置",
   eachSubmit: "逐题提交",
   paperSubmit: "统一提交",
@@ -106,7 +105,6 @@ export const zh: Record<string, string> = {
   prompt: "题干",
   options: "选项",
   answerSepHint: "答案（多选/填空用 | 分隔）",
-  subQuestions: "子题",
 
   // Self-fill dialog
   selfFillTitle: "自助补充答案/解析",
@@ -233,7 +231,7 @@ export const zh: Record<string, string> = {
   obPrev: "上一步",
   obNext: "下一步",
   obWelcome1: "PassLoop 是一个纯前端的本地刷题平台，所有数据保存在浏览器中，无需后端服务。",
-  obWelcome2: "支持单选、多选、判断、填空、简答和复合题六种题型。",
+  obWelcome2: "支持单选、多选、判断、填空、简答五种题型。",
   obWelcome3: "以下几页将带你了解所有功能，左右翻页浏览，随时可点击右上角关闭开始使用。",
 
   obTitleList: "题单管理",
@@ -442,7 +440,6 @@ export const zh: Record<string, string> = {
   answerLabel: "答案",
   answerSepLabel: "答案（用 | 分隔）",
   explanationLabel: "解析",
-  subQuestionsLabel: "子题",
   addQuestionBtnText: "添加题目",
 
   // Manager Page
@@ -478,7 +475,6 @@ export const zh: Record<string, string> = {
   // Question Editor
   editQuestionTitle: "编辑题目",
   questionTypeLabel: "题型",
-  subQuestionTitle: "子题标题",
 
   // Self-fill Dialog
   selfFillHeader: "自助补充答案/解析",
@@ -595,7 +591,6 @@ export const zh: Record<string, string> = {
   typeBoolean: "判断",
   typeBlank: "填空",
   typeShort: "简答",
-  typeComposite: "综合",
 
   // question.ts fallbacks
   newQuestion: "新题目",

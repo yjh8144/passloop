@@ -46,7 +46,6 @@ export const ko: Record<string, string> = {
   incorrect: "오답",
   hint: "힌트",
   inputAnswer: "답을 입력하세요",
-  compositeInput: "종합 문제 답 입력",
   practiceSettings: "설정",
   eachSubmit: "문제별 제출",
   paperSubmit: "일괄 제출",
@@ -106,7 +105,6 @@ export const ko: Record<string, string> = {
   prompt: "지문",
   options: "선택지",
   answerSepHint: "답 (다중/빈칸은 |로 구분)",
-  subQuestions: "하위 문제",
 
   // Self-fill dialog
   selfFillTitle: "자체 답/해설 보충",
@@ -278,7 +276,7 @@ export const ko: Record<string, string> = {
   obWelcome1:
     "PassLoop은 로컬에서 동작하는 프론트엔드 전용 문제 연습 플랫폼입니다. 모든 데이터는 브라우저에 저장되며 백엔드가 필요 없습니다.",
   obWelcome2:
-    "6가지 문제 유형 지원: 단일 선택, 다중 선택, 참/거짓, 빈칸 채우기, 서술형, 복합 문제.",
+    "5가지 문제 유형 지원: 단일 선택, 다중 선택, 참/거짓, 빈칸 채우기, 서술형.",
   obWelcome3:
     "다음 페이지에서 모든 기능을 안내합니다. 화살표로 이동하고, 언제든 오른쪽 상단 ×를 눌러 시작할 수 있습니다.",
 
@@ -452,7 +450,6 @@ export const ko: Record<string, string> = {
   answerLabel: "답",
   answerSepLabel: "답 (|로 구분)",
   explanationLabel: "해설",
-  subQuestionsLabel: "하위 문제",
   addQuestionBtnText: "문제 추가",
 
   // Manager Page
@@ -488,7 +485,6 @@ export const ko: Record<string, string> = {
   // Question Editor
   editQuestionTitle: "문제 편집",
   questionTypeLabel: "유형",
-  subQuestionTitle: "하위 문제 제목",
 
   // Self-fill Dialog
   selfFillHeader: "자체 답/해설 보충",
@@ -607,7 +603,6 @@ export const ko: Record<string, string> = {
   typeBoolean: "참/거짓",
   typeBlank: "빈칸 채우기",
   typeShort: "서술형",
-  typeComposite: "종합",
 
   // question.ts fallbacks
   newQuestion: "새 문제",

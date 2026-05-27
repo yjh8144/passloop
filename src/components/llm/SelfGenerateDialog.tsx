@@ -29,14 +29,13 @@ export function SelfGenerateDialog(props: {
   "description": "",
   "questions": [
     {
-      "type": "single|multiple|boolean|blank|short|composite",
+      "type": "single|multiple|boolean|blank|short",
       "title": "题目标题",
       "prompt": "题干内容",
       "options": [{"label": "A", "text": "选项内容"}],
       "answer": ${props.mode === "explanation" || props.mode === "none" ? '""' : '"A"'},
       "explanation": ${props.mode === "answer" || props.mode === "none" ? '""' : '"详细解析内容"'},
-      "hint": "",
-      "subQuestions": []
+      "hint": ""
     }
   ]
 }`
@@ -46,7 +45,7 @@ export function SelfGenerateDialog(props: {
   const prompt = `你是题库整理助手。请把我提供的题目转换为以下 JSON 格式。${fillInstruction}
 只返回 JSON，不要使用 Markdown 代码块包裹。
 
-type 可选值：single（单选）、multiple（多选）、boolean（判断）、blank（填空）、short（简答）、composite（综合题）。
+type 可选值：single（单选）、multiple（多选）、boolean（判断）、blank（填空）、short（简答）。
 options 格式：[{"label":"A","text":"选项内容"}]，判断题用 [{"label":"T","text":"正确"},{"label":"F","text":"错误"}]。
 多选题/填空题 answer 用数组，如 ["A","B"]。判断题 answer 用 "T" 或 "F"。
 

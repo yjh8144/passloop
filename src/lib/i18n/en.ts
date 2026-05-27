@@ -46,7 +46,6 @@ export const en: Record<string, string> = {
   incorrect: "Incorrect",
   hint: "Hint",
   inputAnswer: "Enter your answer",
-  compositeInput: "Enter composite answer",
   practiceSettings: "Settings",
   eachSubmit: "Per question",
   paperSubmit: "All at once",
@@ -107,7 +106,6 @@ export const en: Record<string, string> = {
   prompt: "Prompt",
   options: "Options",
   answerSepHint: "Answer (use | for multiple/blank)",
-  subQuestions: "Sub-questions",
 
   // Self-fill dialog
   selfFillTitle: "Self-fill Answers/Explanations",
@@ -244,7 +242,7 @@ export const en: Record<string, string> = {
   obWelcome1:
     "PassLoop is a local, frontend-only quiz platform. All data is stored in your browser — no backend needed.",
   obWelcome2:
-    "Supports six question types: single choice, multiple choice, true/false, fill-in-the-blank, short answer, and composite.",
+    "Supports five question types: single choice, multiple choice, true/false, fill-in-the-blank, and short answer.",
   obWelcome3:
     "The following pages will walk you through all features. Use the arrows to navigate, or close anytime to start using.",
 
@@ -473,7 +471,6 @@ export const en: Record<string, string> = {
   answerLabel: "Answer",
   answerSepLabel: "Answer (use | for multiple)",
   explanationLabel: "Explanation",
-  subQuestionsLabel: "Sub-questions",
   addQuestionBtnText: "Add question",
 
   // Manager Page
@@ -509,7 +506,6 @@ export const en: Record<string, string> = {
   // Question Editor
   editQuestionTitle: "Edit Question",
   questionTypeLabel: "Type",
-  subQuestionTitle: "Sub-question title",
 
   // Self-fill Dialog
   selfFillHeader: "Self-fill Answers/Explanations",
@@ -629,7 +625,6 @@ export const en: Record<string, string> = {
   typeBoolean: "True/False",
   typeBlank: "Fill in Blank",
   typeShort: "Short Answer",
-  typeComposite: "Composite",
 
   // question.ts fallbacks
   newQuestion: "New Question",

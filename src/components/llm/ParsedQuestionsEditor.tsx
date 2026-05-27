@@ -54,15 +54,6 @@ export function ParsedQuestionsEditor(props: {
     updateQuestion(qIndex, { options })
   }
 
-  const updateSubQuestion = (qIndex: number, subIndex: number, patch: Partial<Question>) => {
-    if (props.readOnly) return
-    const question = props.list.questions[qIndex]
-    const subQuestions = question.subQuestions.map((sq, i) =>
-      i === subIndex ? { ...sq, ...patch, updatedAt: new Date().toISOString() } : sq,
-    )
-    updateQuestion(qIndex, { subQuestions })
-  }
-
   return (
     <div className="parsed-editor-stack">
       {props.list.questions.map((question, qIndex) => (
@@ -187,69 +178,6 @@ export function ParsedQuestionsEditor(props: {
               onChange={(e) => updateQuestion(qIndex, { explanation: e.target.value })}
             />
           </label>
-          {question.type === "composite" && question.subQuestions.length > 0 && (
-            <div className="parsed-subquestions">
-              <span className="parsed-options-label">{t("subQuestionsLabel")}</span>
-              {question.subQuestions.map((sub, sIndex) => (
-                <div className="parsed-subquestion-card" key={sub.id}>
-                  <div className="parsed-card-header">
-                    <span className="parsed-card-index">
-                      {qIndex + 1}.{sIndex + 1}
-                    </span>
-                    <select
-                      value={sub.type}
-                      disabled={props.readOnly}
-                      onChange={(e) =>
-                        updateSubQuestion(qIndex, sIndex, { type: e.target.value as QuestionType })
-                      }
-                    >
-                      {questionTypes.map((tp) => (
-                        <option key={tp} value={tp}>
-                          {labels[tp]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <label className="field-label">
-                    {t("titleLabel")}
-                    <input
-                      value={sub.title}
-                      disabled={props.readOnly}
-                      onChange={(e) => updateSubQuestion(qIndex, sIndex, { title: e.target.value })}
-                    />
-                  </label>
-                  <label className="field-label">
-                    {t("answerLabel")}
-                    <input
-                      value={Array.isArray(sub.answer) ? sub.answer.join("|") : sub.answer}
-                      disabled={props.readOnly}
-                      onChange={(e) =>
-                        updateSubQuestion(qIndex, sIndex, {
-                          answer:
-                            sub.type === "multiple" || sub.type === "blank"
-                              ? e.target.value
-                                  .split("|")
-                                  .map((s) => s.trim())
-                                  .filter(Boolean)
-                              : e.target.value,
-                        })
-                      }
-                    />
-                  </label>
-                  <label className="field-label">
-                    {t("explanationLabel")}
-                    <textarea
-                      value={sub.explanation}
-                      disabled={props.readOnly}
-                      onChange={(e) =>
-                        updateSubQuestion(qIndex, sIndex, { explanation: e.target.value })
-                      }
-                    />
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       ))}
       {!props.readOnly && (

@@ -20,7 +20,6 @@ export const typeLabels: Record<QuestionType, string> = {
   boolean: "判断",
   blank: "填空",
   short: "简答",
-  composite: "综合",
 }
 
 export function getTypeLabels(t: TFunc): Record<QuestionType, string> {
@@ -30,7 +29,6 @@ export function getTypeLabels(t: TFunc): Record<QuestionType, string> {
     boolean: t("typeBoolean"),
     blank: t("typeBlank"),
     short: t("typeShort"),
-    composite: t("typeComposite"),
   }
 }
 
@@ -47,7 +45,6 @@ export function createEmptyQuestion(type: QuestionType = "single"): Question {
         : [],
     answer: type === "multiple" || type === "blank" ? [] : "",
     explanation: "",
-    subQuestions: [],
     createdAt: timestamp,
     updatedAt: timestamp,
   }
@@ -75,9 +72,6 @@ export function normalizeQuestion(value: unknown, index = 0): Question {
     answer: normalizeAnswer(source.answer ?? source.answers ?? source.correctAnswer, type),
     explanation: asString(source.explanation ?? source.analysis ?? source.resolve, ""),
     hint: typeof source.hint === "string" ? source.hint : undefined,
-    subQuestions: Array.isArray(source.subQuestions ?? source.children)
-      ? ((source.subQuestions ?? source.children) as unknown[]).map(normalizeQuestion)
-      : [],
     createdAt: asString(source.createdAt, timestamp),
     updatedAt: timestamp,
   }
@@ -96,8 +90,6 @@ function normalizeType(value: unknown, source: Record<string, unknown>): Questio
   if (["boolean", "judge", "truefalse", "判断题", "判断"].includes(text)) return "boolean"
   if (["blank", "fill", "填空题", "填空"].includes(text)) return "blank"
   if (["short", "essay", "answer", "简答题", "简答"].includes(text)) return "short"
-  if (["composite", "综合题", "综合"].includes(text)) return "composite"
-  if (Array.isArray(source.subQuestions ?? source.children)) return "composite"
   if (Array.isArray(source.options ?? source.choices)) return "single"
   return "short"
 }

@@ -1,6 +1,6 @@
 import { Check, ChevronRight } from "lucide-react"
 import type { PracticeMode, Question } from "../../lib/types"
-import { formatAnswer, getTypeLabels, isAnswerCorrect } from "../../lib/question"
+import { formatAnswer, getTypeLabels } from "../../lib/question"
 import { AnswerInput } from "./AnswerInput"
 import type { AnswerMap } from "../../hooks/types"
 import { useT } from "../../contexts"
@@ -53,39 +53,12 @@ export function QuestionCard(props: {
         </div>
       )}
 
-      {props.question.type === "composite" ? (
-        <div className="subquestion-stack">
-          {props.question.subQuestions.length ? (
-            props.question.subQuestions.map((subQuestion, index) => (
-              <QuestionCard
-                key={subQuestion.id}
-                index={index}
-                question={subQuestion}
-                answers={props.answers}
-                setAnswers={props.setAnswers}
-                submitted={showAnswer && subQuestion.id in props.answers}
-                result={isAnswerCorrect(subQuestion, props.answers[subQuestion.id] ?? "")}
-                practiceMode={props.practiceMode}
-                onSubmit={() => undefined}
-                compact
-              />
-            ))
-          ) : (
-            <textarea
-              value={String(props.answers[props.question.id] ?? "")}
-              onChange={(event) => updateAnswer(props.question.id, event.target.value)}
-              placeholder={t("compositeInput")}
-            />
-          )}
-        </div>
-      ) : (
-        <AnswerInput
-          question={props.question}
-          value={props.answers[props.question.id]}
-          onChange={updateAnswer}
-          practiceMode={props.practiceMode}
-        />
-      )}
+      <AnswerInput
+        question={props.question}
+        value={props.answers[props.question.id]}
+        onChange={updateAnswer}
+        practiceMode={props.practiceMode}
+      />
 
       {!props.compact && !props.hideSubmit && props.practiceMode !== "memorize" && (
         <div className="question-actions">

@@ -71,8 +71,7 @@
   font-size: 18px;
 }
 
-.option-editor,
-.sub-editor {
+.option-editor {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px;
@@ -83,13 +82,6 @@
   grid-template-columns: 56px minmax(0, 1fr) 36px;
   gap: 8px;
   margin-top: 8px;
-}
-
-.sub-row {
-  justify-content: flex-start;
-  width: 100%;
-  margin-top: 8px;
-  background: var(--surface-2);
 }
 
 @media (max-width: 1180px) {

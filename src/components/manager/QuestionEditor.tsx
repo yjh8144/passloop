@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { Check, Plus, Trash2, X } from "lucide-react"
 import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
-import { createEmptyQuestion, createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
+import { createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
-import { useT, useDialog } from "../../contexts"
+import { useT } from "../../contexts"
 
 export function QuestionEditor(props: {
   question: Question
@@ -11,7 +11,6 @@ export function QuestionEditor(props: {
   onCancel: () => void
 }) {
   const t = useT()
-  const { showPrompt } = useDialog()
   const labels = getTypeLabels(t)
   const [draft, setDraft] = useState<Question>(props.question)
   const [prevQuestion, setPrevQuestion] = useState(props.question)
@@ -132,38 +131,6 @@ export function QuestionEditor(props: {
           onChange={(event) => patch({ explanation: event.target.value })}
         />
       </label>
-      {draft.type === "composite" && (
-        <div className="sub-editor">
-          <div className="section-title">
-            <span>{t("subQuestionsLabel")}</span>
-            <button
-              className="icon-button"
-              onClick={() =>
-                patch({ subQuestions: [...draft.subQuestions, createEmptyQuestion("single")] })
-              }
-            >
-              <Plus size={16} />
-            </button>
-          </div>
-          {draft.subQuestions.map((subQuestion, index) => (
-            <button
-              key={subQuestion.id}
-              className="sub-row"
-              onClick={() => {
-                showPrompt(t("subQuestionTitle"), subQuestion.title, (title) => {
-                  patch({
-                    subQuestions: draft.subQuestions.map((item) =>
-                      item.id === subQuestion.id ? { ...item, title } : item,
-                    ),
-                  })
-                })
-              }}
-            >
-              {index + 1}. {subQuestion.title}
-            </button>
-          ))}
-        </div>
-      )}
       <div className="editor-actions">
         <button onClick={props.onCancel}>{t("cancel")}</button>
         <button className="primary-button" onClick={() => props.onSave(normalizeQuestion(draft))}>

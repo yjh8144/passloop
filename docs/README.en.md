@@ -25,7 +25,7 @@ A local, lightweight quiz platform. Supports question import/export, multiple pr
 
 ### Question Types
 
-- Single choice, multiple choice, true/false, fill-in-the-blank, short answer, composite (with sub-questions)
+- Single choice, multiple choice, true/false, fill-in-the-blank, short answer
 
 ### Question Bank Management
 
