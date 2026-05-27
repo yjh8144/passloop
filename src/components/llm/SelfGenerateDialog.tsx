@@ -30,8 +30,7 @@ export function SelfGenerateDialog(props: {
   "questions": [
     {
       "type": "single|multiple|boolean|blank|short",
-      "title": "题目标题",
-      "prompt": "题干内容",
+      "title": "题干内容",
       "options": [{"label": "A", "text": "选项内容"}],
       "answer": ${props.mode === "explanation" || props.mode === "none" ? '""' : '"A"'},
       "explanation": ${props.mode === "answer" || props.mode === "none" ? '""' : '"详细解析内容"'},

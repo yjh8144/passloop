@@ -44,9 +44,6 @@ export function QuestionCard(props: {
           </span>
         )}
       </div>
-      {props.question.prompt && props.question.prompt !== props.question.title && (
-        <p className="prompt-text">{props.question.prompt}</p>
-      )}
       {props.question.hint && (
         <div className="hint-box">
           {t("hint")}：{props.question.hint}

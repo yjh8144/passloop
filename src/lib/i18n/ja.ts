@@ -84,7 +84,7 @@ export const ja: Record<string, string> = {
   clearListAttempts: "練習データをクリア",
   deleteList: "リストを削除",
   listDesc: "リストの説明",
-  noPrompt: "問題文なし",
+  noPrompt: "問題なし",
   llmFilling: "LLM補充中…",
   waitingAI: "AI応答待ち…",
   selectToEdit: "編集する問題を選択",
@@ -441,8 +441,7 @@ export const ja: Record<string, string> = {
 
   // Parsed Questions Editor
   deleteQuestionTitle: "問題を削除",
-  titleLabel: "タイトル",
-  promptLabel: "問題文",
+  titleLabel: "問題文",
   optionsLabel: "選択肢",
   addOptionTitle: "選択肢を追加",
   deleteOptionTitle: "選択肢を削除",
@@ -461,7 +460,7 @@ export const ja: Record<string, string> = {
   fillingStatus: "補充中…",
   deleteCurrentList: "現在のリストを削除",
   listDescPlaceholder: "リスト説明",
-  noPromptText: "問題文なし",
+  noPromptText: "問題なし",
   confirmDeleteQuestion: "この問題を削除しますか？",
   questionSaved: "問題を保存しました。",
   noQuestionsInList: "現在のリストに問題がありません。",

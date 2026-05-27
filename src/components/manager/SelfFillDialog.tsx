@@ -32,7 +32,6 @@ export function SelfFillDialog(props: {
       id: q.id,
       type: q.type,
       title: q.title,
-      prompt: q.prompt,
       options: q.options.map((o) => ({ label: o.label, text: o.text })),
     })),
     null,

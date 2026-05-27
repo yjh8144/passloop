@@ -95,7 +95,7 @@ export function AppDataProvider({
     const trimmed = query.trim().toLowerCase()
     if (!trimmed) return sorted
     return sorted.filter((question) =>
-      [question.title, question.prompt, labels[question.type]]
+      [question.title, labels[question.type]]
         .join(" ")
         .toLowerCase()
         .includes(trimmed),

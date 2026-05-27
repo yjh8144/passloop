@@ -84,7 +84,7 @@ export const zh: Record<string, string> = {
   clearListAttempts: "清空当前题单刷题数据",
   deleteList: "删除当前题单",
   listDesc: "题单描述",
-  noPrompt: "暂无题干",
+  noPrompt: "暂无题目",
   llmFilling: "LLM 补充中…",
   waitingAI: "等待 AI 响应…",
   selectToEdit: "选择题目编辑",
@@ -429,8 +429,7 @@ export const zh: Record<string, string> = {
 
   // Parsed Questions Editor
   deleteQuestionTitle: "删除题目",
-  titleLabel: "标题",
-  promptLabel: "题干",
+  titleLabel: "题干",
   optionsLabel: "选项",
   addOptionTitle: "添加选项",
   deleteOptionTitle: "删除选项",
@@ -449,7 +448,7 @@ export const zh: Record<string, string> = {
   fillingStatus: "补充中…",
   deleteCurrentList: "删除当前题单",
   listDescPlaceholder: "题单描述",
-  noPromptText: "暂无题干",
+  noPromptText: "暂无题目",
   confirmDeleteQuestion: "确定删除这道题吗？",
   questionSaved: "题目已保存。",
   noQuestionsInList: "当前题单没有题目。",

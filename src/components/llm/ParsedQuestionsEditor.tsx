@@ -83,18 +83,10 @@ export function ParsedQuestionsEditor(props: {
           </div>
           <label className="field-label">
             {t("titleLabel")}
-            <input
+            <textarea
               value={question.title}
               disabled={props.readOnly}
               onChange={(e) => updateQuestion(qIndex, { title: e.target.value })}
-            />
-          </label>
-          <label className="field-label">
-            {t("promptLabel")}
-            <textarea
-              value={question.prompt}
-              disabled={props.readOnly}
-              onChange={(e) => updateQuestion(qIndex, { prompt: e.target.value })}
             />
           </label>
           {(question.type === "single" || question.type === "multiple") && (

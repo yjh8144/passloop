@@ -23,6 +23,7 @@
   font-size: 20px;
   line-height: 1.35;
   letter-spacing: 0;
+  white-space: pre-wrap;
 }
 
 .question-type,
@@ -50,13 +51,6 @@
 .result-chip.wrong {
   color: var(--danger);
   background: color-mix(in srgb, var(--danger) 12%, transparent);
-}
-
-.prompt-text {
-  margin: 16px 0;
-  white-space: pre-wrap;
-  line-height: 1.75;
-  font-size: 16px;
 }
 
 .image-grid {

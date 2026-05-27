@@ -197,7 +197,6 @@ export function ManagerPage(props: {
               <span>{index + 1}</span>
               <strong>{question.title}</strong>
               <small>{typeLabelsMap[question.type]}</small>
-              <p>{question.prompt || t("noPrompt")}</p>
               <button className="icon-button" onClick={() => props.setEditing(question)}>
                 <Edit3 size={16} />
               </button>

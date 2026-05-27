@@ -37,8 +37,7 @@ export function createEmptyQuestion(type: QuestionType = "single"): Question {
   return {
     id: createId(),
     type,
-    title: "New Question",
-    prompt: "",
+    title: "",
     options:
       type === "single" || type === "multiple"
         ? ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
@@ -57,17 +56,18 @@ export function normalizeQuestion(value: unknown, index = 0): Question {
   }
   const source = value as Record<string, unknown>
   const type = normalizeType(source.type ?? source.questionType ?? source.kind, source)
-  const title = asString(source.title ?? source.name ?? source.no, `Question ${index + 1}`)
-  const prompt = asString(
+  const rawTitle = asString(source.title ?? source.name ?? source.no, "")
+  const rawPrompt = asString(
     source.prompt ?? source.question ?? source.stem ?? source.content ?? source.text,
     "",
   )
+  const isDefaultTitle = !rawTitle || rawTitle === "New Question"
+  const title = isDefaultTitle && rawPrompt ? rawPrompt : rawTitle || rawPrompt || `Question ${index + 1}`
   const rawOptions = source.options ?? source.choices ?? source.items
   return {
     id: asString(source.id, createId()),
     type,
     title,
-    prompt,
     options: normalizeOptions(rawOptions, type),
     answer: normalizeAnswer(source.answer ?? source.answers ?? source.correctAnswer, type),
     explanation: asString(source.explanation ?? source.analysis ?? source.resolve, ""),

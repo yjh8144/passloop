@@ -50,14 +50,7 @@ export function QuestionEditor(props: {
       </label>
       <label className="field-label">
         {t("titleLabel")}
-        <input value={draft.title} onChange={(event) => patch({ title: event.target.value })} />
-      </label>
-      <label className="field-label">
-        {t("promptLabel")}
-        <textarea
-          value={draft.prompt}
-          onChange={(event) => patch({ prompt: event.target.value })}
-        />
+        <textarea value={draft.title} onChange={(event) => patch({ title: event.target.value })} />
       </label>
       {(draft.type === "single" || draft.type === "multiple" || draft.type === "boolean") && (
         <div className="option-editor">

@@ -84,7 +84,7 @@ export const ko: Record<string, string> = {
   clearListAttempts: "연습 데이터 초기화",
   deleteList: "목록 삭제",
   listDesc: "목록 설명",
-  noPrompt: "지문 없음",
+  noPrompt: "문제 없음",
   llmFilling: "LLM 보충 중…",
   waitingAI: "AI 응답 대기…",
   selectToEdit: "편집할 문제 선택",
@@ -439,8 +439,7 @@ export const ko: Record<string, string> = {
 
   // Parsed Questions Editor
   deleteQuestionTitle: "문제 삭제",
-  titleLabel: "제목",
-  promptLabel: "지문",
+  titleLabel: "문제",
   optionsLabel: "선택지",
   addOptionTitle: "선택지 추가",
   deleteOptionTitle: "선택지 삭제",
@@ -459,7 +458,7 @@ export const ko: Record<string, string> = {
   fillingStatus: "보충 중…",
   deleteCurrentList: "현재 목록 삭제",
   listDescPlaceholder: "목록 설명",
-  noPromptText: "지문 없음",
+  noPromptText: "문제 없음",
   confirmDeleteQuestion: "이 문제를 삭제하시겠습니까?",
   questionSaved: "문제가 저장되었습니다.",
   noQuestionsInList: "현재 목록에 문제가 없습니다.",

@@ -18,7 +18,6 @@ export interface Question {
   id: string
   type: QuestionType
   title: string
-  prompt: string
   options: ChoiceOption[]
   answer: string | string[]
   explanation: string

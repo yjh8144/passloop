@@ -84,7 +84,7 @@ export const en: Record<string, string> = {
   clearListAttempts: "Clear practice data",
   deleteList: "Delete list",
   listDesc: "List description",
-  noPrompt: "No prompt",
+  noPrompt: "No question",
   llmFilling: "LLM filling...",
   waitingAI: "Waiting for AI...",
   selectToEdit: "Select to edit",
@@ -460,8 +460,7 @@ export const en: Record<string, string> = {
 
   // Parsed Questions Editor
   deleteQuestionTitle: "Delete question",
-  titleLabel: "Title",
-  promptLabel: "Prompt",
+  titleLabel: "Question",
   optionsLabel: "Options",
   addOptionTitle: "Add option",
   deleteOptionTitle: "Delete option",
@@ -480,7 +479,7 @@ export const en: Record<string, string> = {
   fillingStatus: "Filling...",
   deleteCurrentList: "Delete current list",
   listDescPlaceholder: "List description",
-  noPromptText: "No prompt",
+  noPromptText: "No question",
   confirmDeleteQuestion: "Are you sure you want to delete this question?",
   questionSaved: "Question saved.",
   noQuestionsInList: "No questions in current list.",
