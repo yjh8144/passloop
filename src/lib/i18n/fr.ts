@@ -104,7 +104,8 @@ export const fr: Record<string, string> = {
   title: "Titre",
   prompt: "Énoncé",
   options: "Options",
-  answerSepHint: "Réponse (utiliser | pour multiple/blancs)",
+  answerSepHint: "Réponse (utiliser | pour blancs)",
+  selectAnswerHint: "Cliquer pour sélectionner la bonne réponse",
 
   // Self-fill dialog
   selfFillTitle: "Auto-complétion réponses/explications",
@@ -480,7 +481,7 @@ export const fr: Record<string, string> = {
   booleanTrue: "Vrai",
   booleanFalse: "Faux",
   answerLabel: "Réponse",
-  answerSepLabel: "Réponse (| pour séparer)",
+  answerSepLabel: "Réponse (| pour blancs)",
   explanationLabel: "Explication",
   addQuestionBtnText: "Ajouter une question",
 

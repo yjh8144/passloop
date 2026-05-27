@@ -104,7 +104,8 @@ export const ja: Record<string, string> = {
   title: "タイトル",
   prompt: "問題文",
   options: "選択肢",
-  answerSepHint: "答え（複数/空欄は | で区切る）",
+  answerSepHint: "答え（空欄は | で区切る）",
+  selectAnswerHint: "クリックして正解を選択",
 
   // Self-fill dialog
   selfFillTitle: "自助 答え/解説補充",
@@ -449,7 +450,7 @@ export const ja: Record<string, string> = {
   booleanTrue: "正しい",
   booleanFalse: "誤り",
   answerLabel: "解答",
-  answerSepLabel: "解答（| で区切り）",
+  answerSepLabel: "解答（空欄は | で区切り）",
   explanationLabel: "解説",
   addQuestionBtnText: "問題を追加",
 

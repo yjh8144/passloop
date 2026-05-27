@@ -101,21 +101,61 @@ export function QuestionEditor(props: {
         </div>
       )}
       <label className="field-label">
-        {t("answerSepHint")}
-        <input
-          value={Array.isArray(draft.answer) ? draft.answer.join("|") : draft.answer}
-          onChange={(event) =>
-            patch({
-              answer:
-                draft.type === "multiple" || draft.type === "blank"
-                  ? event.target.value
-                      .split("|")
-                      .map((item) => item.trim())
-                      .filter(Boolean)
-                  : event.target.value,
-            })
-          }
-        />
+        {draft.type === "single" || draft.type === "multiple" || draft.type === "boolean"
+          ? t("selectAnswerHint")
+          : t("answerSepHint")}
+        {draft.type === "single" || draft.type === "boolean" ? (
+          <div className="answer-toggle-group">
+            {draft.options.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={`answer-toggle-btn ${draft.answer === option.label ? "is-active" : ""}`}
+                onClick={() => patch({ answer: option.label })}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        ) : draft.type === "multiple" ? (
+          <div className="answer-toggle-group">
+            {draft.options.map((option) => {
+              const selected = Array.isArray(draft.answer) ? draft.answer : []
+              const isActive = selected.includes(option.label)
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={`answer-toggle-btn ${isActive ? "is-active" : ""}`}
+                  onClick={() =>
+                    patch({
+                      answer: isActive
+                        ? selected.filter((item) => item !== option.label)
+                        : [...selected, option.label],
+                    })
+                  }
+                >
+                  {option.label}
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <input
+            value={Array.isArray(draft.answer) ? draft.answer.join("|") : draft.answer}
+            onChange={(event) =>
+              patch({
+                answer:
+                  draft.type === "blank"
+                    ? event.target.value
+                        .split("|")
+                        .map((item) => item.trim())
+                        .filter(Boolean)
+                    : event.target.value,
+              })
+            }
+          />
+        )}
       </label>
       <label className="field-label">
         {t("explanationLabel")}

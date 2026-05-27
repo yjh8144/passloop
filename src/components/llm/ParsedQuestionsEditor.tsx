@@ -143,24 +143,66 @@ export function ParsedQuestionsEditor(props: {
             </div>
           )}
           <label className="field-label">
-            {question.type === "multiple" || question.type === "blank"
-              ? t("answerSepLabel")
-              : t("answerLabel")}
-            <input
-              value={Array.isArray(question.answer) ? question.answer.join("|") : question.answer}
-              disabled={props.readOnly}
-              onChange={(e) =>
-                updateQuestion(qIndex, {
-                  answer:
-                    question.type === "multiple" || question.type === "blank"
-                      ? e.target.value
-                          .split("|")
-                          .map((s) => s.trim())
-                          .filter(Boolean)
-                      : e.target.value,
-                })
-              }
-            />
+            {question.type === "single" || question.type === "multiple" || question.type === "boolean"
+              ? t("selectAnswerHint")
+              : question.type === "blank"
+                ? t("answerSepLabel")
+                : t("answerLabel")}
+            {question.type === "single" || question.type === "boolean" ? (
+              <div className="answer-toggle-group">
+                {question.options.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`answer-toggle-btn ${question.answer === option.label ? "is-active" : ""}`}
+                    disabled={props.readOnly}
+                    onClick={() => updateQuestion(qIndex, { answer: option.label })}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            ) : question.type === "multiple" ? (
+              <div className="answer-toggle-group">
+                {question.options.map((option) => {
+                  const selected = Array.isArray(question.answer) ? question.answer : []
+                  const isActive = selected.includes(option.label)
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={`answer-toggle-btn ${isActive ? "is-active" : ""}`}
+                      disabled={props.readOnly}
+                      onClick={() =>
+                        updateQuestion(qIndex, {
+                          answer: isActive
+                            ? selected.filter((item) => item !== option.label)
+                            : [...selected, option.label],
+                        })
+                      }
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <input
+                value={Array.isArray(question.answer) ? question.answer.join("|") : question.answer}
+                disabled={props.readOnly}
+                onChange={(e) =>
+                  updateQuestion(qIndex, {
+                    answer:
+                      question.type === "blank"
+                        ? e.target.value
+                            .split("|")
+                            .map((s) => s.trim())
+                            .filter(Boolean)
+                        : e.target.value,
+                  })
+                }
+              />
+            )}
           </label>
           <label className="field-label">
             {t("explanationLabel")}

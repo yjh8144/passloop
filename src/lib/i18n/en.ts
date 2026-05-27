@@ -105,7 +105,8 @@ export const en: Record<string, string> = {
   title: "Title",
   prompt: "Prompt",
   options: "Options",
-  answerSepHint: "Answer (use | for multiple/blank)",
+  answerSepHint: "Answer (use | for blank)",
+  selectAnswerHint: "Click to select correct answer",
 
   // Self-fill dialog
   selfFillTitle: "Self-fill Answers/Explanations",
@@ -468,7 +469,7 @@ export const en: Record<string, string> = {
   booleanTrue: "True",
   booleanFalse: "False",
   answerLabel: "Answer",
-  answerSepLabel: "Answer (use | for multiple)",
+  answerSepLabel: "Answer (use | for blank)",
   explanationLabel: "Explanation",
   addQuestionBtnText: "Add question",
 

@@ -104,7 +104,8 @@ export const ko: Record<string, string> = {
   title: "제목",
   prompt: "지문",
   options: "선택지",
-  answerSepHint: "답 (다중/빈칸은 |로 구분)",
+  answerSepHint: "답 (빈칸은 |로 구분)",
+  selectAnswerHint: "클릭하여 정답 선택",
 
   // Self-fill dialog
   selfFillTitle: "자체 답/해설 보충",
@@ -447,7 +448,7 @@ export const ko: Record<string, string> = {
   booleanTrue: "맞음",
   booleanFalse: "틀림",
   answerLabel: "답",
-  answerSepLabel: "답 (|로 구분)",
+  answerSepLabel: "답 (빈칸은 |로 구분)",
   explanationLabel: "해설",
   addQuestionBtnText: "문제 추가",
 

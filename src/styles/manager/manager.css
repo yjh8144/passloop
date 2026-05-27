@@ -82,6 +82,38 @@
   margin-top: 8px;
 }
 
+.answer-toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.answer-toggle-btn {
+  min-width: 36px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.answer-toggle-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.answer-toggle-btn.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
 @media (max-width: 1180px) {
   .manager-layout {
     grid-template-columns: 1fr;

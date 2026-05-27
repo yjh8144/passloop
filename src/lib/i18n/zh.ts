@@ -104,7 +104,8 @@ export const zh: Record<string, string> = {
   title: "标题",
   prompt: "题干",
   options: "选项",
-  answerSepHint: "答案（多选/填空用 | 分隔）",
+  answerSepHint: "答案（填空用 | 分隔）",
+  selectAnswerHint: "点击选择正确答案",
 
   // Self-fill dialog
   selfFillTitle: "自助补充答案/解析",
@@ -437,7 +438,7 @@ export const zh: Record<string, string> = {
   booleanTrue: "正确",
   booleanFalse: "错误",
   answerLabel: "答案",
-  answerSepLabel: "答案（用 | 分隔）",
+  answerSepLabel: "答案（填空用 | 分隔）",
   explanationLabel: "解析",
   addQuestionBtnText: "添加题目",
 
