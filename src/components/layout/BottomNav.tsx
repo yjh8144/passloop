@@ -6,6 +6,7 @@ import {
   FileDown,
   FileUp,
   FolderDown,
+  Github,
   Plus,
   Settings2,
   RotateCcw,
@@ -54,6 +55,23 @@ export function BottomNav(props: {
         aria-label="panel"
       >
         <div className="bottom-nav-panel-content">
+          <div className="panel-brand">
+            <div className="panel-brand-mark">P</div>
+            <div className="panel-brand-text">
+              <strong>PassLoop</strong>
+              <span>{t("brandTagline")}</span>
+            </div>
+            <a
+              href="https://github.com/yjh8144/passloop"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-button"
+              title={t("githubRepo")}
+            >
+              <Github size={17} />
+            </a>
+          </div>
+
           <div>
             <div className="panel-section-title">
               <span>{t("questionList")}</span>
