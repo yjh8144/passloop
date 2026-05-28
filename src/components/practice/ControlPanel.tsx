@@ -1,7 +1,7 @@
 import { Eraser, Plus } from "lucide-react"
 import type { AppData, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
-import { useT, usePushToast } from "../../contexts"
+import { useT, usePushToast, useAppData } from "../../contexts"
 
 export function ControlPanel(props: {
   settings: AppData["settings"]
@@ -13,6 +13,7 @@ export function ControlPanel(props: {
 }) {
   const t = useT()
   const pushToast = usePushToast()
+  const { wrongQuestions } = useAppData()
   return (
     <section className="inspector-panel">
       <h3>{t("controls")}</h3>
@@ -77,10 +78,10 @@ export function ControlPanel(props: {
       </label>
       <div className="two-col-actions">
         <button onClick={props.onRedoWrong}>{t("redoWrong")}</button>
-        <button onClick={props.onExportWrong}>{t("exportWrong")}</button>
+        <button onClick={props.onExportWrong} disabled={!wrongQuestions.length}>{t("exportWrong")}</button>
       </div>
       <div className="two-col-actions">
-        <button onClick={props.onCreateWrongList}>
+        <button onClick={props.onCreateWrongList} disabled={!wrongQuestions.length}>
           <Plus size={16} /> {t("createWrongList")}
         </button>
       </div>

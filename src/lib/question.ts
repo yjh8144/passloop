@@ -174,7 +174,7 @@ export function sortQuestions(
   const copy = [...questions]
   if (mode === "random") {
     return copy
-      .map((question) => ({ question, score: seededScore(question.id) }))
+      .map((question) => ({ question, score: Math.random() }))
       .sort((a, b) => a.score - b.score)
       .map((item) => item.question)
   }
@@ -182,12 +182,6 @@ export function sortQuestions(
   if (mode === "name") return copy.sort((a, b) => a.title.localeCompare(b.title, loc))
   const labels = localizedLabels ?? typeLabels
   return copy.sort((a, b) => labels[a.type].localeCompare(labels[b.type], loc))
-}
-
-function seededScore(value: string) {
-  let hash = 0
-  for (const char of value) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
-  return hash
 }
 
 export function isAnswerCorrect(question: Question, answer: string | string[]) {

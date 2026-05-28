@@ -94,20 +94,32 @@ export function Sidebar(props: {
         <nav className="nav-stack" aria-label="navigation">
           <button
             className={page === "practice" ? "active" : ""}
-            onClick={() => changePage("practice")}
+            onClick={() => {
+              changePage("practice")
+              setMobileSidebarCollapsed(true)
+            }}
           >
             <BookOpen size={17} /> {t("dashboard")}
           </button>
           <button
             className={page === "manager" ? "active" : ""}
-            onClick={() => changePage("manager")}
+            onClick={() => {
+              changePage("manager")
+              setMobileSidebarCollapsed(true)
+            }}
           >
             <Edit3 size={17} /> {t("manager")}
           </button>
-          <button className={page === "llm" ? "active" : ""} onClick={() => changePage("llm")}>
+          <button className={page === "llm" ? "active" : ""} onClick={() => {
+            changePage("llm")
+            setMobileSidebarCollapsed(true)
+          }}>
             <Bot size={17} /> {t("llm")}
           </button>
-          <button className={page === "wrong" ? "active" : ""} onClick={() => changePage("wrong")}>
+          <button className={page === "wrong" ? "active" : ""} onClick={() => {
+            changePage("wrong")
+            setMobileSidebarCollapsed(true)
+          }}>
             <RotateCcw size={17} /> {t("wrong")}
           </button>
         </nav>

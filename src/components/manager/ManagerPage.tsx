@@ -273,7 +273,17 @@ export function ManagerPage(props: {
         <div className="editor-float-inner">
           <div className="editor-float-header">
             <span>{t("editorTitle")}</span>
-            <button className="icon-button" onClick={() => setEditorFloatOpen(false)}>
+            <button className="icon-button" onClick={() => {
+              if (props.editing && editorDirty) {
+                showConfirm(t("unsavedConfirm"), () => {
+                  props.setEditing(null)
+                  setEditorFloatOpen(false)
+                })
+              } else {
+                props.setEditing(null)
+                setEditorFloatOpen(false)
+              }
+            }}>
               <X size={16} />
             </button>
           </div>
