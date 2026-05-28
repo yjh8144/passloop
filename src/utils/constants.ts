@@ -1,4 +1,4 @@
-import type { LlmConfig, LlmMultiConfig, QuestionType } from "../lib/types"
+import type { LlmConfig, LlmMultiConfig, ProxySettings, QuestionType } from "../lib/types"
 
 export const questionTypes: QuestionType[] = [
   "single",
@@ -21,6 +21,12 @@ export const providerPlaceholders: Record<
     endpoint: "https://api.anthropic.com/v1/messages",
     model: "claude-sonnet-4-20250514",
   },
+}
+
+export const defaultProxySettings: ProxySettings = {
+  proxyEnabled: true,
+  proxyUrl: "http://121.40.35.52:9362",
+  proxyKey: "19b0451c81fb111df6704051c438c0d868bf661a27e816a287fe5aa28a1a2143",
 }
 
 export const defaultLlmConfig: LlmConfig = {

@@ -5,10 +5,12 @@ import {
   I18nProvider,
   ToastProvider,
   DialogProvider,
+  ProxyProvider,
   LlmConfigProvider,
   AppDataProvider,
   useAppData,
   useLlmConfig,
+  useProxy,
   NavigationProvider,
   useNavigation,
   PracticeProvider,
@@ -43,13 +45,15 @@ export function App() {
     <I18nProvider t={t}>
       <ToastProvider pushToast={pushToast}>
         <DialogProvider>
-          <LlmConfigProvider>
-            <AppDataProvider data={data} setData={setData}>
-              <NavigationProvider>
-                <AppShell toasts={toasts} />
-              </NavigationProvider>
-            </AppDataProvider>
-          </LlmConfigProvider>
+          <ProxyProvider>
+            <LlmConfigProvider>
+              <AppDataProvider data={data} setData={setData}>
+                <NavigationProvider>
+                  <AppShell toasts={toasts} />
+                </NavigationProvider>
+              </AppDataProvider>
+            </LlmConfigProvider>
+          </ProxyProvider>
         </DialogProvider>
       </ToastProvider>
     </I18nProvider>
@@ -67,6 +71,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
     addImportedList,
   } = useAppData()
   const { clearLlmConfig: clearLlmConfigCtx } = useLlmConfig()
+  const { resetProxySettings } = useProxy()
   const { page, desktopSidebarCollapsed, llmUnsavedRef } = useNavigation()
   const { showConfirm } = useDialog()
   const t = useT()
@@ -143,6 +148,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           onClose={() => setResetConfirmDialog(false)}
           onResetData={() => {
             clearLlmConfigCtx()
+            resetProxySettings()
             setData(createDefaultData())
           }}
         />

@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useAppData, useLlmConfig, usePushToast, useT } from "../../contexts"
+import { useAppData, useProxy, usePushToast, useT } from "../../contexts"
 import { useImportExport } from "../../hooks/useImportExport"
 import { ImportSourceDialog } from "./ImportSourceDialog"
 import { ImportChoiceDialog } from "./ImportChoiceDialog"
@@ -17,20 +17,12 @@ export function ImportExportDialogs({
 }) {
   const t = useT()
   const { data, setData, activeList, updateActiveList, updateData } = useAppData()
-  const { getConfigForScenario } = useLlmConfig()
+  const { proxySettings } = useProxy()
   const pushToast = usePushToast()
-
-  const proxyConfig = (() => {
-    const cfg = getConfigForScenario("parse")
-    if (cfg && cfg.proxyEnabled) {
-      return { proxyEnabled: true, proxyUrl: cfg.proxyUrl, proxyKey: cfg.proxyKey }
-    }
-    return { proxyEnabled: false, proxyUrl: "", proxyKey: "" }
-  })()
 
   const importExport = useImportExport({
     t,
-    proxyConfig,
+    proxyConfig: proxySettings,
     pushToast,
     updateActiveList,
     updateData,

@@ -8,6 +8,7 @@ import {
   FileDown,
   FileUp,
   Github,
+  Globe,
   HardDriveDownload,
   PanelLeftClose,
   PanelLeftOpen,
@@ -17,7 +18,7 @@ import {
   FolderDown,
   FolderUp,
 } from "lucide-react"
-import { useT, useNavigation, useLlmConfig } from "../../contexts"
+import { useT, useNavigation, useLlmConfig, useProxy } from "../../contexts"
 
 export function Sidebar(props: {
   onQuestionImport: () => void
@@ -38,6 +39,7 @@ export function Sidebar(props: {
     setDesktopSidebarCollapsed,
   } = useNavigation()
   const { openLlmConfig } = useLlmConfig()
+  const { openProxyConfig } = useProxy()
   const { onOpenDebugDialog } = props
   const clickTimesRef = useRef<number[]>([])
 
@@ -113,6 +115,9 @@ export function Sidebar(props: {
         <div className="sidebar-actions">
           <button onClick={openLlmConfig}>
             <Settings2 size={16} /> {t("llmConfigBtn")}
+          </button>
+          <button onClick={openProxyConfig}>
+            <Globe size={16} /> {t("proxySettingsBtn")}
           </button>
           <button onClick={props.onQuestionImport}>
             <FileUp size={16} /> {t("importQuestions")}

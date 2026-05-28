@@ -7,13 +7,14 @@ import {
   FileUp,
   FolderDown,
   Github,
+  Globe,
   Layers,
   Settings2,
   RotateCcw,
   Trash2,
   FolderUp,
 } from "lucide-react"
-import { useT, useNavigation, useLlmConfig } from "../../contexts"
+import { useT, useNavigation, useLlmConfig, useProxy } from "../../contexts"
 
 export function BottomNav(props: {
   onQuestionImport: () => void
@@ -25,6 +26,7 @@ export function BottomNav(props: {
   const t = useT()
   const { page, changePage } = useNavigation()
   const { openLlmConfig } = useLlmConfig()
+  const { openProxyConfig } = useProxy()
   const [panelOpen, setPanelOpen] = useState(false)
 
   const close = useCallback(() => setPanelOpen(false), [])
@@ -82,6 +84,15 @@ export function BottomNav(props: {
                 }}
               >
                 <Settings2 size={15} /> {t("llmConfigBtn")}
+              </button>
+              <button
+                className="panel-action-btn"
+                onClick={() => {
+                  openProxyConfig()
+                  close()
+                }}
+              >
+                <Globe size={15} /> {t("proxySettingsBtn")}
               </button>
               <button
                 className="panel-action-btn"

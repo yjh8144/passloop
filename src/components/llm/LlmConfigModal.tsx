@@ -4,7 +4,6 @@ import type { LlmProvider, LlmProviderType, LlmScenario } from "../../lib/types"
 import { useLlmConfig, useT } from "../../contexts"
 import { LlmProviderList } from "./LlmProviderList"
 import { LlmProviderEditor } from "./LlmProviderEditor"
-import { defaultLlmConfig } from "../../utils/constants"
 
 type Tab = "providers" | "scenarios"
 
@@ -29,9 +28,6 @@ export function LlmConfigModal(props: { open: boolean; onClose: () => void }) {
       endpoint: "",
       apiKey: "",
       model: "",
-      proxyEnabled: defaultLlmConfig.proxyEnabled,
-      proxyUrl: defaultLlmConfig.proxyUrl,
-      proxyKey: defaultLlmConfig.proxyKey,
     })
     setEditingId(null)
     setIsAdding(true)
@@ -46,9 +42,6 @@ export function LlmConfigModal(props: { open: boolean; onClose: () => void }) {
       endpoint: p.endpoint,
       apiKey: p.apiKey,
       model: p.model,
-      proxyEnabled: p.proxyEnabled,
-      proxyUrl: p.proxyUrl,
-      proxyKey: p.proxyKey,
     })
     setEditingId(id)
     setIsAdding(false)

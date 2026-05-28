@@ -375,6 +375,8 @@ export const fr: Record<string, string> = {
 
   // LLM Config Modal
   llmConfigTitle: "Configuration LLM",
+  proxySettingsTitle: "Paramètres du proxy",
+  proxySettingsBtn: "Paramètres du proxy",
   providerLabel: "Fournisseur",
   modelLabel: "Modèle",
   apiUrlLabel: "URL de l'API",

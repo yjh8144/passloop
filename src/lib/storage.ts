@@ -3,6 +3,7 @@ import type {
   LlmConfig,
   LlmMultiConfig,
   LlmProvider,
+  ProxySettings,
   QuestionList,
   Settings,
 } from "./types"
@@ -12,6 +13,7 @@ import { debugError } from "./debug"
 export const STORAGE_KEY = "passloop.app.v1"
 export const LLM_CONFIG_STORAGE_KEY = "passloop.llm-config.v1"
 export const LLM_MULTI_CONFIG_STORAGE_KEY = "passloop.llm-config.v2"
+export const PROXY_STORAGE_KEY = "passloop.proxy.v1"
 
 const now = () => new Date().toISOString()
 
@@ -141,11 +143,59 @@ export function clearLlmMultiConfig() {
   localStorage.removeItem(LLM_MULTI_CONFIG_STORAGE_KEY)
 }
 
+export function loadProxySettings(fallback: ProxySettings): ProxySettings {
+  try {
+    const raw = localStorage.getItem(PROXY_STORAGE_KEY)
+    if (raw) {
+      const source = JSON.parse(raw) as Partial<ProxySettings>
+      return {
+        proxyEnabled:
+          typeof source.proxyEnabled === "boolean" ? source.proxyEnabled : fallback.proxyEnabled,
+        proxyUrl: typeof source.proxyUrl === "string" ? source.proxyUrl : fallback.proxyUrl,
+        proxyKey: typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey,
+      }
+    }
+    const rawMulti = localStorage.getItem(LLM_MULTI_CONFIG_STORAGE_KEY)
+    if (rawMulti) {
+      const multi = JSON.parse(rawMulti) as { providers?: Array<Partial<LlmProvider & { proxyEnabled?: boolean; proxyUrl?: string; proxyKey?: string }>> }
+      const first = multi.providers?.[0]
+      if (first && typeof first.proxyUrl === "string" && first.proxyUrl) {
+        const migrated: ProxySettings = {
+          proxyEnabled: typeof first.proxyEnabled === "boolean" ? first.proxyEnabled : fallback.proxyEnabled,
+          proxyUrl: first.proxyUrl,
+          proxyKey: typeof first.proxyKey === "string" ? first.proxyKey : fallback.proxyKey,
+        }
+        saveProxySettings(migrated)
+        return migrated
+      }
+    }
+    return fallback
+  } catch (e) {
+    debugError("loadProxySettings failed", e)
+    return fallback
+  }
+}
+
+export function saveProxySettings(settings: ProxySettings) {
+  localStorage.setItem(PROXY_STORAGE_KEY, JSON.stringify(settings))
+}
+
 function migrateV1ToV2(v1: Partial<LlmConfig>, fallback: LlmMultiConfig): LlmMultiConfig {
   const provider = isLlmProvider(v1.provider) ? v1.provider : "openai"
   const timestamp = now()
   const id = createId()
   const hasKey = typeof v1.apiKey === "string" && v1.apiKey.trim() !== ""
+
+  if (typeof v1.proxyUrl === "string" && v1.proxyUrl) {
+    const proxyMigrated: ProxySettings = {
+      proxyEnabled: typeof v1.proxyEnabled === "boolean" ? v1.proxyEnabled : true,
+      proxyUrl: v1.proxyUrl,
+      proxyKey: typeof v1.proxyKey === "string" ? v1.proxyKey : "",
+    }
+    if (!localStorage.getItem(PROXY_STORAGE_KEY)) {
+      saveProxySettings(proxyMigrated)
+    }
+  }
 
   const entry: LlmProvider = {
     id,
@@ -154,9 +204,6 @@ function migrateV1ToV2(v1: Partial<LlmConfig>, fallback: LlmMultiConfig): LlmMul
     endpoint: typeof v1.endpoint === "string" ? v1.endpoint : "",
     apiKey: typeof v1.apiKey === "string" ? v1.apiKey : "",
     model: typeof v1.model === "string" ? v1.model : "",
-    proxyEnabled: typeof v1.proxyEnabled === "boolean" ? v1.proxyEnabled : true,
-    proxyUrl: typeof v1.proxyUrl === "string" ? v1.proxyUrl : "",
-    proxyKey: typeof v1.proxyKey === "string" ? v1.proxyKey : "",
     createdAt: timestamp,
     updatedAt: timestamp,
   }

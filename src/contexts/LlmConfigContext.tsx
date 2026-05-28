@@ -97,9 +97,9 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
         model: p.model,
         fillAnswer: true,
         fillExplanation: true,
-        proxyEnabled: p.proxyEnabled,
-        proxyUrl: p.proxyUrl,
-        proxyKey: p.proxyKey,
+        proxyEnabled: false,
+        proxyUrl: "",
+        proxyKey: "",
       }
     },
     [multiConfig],

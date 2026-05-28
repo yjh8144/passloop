@@ -315,7 +315,7 @@ export const zh: Record<string, string> = {
   uploadLocalJsonFile: "上传本地 JSON 文件",
   importFromUrl: "从 URL 导入 JSON",
   jsonFileUrl: "JSON 文件 URL",
-  corsProxyNote: "请求将通过 LLM 配置中的 CORS 代理转发（如已配置）。",
+  corsProxyNote: "请求将通过全局 CORS 代理转发（如已配置）。",
   downloading: "下载中…",
   detectedLists: "检测到 {0} 个题单，{1} 条刷题记录。选择导入方式：",
   mergeToExisting: "合并到现有数据",
@@ -336,6 +336,8 @@ export const zh: Record<string, string> = {
 
   // LLM Config Modal
   llmConfigTitle: "LLM 配置",
+  proxySettingsTitle: "代理设置",
+  proxySettingsBtn: "代理设置",
   providerLabel: "提供商",
   modelLabel: "模型",
   apiUrlLabel: "API 地址",

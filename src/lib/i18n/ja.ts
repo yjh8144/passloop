@@ -347,6 +347,8 @@ export const ja: Record<string, string> = {
 
   // LLM Config Modal
   llmConfigTitle: "LLM 設定",
+  proxySettingsTitle: "プロキシ設定",
+  proxySettingsBtn: "プロキシ設定",
   providerLabel: "プロバイダー",
   modelLabel: "モデル",
   apiUrlLabel: "API アドレス",

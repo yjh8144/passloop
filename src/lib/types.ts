@@ -71,6 +71,12 @@ export type LlmProviderType = "openai" | "gemini" | "anthropic"
 
 export type LlmScenario = "parse" | "fill"
 
+export interface ProxySettings {
+  proxyEnabled: boolean
+  proxyUrl: string
+  proxyKey: string
+}
+
 export interface LlmProvider {
   id: string
   name: string
@@ -78,9 +84,6 @@ export interface LlmProvider {
   endpoint: string
   apiKey: string
   model: string
-  proxyEnabled: boolean
-  proxyUrl: string
-  proxyKey: string
   createdAt: string
   updatedAt: string
 }

@@ -7,7 +7,7 @@ import { debugLog } from "../../lib/debug"
 import { EmptyState } from "../ui/EmptyState"
 import { QuestionEditor } from "./QuestionEditor"
 import { SelfFillDialog } from "./SelfFillDialog"
-import { useT, usePushToast, useDialog, useLlmConfig } from "../../contexts"
+import { useT, usePushToast, useDialog, useLlmConfig, useProxy } from "../../contexts"
 
 export function ManagerPage(props: {
   list: QuestionList
@@ -20,6 +20,7 @@ export function ManagerPage(props: {
   const pushToast = usePushToast()
   const { showConfirm } = useDialog()
   const { getConfigForScenario, openLlmConfig } = useLlmConfig()
+  const { proxySettings } = useProxy()
   const typeLabelsMap = getTypeLabels(t)
   const [localListName, setLocalListName] = useState(props.list.name)
   const [showFillChoice, setShowFillChoice] = useState(false)
@@ -60,11 +61,12 @@ export function ManagerPage(props: {
   }
 
   const runFill = async (mode: "answer" | "explanation" | "both") => {
-    const fillConfig = getConfigForScenario("fill")
-    if (!fillConfig) {
+    const rawFillConfig = getConfigForScenario("fill")
+    if (!rawFillConfig) {
       openLlmConfig()
       return
     }
+    const fillConfig = { ...rawFillConfig, ...proxySettings }
     if (!props.list.questions.length) {
       pushToast("info", t("noQuestionsInList"))
       return

@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react"
-import { ChevronRight, Eye, EyeOff, HelpCircle, List, Undo2, X } from "lucide-react"
+import { ChevronRight, Eye, EyeOff, Undo2, X } from "lucide-react"
 import type { LlmProvider, LlmProviderType } from "../../lib/types"
 import { testLlmConnection, fetchModelList } from "../../lib/llm"
-import { providerPlaceholders, PRESET_PROXIES } from "../../utils/constants"
-import { useT, usePushToast } from "../../contexts"
-import { debugError } from "../../lib/debug"
+import { providerPlaceholders } from "../../utils/constants"
+import { useT, usePushToast, useProxy } from "../../contexts"
 
 interface LlmProviderEditorProps {
   provider: Omit<LlmProvider, "id" | "createdAt" | "updatedAt">
@@ -23,25 +22,18 @@ export function LlmProviderEditor({
 }: LlmProviderEditorProps) {
   const t = useT()
   const pushToast = usePushToast()
+  const { proxySettings } = useProxy()
   const [showApiKey, setShowApiKey] = useState(false)
-  const [showProxyKey, setShowProxyKey] = useState(false)
-  const [showProxyHelp, setShowProxyHelp] = useState(false)
-  const [showProxyList, setShowProxyList] = useState(false)
   const [clearedFields, setClearedFields] = useState<{
     model?: string
     endpoint?: string
     apiKey?: string
-    proxyUrl?: string
-    proxyKey?: string
   }>({})
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false)
   const modelDropdownRef = useRef<HTMLDivElement>(null)
   const [testing, setTesting] = useState(false)
   const [modelList, setModelList] = useState<string[]>([])
   const [fetchingModels, setFetchingModels] = useState(false)
-  const [proxyStatus, setProxyStatus] = useState<
-    Record<string, { status: "idle" | "testing" | "alive" | "dead"; latency?: number }>
-  >({})
 
   useEffect(() => {
     if (!modelDropdownOpen) return
@@ -61,9 +53,7 @@ export function LlmProviderEditor({
     model: provider.model,
     fillAnswer: false,
     fillExplanation: false,
-    proxyEnabled: provider.proxyEnabled,
-    proxyUrl: provider.proxyUrl,
-    proxyKey: provider.proxyKey,
+    ...proxySettings,
   })
 
   const runTest = async () => {
@@ -93,26 +83,6 @@ export function LlmProviderEditor({
     } finally {
       setFetchingModels(false)
     }
-  }
-
-  const testProxy = async (url: string) => {
-    setProxyStatus((s) => ({ ...s, [url]: { status: "testing" } }))
-    try {
-      const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 5000)
-      const start = performance.now()
-      await fetch(url.replace(/\/+$/, "") + "/", { signal: controller.signal })
-      const latency = Math.round(performance.now() - start)
-      clearTimeout(timer)
-      setProxyStatus((s) => ({ ...s, [url]: { status: "alive", latency } }))
-    } catch (e) {
-      debugError("testProxy failed", url, e)
-      setProxyStatus((s) => ({ ...s, [url]: { status: "dead" } }))
-    }
-  }
-
-  const testAllProxies = () => {
-    PRESET_PROXIES.forEach((proxy) => testProxy(proxy.url))
   }
 
   const updateProviderType = (type: LlmProviderType) => {
@@ -290,124 +260,6 @@ export function LlmProviderEditor({
             </button>
           </div>
         </label>
-        <label
-          className="field-label wide"
-          style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8 }}
-        >
-          <input
-            type="checkbox"
-            checked={provider.proxyEnabled}
-            onChange={(e) => onChange({ ...provider, proxyEnabled: e.target.checked })}
-            style={{ width: "auto", height: "auto" }}
-          />
-          <span>{t("proxyToggleLabel")}</span>
-        </label>
-        {!provider.proxyEnabled && (
-          <div
-            className="field-label wide"
-            style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -8 }}
-          >
-            {t("proxyDisabledHint")}
-          </div>
-        )}
-        <label className="field-label wide" style={{ opacity: provider.proxyEnabled ? 1 : 0.5 }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            {t("proxyUrlLabel")}
-            <button
-              className="icon-button"
-              style={{ padding: 2 }}
-              onClick={() => setShowProxyHelp(true)}
-              title={t("whatIsCorsProxy")}
-            >
-              <HelpCircle size={14} />
-            </button>
-            <button
-              className="icon-button"
-              style={{ padding: 2 }}
-              onClick={() => setShowProxyList(true)}
-              title={t("proxyListTitle")}
-            >
-              <List size={14} />
-            </button>
-          </span>
-          <div className="input-with-actions">
-            <input
-              value={provider.proxyUrl}
-              placeholder="https://your-worker.workers.dev"
-              onChange={(e) => onChange({ ...provider, proxyUrl: e.target.value })}
-              disabled={!provider.proxyEnabled}
-            />
-            {provider.proxyUrl ? (
-              <button
-                className="input-clear-btn"
-                onClick={() => {
-                  setClearedFields((f) => ({ ...f, proxyUrl: provider.proxyUrl }))
-                  onChange({ ...provider, proxyUrl: "" })
-                }}
-                title={t("clear")}
-              >
-                <X size={14} />
-              </button>
-            ) : (
-              clearedFields.proxyUrl && (
-                <button
-                  className="input-clear-btn"
-                  onClick={() => {
-                    onChange({ ...provider, proxyUrl: clearedFields.proxyUrl! })
-                    setClearedFields((f) => ({ ...f, proxyUrl: undefined }))
-                  }}
-                  title={t("restore")}
-                >
-                  <Undo2 size={14} />
-                </button>
-              )
-            )}
-          </div>
-        </label>
-        <label className="field-label wide" style={{ opacity: provider.proxyEnabled ? 1 : 0.5 }}>
-          {t("proxyKeyLabel")}
-          <div className="input-with-actions">
-            <input
-              type={showProxyKey ? "text" : "password"}
-              value={provider.proxyKey}
-              placeholder={t("proxyKeyPlaceholder")}
-              onChange={(e) => onChange({ ...provider, proxyKey: e.target.value })}
-              disabled={!provider.proxyEnabled}
-            />
-            {provider.proxyKey ? (
-              <button
-                className="input-clear-btn"
-                onClick={() => {
-                  setClearedFields((f) => ({ ...f, proxyKey: provider.proxyKey }))
-                  onChange({ ...provider, proxyKey: "" })
-                }}
-                title={t("clear")}
-              >
-                <X size={14} />
-              </button>
-            ) : (
-              clearedFields.proxyKey && (
-                <button
-                  className="input-clear-btn"
-                  onClick={() => {
-                    onChange({ ...provider, proxyKey: clearedFields.proxyKey! })
-                    setClearedFields((f) => ({ ...f, proxyKey: undefined }))
-                  }}
-                  title={t("restore")}
-                >
-                  <Undo2 size={14} />
-                </button>
-              )
-            )}
-            <button
-              className="input-clear-btn"
-              onClick={() => setShowProxyKey((v) => !v)}
-              title={showProxyKey ? t("hide") : t("show")}
-            >
-              {showProxyKey ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
-          </div>
-        </label>
         <div className="field-label">
           <button
             className="test-button"
@@ -430,144 +282,6 @@ export function LlmProviderEditor({
           {isNew ? t("addProvider") : t("saveProvider")}
         </button>
       </div>
-      {showProxyHelp && (
-        <div
-          className="modal-overlay"
-          style={{ zIndex: 1100 }}
-          onClick={() => setShowProxyHelp(false)}
-        >
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: 500 }}
-          >
-            <div className="modal-header">
-              <h2>{t("corsExplainTitle")}</h2>
-              <button className="icon-button" onClick={() => setShowProxyHelp(false)}>
-                <X size={18} />
-              </button>
-            </div>
-            <div style={{ lineHeight: 1.8, fontSize: "0.92rem" }}>
-              <p style={{ marginBottom: 12 }}>
-                <strong>CORS</strong> — {t("corsExplain1")}
-              </p>
-              <p style={{ marginBottom: 12 }}>{t("corsExplain2")}</p>
-              <p style={{ marginBottom: 12 }}>{t("corsExplain3")}</p>
-              <p style={{ marginBottom: 12 }}>
-                {t("corsExplain4")}
-                <br />
-                <span style={{ color: "var(--text-muted)" }}>{t("corsExplainFlow")}</span>
-              </p>
-              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t("corsExplain5")}</p>
-              <p style={{ marginTop: 12 }}>
-                <a
-                  href="https://github.com/yjh8144/passloop/tree/main/proxy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "var(--accent)" }}
-                >
-                  {t("viewDeployGuide")}
-                </a>
-              </p>
-            </div>
-            <div className="modal-actions">
-              <button className="primary-button" onClick={() => setShowProxyHelp(false)}>
-                {t("understood")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {showProxyList && (
-        <div
-          className="modal-overlay"
-          style={{ zIndex: 1100 }}
-          onClick={() => setShowProxyList(false)}
-        >
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: 460 }}
-          >
-            <div className="modal-header">
-              <h2>{t("proxyListTitle")}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <button
-                  className="test-button"
-                  style={{ padding: "4px 10px", fontSize: 12 }}
-                  onClick={testAllProxies}
-                >
-                  {t("proxyListTestAll")}
-                </button>
-                <button className="icon-button" onClick={() => setShowProxyList(false)}>
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {PRESET_PROXIES.map((proxy) => {
-                const info = proxyStatus[proxy.url] ?? { status: "idle" }
-                const status = info.status
-                return (
-                  <div
-                    key={proxy.url}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "10px 12px",
-                      borderRadius: 8,
-                      border: "1px solid var(--border)",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      onChange({ ...provider, proxyUrl: proxy.url, proxyKey: proxy.key })
-                      setShowProxyList(false)
-                    }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{proxy.name}</div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "var(--text-muted)",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {proxy.url}
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                      {status === "alive" && (
-                        <span style={{ fontSize: 12, color: "#22c55e" }}>
-                          {t("proxyListAlive")}
-                          {info.latency != null ? ` ${info.latency}ms` : ""}
-                        </span>
-                      )}
-                      {status === "dead" && (
-                        <span style={{ fontSize: 12, color: "#ef4444" }}>{t("proxyListDead")}</span>
-                      )}
-                      <button
-                        className="test-button"
-                        style={{ padding: "4px 10px", fontSize: 12 }}
-                        disabled={status === "testing"}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          testProxy(proxy.url)
-                        }}
-                      >
-                        {status === "testing" ? t("proxyListTesting") : t("proxyListTest")}
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

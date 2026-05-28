@@ -23,7 +23,7 @@ import { Segmented } from "../ui/Segmented"
 import { EmptyState } from "../ui/EmptyState"
 import { SelfGenerateDialog } from "./SelfGenerateDialog"
 import { ParsedQuestionsEditor } from "./ParsedQuestionsEditor"
-import { useT, usePushToast, useLlmConfig } from "../../contexts"
+import { useT, usePushToast, useLlmConfig, useProxy } from "../../contexts"
 
 export function LlmPage(props: {
   activeList: QuestionList
@@ -34,8 +34,10 @@ export function LlmPage(props: {
   const t = useT()
   const pushToast = usePushToast()
   const { getConfigForScenario, openLlmConfig } = useLlmConfig()
+  const { proxySettings } = useProxy()
   const { unsavedRef, updateActiveList, addImportedList } = props
-  const config = getConfigForScenario("parse")
+  const rawLlmConfig = getConfigForScenario("parse")
+  const config = rawLlmConfig ? { ...rawLlmConfig, ...proxySettings } : null
   const [rawText, setRawText] = useState("")
   const [parsedList, setParsedList] = useState<QuestionList | null>(null)
   const [parsedJsonText, setParsedJsonText] = useState("")

@@ -5,7 +5,7 @@ import { createId, parseQuestionJson } from "../lib/question"
 import { normalizeAppData, readFileAsText } from "../lib/storage"
 import { debugLog } from "../lib/debug"
 import { fetchViaProxy } from "../lib/llm"
-import { defaultLlmConfig } from "../utils/constants"
+import { defaultProxySettings } from "../utils/constants"
 import type { PushToast, UpdateActiveList, UpdateData, SetState } from "./types"
 
 interface ProxyConfig {
@@ -63,8 +63,8 @@ export function useImportExport({
   const handleUrlImport = async (url: string) => {
     const fetchProxyConfig = {
       proxyEnabled: proxyConfig.proxyEnabled,
-      proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultLlmConfig.proxyUrl : "",
-      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultLlmConfig.proxyKey : "",
+      proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl : "",
+      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultProxySettings.proxyKey : "",
     }
     try {
       const response = await fetchViaProxy(url, fetchProxyConfig)
@@ -136,8 +136,8 @@ export function useImportExport({
   const handleBackupUrlImport = async (url: string) => {
     const fetchProxyConfig = {
       proxyEnabled: proxyConfig.proxyEnabled,
-      proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultLlmConfig.proxyUrl : "",
-      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultLlmConfig.proxyKey : "",
+      proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl : "",
+      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultProxySettings.proxyKey : "",
     }
     try {
       const response = await fetchViaProxy(url, fetchProxyConfig)

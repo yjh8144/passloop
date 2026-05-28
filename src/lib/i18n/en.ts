@@ -342,7 +342,7 @@ export const en: Record<string, string> = {
   uploadLocalJsonFile: "Upload local JSON file",
   importFromUrl: "Import JSON from URL",
   jsonFileUrl: "JSON file URL",
-  corsProxyNote: "Requests will be forwarded via the CORS proxy in LLM config (if configured).",
+  corsProxyNote: "Requests will be forwarded via the global CORS proxy (if configured).",
   downloading: "Downloading...",
   detectedLists: "Detected {0} lists and {1} practice records. Choose import method:",
   mergeToExisting: "Merge with existing data",
@@ -363,6 +363,8 @@ export const en: Record<string, string> = {
 
   // LLM Config Modal
   llmConfigTitle: "LLM Config",
+  proxySettingsTitle: "Proxy Settings",
+  proxySettingsBtn: "Proxy Settings",
   providerLabel: "Provider",
   modelLabel: "Model",
   apiUrlLabel: "API URL",

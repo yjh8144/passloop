@@ -345,6 +345,8 @@ export const ko: Record<string, string> = {
 
   // LLM Config Modal
   llmConfigTitle: "LLM 설정",
+  proxySettingsTitle: "프록시 설정",
+  proxySettingsBtn: "프록시 설정",
   providerLabel: "제공자",
   modelLabel: "모델",
   apiUrlLabel: "API 주소",
