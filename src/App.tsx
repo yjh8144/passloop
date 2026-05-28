@@ -170,7 +170,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
 }
 
 function TopbarConnected() {
-  const { data, setData, activeList, createList, query, setQuery, updateSettings } = useAppData()
+  const { data, setData, activeList, createList, deleteList, query, setQuery, updateSettings } = useAppData()
   const { page } = useNavigation()
   const { answers } = usePracticeContext()
   const { showConfirm } = useDialog()
@@ -200,6 +200,7 @@ function TopbarConnected() {
       lists={data.lists}
       setActiveListId={changeActiveList}
       createList={createList}
+      deleteList={deleteList}
     />
   )
 }

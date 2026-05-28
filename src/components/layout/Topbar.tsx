@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { ChevronDown, Languages, Palette, Plus, Search, Settings2 } from "lucide-react"
+import { ChevronDown, Languages, Palette, Plus, Search, Settings2, Trash2 } from "lucide-react"
 import type { AppData, QuestionList } from "../../lib/types"
 import { ControlPanel } from "../practice/ControlPanel"
 import type { Page } from "../../hooks/types"
@@ -15,6 +15,7 @@ export function Topbar(props: {
   lists: QuestionList[]
   setActiveListId: (id: string) => void
   createList: () => void
+  deleteList: (id: string) => void
 }) {
   const t = useT()
   const [showSettings, setShowSettings] = useState(false)
@@ -142,19 +143,36 @@ export function Topbar(props: {
             <div className="list-picker-dropdown">
               <div className="list-picker-items">
                 {props.lists.map((list) => (
-                  <button
+                  <div
                     key={list.id}
                     className={`list-picker-item ${list.id === props.activeList.id ? "active" : ""}`}
-                    onClick={() => {
-                      props.setActiveListId(list.id)
-                      closeListPicker()
-                    }}
                   >
-                    <span className="list-picker-item-name">{list.name}</span>
-                    <span className="list-picker-item-count">
-                      {list.questions.length} {t("questionCount")}
-                    </span>
-                  </button>
+                    <button
+                      className="list-picker-item-main"
+                      onClick={() => {
+                        props.setActiveListId(list.id)
+                        closeListPicker()
+                      }}
+                    >
+                      <span className="list-picker-item-name">{list.name}</span>
+                      <span className="list-picker-item-count">
+                        {list.questions.length} {t("questionCount")}
+                      </span>
+                    </button>
+                    {props.lists.length > 1 && (
+                      <button
+                        className="list-picker-item-delete"
+                        title={t("deleteList")}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          closeListPicker()
+                          props.deleteList(list.id)
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
               <button
