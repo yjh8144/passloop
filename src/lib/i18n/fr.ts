@@ -621,6 +621,7 @@ export const fr: Record<string, string> = {
   backupOverwritten: "Configuration écrasée et restaurée.",
   mergedLists: "{0} listes fusionnées.",
   noWrongQuestions: "Pas de questions erronées dans cette liste.",
+  confirmRedoWrong: "Refaire les erreurs effacera les réponses actuelles de ces questions. Continuer ?",
   wrongListSuffix: "{0} - Erreurs",
   wrongListExportDesc: "Questions erronées exportées depuis PassLoop basées sur l'historique.",
   wrongListCreateDesc: "Questions erronées générées depuis PassLoop basées sur l'historique.",

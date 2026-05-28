@@ -583,6 +583,7 @@ export const ko: Record<string, string> = {
   backupOverwritten: "설정이 덮어쓰기 복원됨.",
   mergedLists: "{0}개 목록 병합됨.",
   noWrongQuestions: "현재 목록에 오답이 없습니다.",
+  confirmRedoWrong: "오답 다시 풀기를 하면 해당 문제의 현재 답변 기록이 초기화됩니다. 계속하시겠습니까?",
   wrongListSuffix: "{0} - 오답",
   wrongListExportDesc: "PassLoop 답변 기록 기반 오답 목록.",
   wrongListCreateDesc: "PassLoop 답변 기록 기반 생성된 오답 목록.",

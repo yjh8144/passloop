@@ -585,6 +585,7 @@ export const ja: Record<string, string> = {
   backupOverwritten: "設定を上書き復元しました。",
   mergedLists: "{0}個のリストをマージしました。",
   noWrongQuestions: "このリストに不正解はありません。",
+  confirmRedoWrong: "不正解の再挑戦を行うと、これらの問題の現在の回答記録がクリアされます。続行しますか？",
   wrongListSuffix: "{0} - 不正解",
   wrongListExportDesc: "PassLoopの回答履歴に基づいてエクスポートされた不正解リスト。",
   wrongListCreateDesc: "PassLoopの回答履歴に基づいて生成された不正解リスト。",
