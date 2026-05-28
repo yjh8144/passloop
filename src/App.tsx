@@ -165,7 +165,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
 }
 
 function TopbarConnected({ onClearListAttempts }: { onClearListAttempts: () => void }) {
-  const { data, activeList, query, setQuery, updateSettings } = useAppData()
+  const { data, setData, activeList, createList, query, setQuery, updateSettings } = useAppData()
   const { page } = useNavigation()
   const { resetWrongPractice, exportWrongList, createWrongList } = usePracticeContext()
 
@@ -177,6 +177,9 @@ function TopbarConnected({ onClearListAttempts }: { onClearListAttempts: () => v
       data={data}
       updateSettings={updateSettings}
       activeList={activeList}
+      lists={data.lists}
+      setActiveListId={(id) => setData((current) => ({ ...current, activeListId: id }))}
+      createList={createList}
       onRedoWrong={resetWrongPractice}
       onExportWrong={exportWrongList}
       onCreateWrongList={createWrongList}

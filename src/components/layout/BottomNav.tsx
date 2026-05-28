@@ -7,13 +7,13 @@ import {
   FileUp,
   FolderDown,
   Github,
-  Plus,
+  Layers,
   Settings2,
   RotateCcw,
   Trash2,
   FolderUp,
 } from "lucide-react"
-import { useT, useAppData, useNavigation, useLlmConfig } from "../../contexts"
+import { useT, useNavigation, useLlmConfig } from "../../contexts"
 
 export function BottomNav(props: {
   onQuestionImport: () => void
@@ -23,7 +23,6 @@ export function BottomNav(props: {
   onResetAll: () => void
 }) {
   const t = useT()
-  const { data, setData, activeList, createList } = useAppData()
   const { page, changePage } = useNavigation()
   const { openLlmConfig } = useLlmConfig()
   const [panelOpen, setPanelOpen] = useState(false)
@@ -70,39 +69,6 @@ export function BottomNav(props: {
             >
               <Github size={17} />
             </a>
-          </div>
-
-          <div>
-            <div className="panel-section-title">
-              <span>{t("questionList")}</span>
-              <button
-                className="icon-button"
-                title={t("addList")}
-                onClick={() => {
-                  createList()
-                  close()
-                }}
-              >
-                <Plus size={15} />
-              </button>
-            </div>
-            <div className="panel-list-stack">
-              {data.lists.map((list) => (
-                <button
-                  key={list.id}
-                  className={`panel-list-item ${list.id === activeList.id ? "active" : ""}`}
-                  onClick={() => {
-                    setData((current) => ({ ...current, activeListId: list.id }))
-                    close()
-                  }}
-                >
-                  <span>{list.name}</span>
-                  <span className="panel-list-item-count">
-                    {list.questions.length} {t("questionCount")}
-                  </span>
-                </button>
-              ))}
-            </div>
           </div>
 
           <div>
@@ -190,7 +156,7 @@ export function BottomNav(props: {
           onClick={() => setPanelOpen(!panelOpen)}
         >
           <div className="bottom-nav-expand-inner">
-            <Plus size={22} />
+            <Layers size={20} />
           </div>
         </button>
 

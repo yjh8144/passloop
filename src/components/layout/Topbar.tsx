@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Languages, Palette, Search, Settings2 } from "lucide-react"
+import { useCallback, useEffect, useState } from "react"
+import { ChevronDown, Languages, Palette, Plus, Search, Settings2 } from "lucide-react"
 import type { AppData, QuestionList } from "../../lib/types"
 import { ControlPanel } from "../practice/ControlPanel"
 import type { Page } from "../../hooks/types"
@@ -12,6 +12,9 @@ export function Topbar(props: {
   data: AppData
   updateSettings: (patch: Partial<AppData["settings"]>) => void
   activeList: QuestionList
+  lists: QuestionList[]
+  setActiveListId: (id: string) => void
+  createList: () => void
   onRedoWrong: () => void
   onExportWrong: () => void
   onCreateWrongList: () => void
@@ -19,8 +22,21 @@ export function Topbar(props: {
 }) {
   const t = useT()
   const [showSettings, setShowSettings] = useState(false)
+  const [showListPicker, setShowListPicker] = useState(false)
   const showSearch = props.page === "practice" || props.page === "wrong"
   const showSettingsButton = props.page === "practice" || props.page === "wrong"
+
+  const closeListPicker = useCallback(() => setShowListPicker(false), [])
+
+  useEffect(() => {
+    if (!showListPicker) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeListPicker()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [showListPicker, closeListPicker])
+
   return (
     <header className="topbar">
       {showSearch && (
@@ -33,11 +49,47 @@ export function Topbar(props: {
           />
         </div>
       )}
-      <div className="topbar-meta">
-        <span>{props.activeList.name}</span>
-        <span>
-          {props.activeList.questions.length} {t("questionCount")}
-        </span>
+      <div className="list-picker-wrap">
+        <button className="list-picker-trigger" onClick={() => setShowListPicker((v) => !v)}>
+          <span className="list-picker-name">{props.activeList.name}</span>
+          <span className="list-picker-count">
+            {props.activeList.questions.length} {t("questionCount")}
+          </span>
+          <ChevronDown size={15} className={`list-picker-chevron ${showListPicker ? "is-open" : ""}`} />
+        </button>
+        {showListPicker && (
+          <>
+            <div className="list-picker-backdrop" onClick={closeListPicker} />
+            <div className="list-picker-dropdown">
+              <div className="list-picker-items">
+                {props.lists.map((list) => (
+                  <button
+                    key={list.id}
+                    className={`list-picker-item ${list.id === props.activeList.id ? "active" : ""}`}
+                    onClick={() => {
+                      props.setActiveListId(list.id)
+                      closeListPicker()
+                    }}
+                  >
+                    <span className="list-picker-item-name">{list.name}</span>
+                    <span className="list-picker-item-count">
+                      {list.questions.length} {t("questionCount")}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <button
+                className="list-picker-add"
+                onClick={() => {
+                  props.createList()
+                  closeListPicker()
+                }}
+              >
+                <Plus size={15} /> {t("addList")}
+              </button>
+            </div>
+          </>
+        )}
       </div>
       <div className="topbar-actions">
         <label className="select-label">

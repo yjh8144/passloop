@@ -11,14 +11,13 @@ import {
   HardDriveDownload,
   PanelLeftClose,
   PanelLeftOpen,
-  Plus,
   Settings2,
   RotateCcw,
   Trash2,
   FolderDown,
   FolderUp,
 } from "lucide-react"
-import { useT, useAppData, useNavigation, useLlmConfig } from "../../contexts"
+import { useT, useNavigation, useLlmConfig } from "../../contexts"
 
 export function Sidebar(props: {
   onQuestionImport: () => void
@@ -30,7 +29,6 @@ export function Sidebar(props: {
   onOpenOfflineDialog: () => void
 }) {
   const t = useT()
-  const { data, setData, activeList, createList } = useAppData()
   const {
     page,
     changePage,
@@ -111,29 +109,6 @@ export function Sidebar(props: {
             <RotateCcw size={17} /> {t("wrong")}
           </button>
         </nav>
-
-        <div className="sidebar-section">
-          <div className="section-title">
-            <span>{t("questionList")}</span>
-            <button className="icon-button" title={t("addList")} onClick={createList}>
-              <Plus size={16} />
-            </button>
-          </div>
-          <div className="list-stack">
-            {data.lists.map((list) => (
-              <button
-                key={list.id}
-                className={`list-item ${list.id === activeList.id ? "active" : ""}`}
-                onClick={() => setData((current) => ({ ...current, activeListId: list.id }))}
-              >
-                <span className="list-item-name">{list.name}</span>
-                <small className="list-item-count">
-                  {list.questions.length} {t("questionCount")}
-                </small>
-              </button>
-            ))}
-          </div>
-        </div>
 
         <div className="sidebar-actions">
           <button onClick={openLlmConfig}>
