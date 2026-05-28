@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { ChevronDown, Languages, Palette, Plus, Search, Settings2 } from "lucide-react"
 import type { AppData, QuestionList } from "../../lib/types"
 import { ControlPanel } from "../practice/ControlPanel"
@@ -19,8 +19,59 @@ export function Topbar(props: {
   const t = useT()
   const [showSettings, setShowSettings] = useState(false)
   const [showListPicker, setShowListPicker] = useState(false)
+  const [showSearchOverlay, setShowSearchOverlay] = useState(false)
+  const [localQuery, setLocalQuery] = useState(props.query)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const overlayInputRef = useRef<HTMLInputElement>(null)
+  const localQueryRef = useRef(localQuery)
+  localQueryRef.current = localQuery
   const showSearch = props.page === "practice" || props.page === "wrong"
   const showSettingsButton = props.page === "practice" || props.page === "wrong"
+
+  useEffect(() => {
+    setLocalQuery(props.query)
+  }, [props.query])
+
+  useEffect(() => {
+    if (!showSearch) setShowSearchOverlay(false)
+  }, [showSearch])
+
+  const flushAndClose = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
+    props.setQuery(localQueryRef.current)
+    setShowSearchOverlay(false)
+  }, [props.setQuery])
+
+  const onOverlayInput = useCallback(
+    (value: string) => {
+      setLocalQuery(value)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        props.setQuery(value)
+        debounceRef.current = null
+      }, 500)
+    },
+    [props.setQuery],
+  )
+
+  useEffect(() => {
+    if (!showSearchOverlay) return
+    overlayInputRef.current?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") flushAndClose()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [showSearchOverlay, flushAndClose])
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
 
   const closeListPicker = useCallback(() => setShowListPicker(false), [])
   const closeSettings = useCallback(() => setShowSettings(false), [])
@@ -46,14 +97,36 @@ export function Topbar(props: {
   return (
     <header className="topbar">
       {showSearch && (
-        <div className="search-box">
-          <Search size={17} />
-          <input
-            value={props.query}
-            onChange={(event) => props.setQuery(event.target.value)}
-            placeholder={t("questionSearch")}
-          />
-        </div>
+        <>
+          <div className="search-box">
+            <Search size={17} />
+            <input
+              value={props.query}
+              onChange={(event) => props.setQuery(event.target.value)}
+              placeholder={t("questionSearch")}
+            />
+          </div>
+          <button
+            className="search-trigger icon-button"
+            onClick={() => setShowSearchOverlay(true)}
+          >
+            <Search size={17} />
+          </button>
+          {showSearchOverlay && (
+            <>
+              <div className="search-overlay-backdrop" onClick={flushAndClose} />
+              <div className="search-overlay">
+                <Search size={17} />
+                <input
+                  ref={overlayInputRef}
+                  value={localQuery}
+                  onChange={(e) => onOverlayInput(e.target.value)}
+                  placeholder={t("questionSearch")}
+                />
+              </div>
+            </>
+          )}
+        </>
       )}
       <div className="list-picker-wrap">
         <button className="list-picker-trigger" onClick={() => setShowListPicker((v) => !v)}>

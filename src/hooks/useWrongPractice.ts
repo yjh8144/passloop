@@ -90,6 +90,15 @@ export function useWrongPractice({
     doStart()
   }, [doStart])
 
+  const baseListName = useCallback(() => {
+    const suffix = t("wrongListSuffix", "").trim()
+    let name = activeList.name
+    while (suffix && name.endsWith(suffix)) {
+      name = name.slice(0, -suffix.length).trim()
+    }
+    return name
+  }, [activeList.name, t])
+
   const exportWrongList = useCallback(() => {
     if (!wrongQuestions.length) {
       pushToast("info", t("noWrongQuestions"))
@@ -97,12 +106,12 @@ export function useWrongPractice({
     }
     debugLog("Export wrong questions", { count: wrongQuestions.length, listName: activeList.name })
     const list = normalizeImportedList({
-      name: t("wrongListSuffix", activeList.name),
+      name: t("wrongListSuffix", baseListName()),
       description: t("wrongListExportDesc"),
       questions: wrongQuestions,
     })
     downloadJson(`${list.name}.json`, list)
-  }, [wrongQuestions, activeList.name, pushToast, t])
+  }, [wrongQuestions, activeList.name, baseListName, pushToast, t])
 
   const createWrongList = useCallback(() => {
     if (!wrongQuestions.length) {
@@ -112,7 +121,7 @@ export function useWrongPractice({
     debugLog("Create wrong list", { count: wrongQuestions.length, listName: activeList.name })
     const newList = {
       id: createId(),
-      name: t("wrongListSuffix", activeList.name),
+      name: t("wrongListSuffix", baseListName()),
       description: t("wrongListCreateDesc"),
       questions: wrongQuestions.map((q) => ({ ...q, id: createId() })),
       createdAt: new Date().toISOString(),
@@ -129,7 +138,7 @@ export function useWrongPractice({
         activeListId: newList.id,
       }))
     })
-  }, [wrongQuestions, activeList.name, pushToast, t, updateData, showConfirm])
+  }, [wrongQuestions, activeList.name, baseListName, pushToast, t, updateData, showConfirm])
 
   return { startWrongPractice, resetWrongPractice, exportWrongList, createWrongList }
 }
