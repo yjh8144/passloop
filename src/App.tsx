@@ -119,7 +119,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
             <a href="https://github.com/yjh8144" target="_blank" rel="noopener noreferrer">
               yjh8144
             </a>
-            . All rights reserved. <span className="app-version">v1.0.1</span>
+            . All rights reserved. <span className="app-version">v{__APP_VERSION__}</span>
           </footer>
         </main>
 
