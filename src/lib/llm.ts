@@ -23,6 +23,16 @@ function buildProxyUrl(targetUrl: string, config: ProxyConfig): string {
   return `${proxy}/?url=${encodeURIComponent(targetUrl)}`
 }
 
+function stripApiKey(url: string): string {
+  try {
+    const u = new URL(url)
+    u.searchParams.delete("key")
+    return u.toString()
+  } catch {
+    return url.replace(/[?&]key=[^&]*/g, "").replace(/\?$/, "")
+  }
+}
+
 function proxyHeaders(config: ProxyConfig): Record<string, string> {
   if (!config.proxyEnabled || !config.proxyUrl || !config.proxyKey) return {}
   return { "X-Proxy-Key": config.proxyKey }
@@ -172,17 +182,20 @@ async function streamGemini(
   const model = config.model.trim() || "gemini-1.5-pro"
   const baseEndpoint =
     config.endpoint.trim() ||
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${config.apiKey}`
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`
   assertConfigValid(config.apiKey, model, baseEndpoint)
-  const endpoint = baseEndpoint.includes("streamGenerateContent")
-    ? baseEndpoint
-    : baseEndpoint.replace(":generateContent", ":streamGenerateContent").replace(/\?/, "?alt=sse&")
+  const endpoint = stripApiKey(
+    baseEndpoint.includes("streamGenerateContent")
+      ? baseEndpoint
+      : baseEndpoint.replace(":generateContent", ":streamGenerateContent").replace(/\?/, "?alt=sse&"),
+  )
   const response = await fetchWithProxyFallback(
     endpoint,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-goog-api-key": config.apiKey,
       },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
@@ -374,9 +387,9 @@ export async function fetchModelList(config: LlmConfig): Promise<string[]> {
       ? config.endpoint.trim().replace(/\/models.*$/, "")
       : "https://generativelanguage.googleapis.com/v1beta"
     const response = await fetchWithProxyFallback(
-      `${baseUrl}/models?key=${config.apiKey}`,
+      `${baseUrl}/models`,
       {
-        headers: {},
+        headers: { "x-goog-api-key": config.apiKey },
       },
       config,
     )
@@ -431,9 +444,10 @@ function normalizeModelsEndpoint(endpoint: string) {
 export async function testLlmConnection(config: LlmConfig): Promise<string> {
   if (config.provider === "gemini") {
     const model = config.model.trim() || "gemini-1.5-pro"
-    const endpoint =
+    const endpoint = stripApiKey(
       config.endpoint.trim() ||
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey}`
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    )
     assertConfigValid(config.apiKey, model, endpoint)
     await fetchWithProxyFallback(
       endpoint,
@@ -441,6 +455,7 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-goog-api-key": config.apiKey,
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: "hi" }] }],

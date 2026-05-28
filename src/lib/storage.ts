@@ -17,6 +17,26 @@ export const PROXY_STORAGE_KEY = "passloop.proxy.v1"
 
 const now = () => new Date().toISOString()
 
+const OBF_KEY = "passloop-obf-v1"
+
+function obfuscate(plain: string): string {
+  if (!plain) return plain
+  const data = new TextEncoder().encode(plain)
+  const key = new TextEncoder().encode(OBF_KEY)
+  const out = new Uint8Array(data.length)
+  for (let i = 0; i < data.length; i++) out[i] = data[i] ^ key[i % key.length]
+  return "obf:" + btoa(String.fromCharCode(...out))
+}
+
+function deobfuscate(stored: string): string {
+  if (!stored || !stored.startsWith("obf:")) return stored
+  const raw = Uint8Array.from(atob(stored.slice(4)), (c) => c.charCodeAt(0))
+  const key = new TextEncoder().encode(OBF_KEY)
+  const out = new Uint8Array(raw.length)
+  for (let i = 0; i < raw.length; i++) out[i] = raw[i] ^ key[i % key.length]
+  return new TextDecoder().decode(out)
+}
+
 export const defaultSettings: Settings = {
   theme: "mint",
   language: "zh",
@@ -137,7 +157,11 @@ export function loadLlmMultiConfig(fallback: LlmMultiConfig): LlmMultiConfig {
 }
 
 export function saveLlmMultiConfig(config: LlmMultiConfig) {
-  localStorage.setItem(LLM_MULTI_CONFIG_STORAGE_KEY, JSON.stringify(config))
+  const toStore = {
+    ...config,
+    providers: config.providers.map((p) => ({ ...p, apiKey: obfuscate(p.apiKey) })),
+  }
+  localStorage.setItem(LLM_MULTI_CONFIG_STORAGE_KEY, JSON.stringify(toStore))
 }
 
 export function clearLlmMultiConfig() {
@@ -153,7 +177,7 @@ export function loadProxySettings(fallback: ProxySettings): ProxySettings {
         proxyEnabled:
           typeof source.proxyEnabled === "boolean" ? source.proxyEnabled : fallback.proxyEnabled,
         proxyUrl: typeof source.proxyUrl === "string" ? source.proxyUrl : fallback.proxyUrl,
-        proxyKey: typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey,
+        proxyKey: deobfuscate(typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey),
       }
     }
     const rawMulti = localStorage.getItem(LLM_MULTI_CONFIG_STORAGE_KEY)
@@ -164,7 +188,7 @@ export function loadProxySettings(fallback: ProxySettings): ProxySettings {
         const migrated: ProxySettings = {
           proxyEnabled: typeof first.proxyEnabled === "boolean" ? first.proxyEnabled : fallback.proxyEnabled,
           proxyUrl: first.proxyUrl,
-          proxyKey: typeof first.proxyKey === "string" ? first.proxyKey : fallback.proxyKey,
+          proxyKey: deobfuscate(typeof first.proxyKey === "string" ? first.proxyKey : fallback.proxyKey),
         }
         saveProxySettings(migrated)
         return migrated
@@ -178,7 +202,8 @@ export function loadProxySettings(fallback: ProxySettings): ProxySettings {
 }
 
 export function saveProxySettings(settings: ProxySettings) {
-  localStorage.setItem(PROXY_STORAGE_KEY, JSON.stringify(settings))
+  const toStore = { ...settings, proxyKey: obfuscate(settings.proxyKey) }
+  localStorage.setItem(PROXY_STORAGE_KEY, JSON.stringify(toStore))
 }
 
 function migrateV1ToV2(v1: Partial<LlmConfig>, fallback: LlmMultiConfig): LlmMultiConfig {
@@ -224,7 +249,9 @@ function getDefaultProviderName(provider: string, model: string): string {
 function normalizeMultiConfig(source: unknown, fallback: LlmMultiConfig): LlmMultiConfig {
   if (!source || typeof source !== "object") return fallback
   const s = source as Partial<LlmMultiConfig>
-  const providers = Array.isArray(s.providers) ? s.providers.filter(isValidProvider) : []
+  const providers = Array.isArray(s.providers)
+    ? s.providers.filter(isValidProvider).map((p) => ({ ...p, apiKey: deobfuscate(p.apiKey) }))
+    : []
   const providerIds = new Set(providers.map((p) => p.id))
   return {
     version: 2,

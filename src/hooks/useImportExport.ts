@@ -8,6 +8,38 @@ import { fetchViaProxy } from "../lib/llm"
 import { defaultProxySettings } from "../utils/constants"
 import type { PushToast, UpdateActiveList, UpdateData, SetState } from "./types"
 
+function validateImportUrl(url: string): string {
+  const trimmed = url.trim()
+  let parsed: URL
+  try {
+    parsed = new URL(trimmed)
+  } catch {
+    throw new Error("无效的 URL 格式")
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("仅支持 http:// 或 https:// 地址")
+  }
+  const hostname = parsed.hostname.toLowerCase()
+  if (hostname === "localhost" || hostname.endsWith(".local") || hostname.endsWith(".internal")) {
+    throw new Error("不允许访问本地/内网地址")
+  }
+  const m = hostname.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/)
+  if (m) {
+    const [, a, b] = m.map(Number)
+    if (
+      a === 0 ||
+      a === 127 ||
+      a === 10 ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 169 && b === 254)
+    ) {
+      throw new Error("不允许访问私有网络地址")
+    }
+  }
+  return trimmed
+}
+
 interface ProxyConfig {
   proxyEnabled: boolean
   proxyUrl: string
@@ -61,17 +93,24 @@ export function useImportExport({
   }
 
   const handleUrlImport = async (url: string) => {
+    let validatedUrl: string
+    try {
+      validatedUrl = validateImportUrl(url)
+    } catch (error) {
+      pushToast("error", error instanceof Error ? error.message : t("urlImportFailed"))
+      return
+    }
     const fetchProxyConfig = {
       proxyEnabled: proxyConfig.proxyEnabled,
       proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl : "",
       proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultProxySettings.proxyKey : "",
     }
     try {
-      const response = await fetchViaProxy(url, fetchProxyConfig)
+      const response = await fetchViaProxy(validatedUrl, fetchProxyConfig)
       const text = await response.text()
       const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }))
       debugLog("URL import", {
-        url,
+        url: validatedUrl,
         listCount: lists.length,
         totalQuestions: lists.reduce((sum, l) => sum + l.questions.length, 0),
       })
@@ -134,17 +173,24 @@ export function useImportExport({
   }
 
   const handleBackupUrlImport = async (url: string) => {
+    let validatedUrl: string
+    try {
+      validatedUrl = validateImportUrl(url)
+    } catch (error) {
+      pushToast("error", error instanceof Error ? error.message : t("urlBackupImportFailed"))
+      return
+    }
     const fetchProxyConfig = {
       proxyEnabled: proxyConfig.proxyEnabled,
       proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl : "",
       proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultProxySettings.proxyKey : "",
     }
     try {
-      const response = await fetchViaProxy(url, fetchProxyConfig)
+      const response = await fetchViaProxy(validatedUrl, fetchProxyConfig)
       const text = await response.text()
       const imported = normalizeAppData(JSON.parse(text))
       debugLog("Backup URL import parsed", {
-        url,
+        url: validatedUrl,
         listCount: imported.lists.length,
         attemptCount: imported.attempts.length,
       })
