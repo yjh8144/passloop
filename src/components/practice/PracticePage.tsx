@@ -68,7 +68,7 @@ export function PracticePage() {
     }
     if (!allSubmitted) setShowCompletionBanner(false)
     prevAllSubmitted.current = allSubmitted
-  }, [allSubmitted])
+  }, [allSubmitted, correctCount, questions.length, wrongCount])
 
   const paperStackRef = useRef<HTMLDivElement>(null)
 
@@ -105,7 +105,7 @@ export function PracticePage() {
     const cards = container.querySelectorAll("[id^='question-']")
     cards.forEach((card) => observer.observe(card))
     return () => observer.disconnect()
-  }, [settings.viewMode, questions.length, setCurrentIndex])
+  }, [settings.viewMode, questions.length, setCurrentIndex, paperScrollLockRef])
 
   const content =
     questions.length === 0 ? (

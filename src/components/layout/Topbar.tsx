@@ -37,25 +37,27 @@ export function Topbar(props: {
     if (!showSearch) setShowSearchOverlay(false)
   }, [showSearch])
 
+  const { setQuery } = props
+
   const flushAndClose = useCallback(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current)
       debounceRef.current = null
     }
-    props.setQuery(localQueryRef.current)
+    setQuery(localQueryRef.current)
     setShowSearchOverlay(false)
-  }, [props.setQuery])
+  }, [setQuery])
 
   const onOverlayInput = useCallback(
     (value: string) => {
       setLocalQuery(value)
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
-        props.setQuery(value)
+        setQuery(value)
         debounceRef.current = null
       }, 500)
     },
-    [props.setQuery],
+    [setQuery],
   )
 
   useEffect(() => {

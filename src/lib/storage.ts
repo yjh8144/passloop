@@ -215,7 +215,7 @@ export function saveProxySettings(settings: ProxySettings) {
   localStorage.setItem(PROXY_STORAGE_KEY, JSON.stringify(toStore))
 }
 
-function migrateV1ToV2(v1: Partial<LlmConfig>, fallback: LlmMultiConfig): LlmMultiConfig {
+function migrateV1ToV2(v1: Partial<LlmConfig>, _fallback: LlmMultiConfig): LlmMultiConfig {
   const provider = isLlmProvider(v1.provider) ? v1.provider : "openai"
   const timestamp = now()
   const id = createId()
