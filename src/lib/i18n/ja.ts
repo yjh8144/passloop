@@ -484,6 +484,7 @@ export const ja: Record<string, string> = {
   editorTitle: "エディタ",
   unsavedConfirm: "未保存の変更があります。終了しますか？",
   listNameRequired: "リスト名を空にすることはできません",
+  modeProgressKept: "モードを切り替えました。進捗は保持されます。",
   selfFillApplied: "補充結果を適用しました。",
   llmFillingStatus: "LLM 補充中…",
 

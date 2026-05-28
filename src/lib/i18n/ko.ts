@@ -482,6 +482,7 @@ export const ko: Record<string, string> = {
   editorTitle: "편집기",
   unsavedConfirm: "저장되지 않은 변경이 있습니다. 종료하시겠습니까?",
   listNameRequired: "목록 이름은 비어있을 수 없습니다",
+  modeProgressKept: "모드가 전환되었습니다. 진행 상황은 유지됩니다.",
   selfFillApplied: "보충 결과가 적용되었습니다.",
   llmFillingStatus: "LLM 보충 중…",
 

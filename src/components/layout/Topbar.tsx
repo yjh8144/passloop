@@ -27,6 +27,7 @@ export function Topbar(props: {
   const showSettingsButton = props.page === "practice" || props.page === "wrong"
 
   const closeListPicker = useCallback(() => setShowListPicker(false), [])
+  const closeSettings = useCallback(() => setShowSettings(false), [])
 
   useEffect(() => {
     if (!showListPicker) return
@@ -36,6 +37,15 @@ export function Topbar(props: {
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
   }, [showListPicker, closeListPicker])
+
+  useEffect(() => {
+    if (!showSettings) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSettings()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [showSettings, closeSettings])
 
   return (
     <header className="topbar">

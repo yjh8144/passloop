@@ -76,10 +76,24 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   // --- Persistence ---
   useSessionPersistence(state.answers, state.currentIndex)
 
-  // --- Clamp index when question count changes ---
+  // --- Reset when switching lists ---
+  const prevListIdRef = useRef(activeList.id)
   useEffect(() => {
-    dispatch({ type: "CLAMP_INDEX", maxIndex: Math.max(displayedQuestions.length - 1, 0) })
-  }, [displayedQuestions.length])
+    if (activeList.id !== prevListIdRef.current) {
+      prevListIdRef.current = activeList.id
+      dispatch({ type: "LIST_RESET_FULL" })
+      startedAtRef.current = {}
+    }
+  }, [activeList.id])
+
+  // --- Reset index when displayed questions change (search, sort) ---
+  const prevQuestionsRef = useRef(displayedQuestions)
+  useEffect(() => {
+    if (displayedQuestions !== prevQuestionsRef.current) {
+      prevQuestionsRef.current = displayedQuestions
+      dispatch({ type: "NAVIGATE", index: 0 })
+    }
+  }, [displayedQuestions])
 
   // --- Register reset handler for AppDataContext ---
   const pageRef = useRef(page)

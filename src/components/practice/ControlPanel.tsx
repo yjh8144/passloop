@@ -1,7 +1,7 @@
 import { Eraser, Plus } from "lucide-react"
 import type { AppData, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
-import { useT } from "../../contexts"
+import { useT, usePushToast } from "../../contexts"
 
 export function ControlPanel(props: {
   settings: AppData["settings"]
@@ -12,6 +12,7 @@ export function ControlPanel(props: {
   onClearListAttempts: () => void
 }) {
   const t = useT()
+  const pushToast = usePushToast()
   return (
     <section className="inspector-panel">
       <h3>{t("controls")}</h3>
@@ -29,7 +30,10 @@ export function ControlPanel(props: {
           ["practice", t("practice")],
           ["memorize", t("memorize")],
         ]}
-        onChange={(value) => props.updateSettings({ practiceMode: value as PracticeMode })}
+        onChange={(value) => {
+          props.updateSettings({ practiceMode: value as PracticeMode })
+          pushToast("info", t("modeProgressKept"))
+        }}
       />
       {props.settings.practiceMode !== "memorize" && (
         <Segmented

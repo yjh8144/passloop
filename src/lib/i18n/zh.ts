@@ -472,6 +472,7 @@ export const zh: Record<string, string> = {
   editorTitle: "编辑器",
   unsavedConfirm: "编辑内容尚未保存，确认退出吗？",
   listNameRequired: "题库名称不能为空",
+  modeProgressKept: "已切换模式，作答进度保留",
   selfFillApplied: "已应用补充结果。",
   llmFillingStatus: "LLM 补充中…",
 

@@ -503,6 +503,7 @@ export const en: Record<string, string> = {
   editorTitle: "Editor",
   unsavedConfirm: "Unsaved changes. Are you sure you want to exit?",
   listNameRequired: "List name cannot be empty",
+  modeProgressKept: "Mode switched. Your progress is kept.",
   selfFillApplied: "Fill results applied.",
   llmFillingStatus: "LLM filling...",
 

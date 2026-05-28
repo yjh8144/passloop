@@ -50,7 +50,31 @@ export function QuestionEditor(props: {
         {t("questionTypeLabel")}
         <select
           value={draft.type}
-          onChange={(event) => patch({ type: event.target.value as QuestionType })}
+          onChange={(event) => {
+            const newType = event.target.value as QuestionType
+            if (newType === draft.type) return
+            const defaults: Partial<Question> = { type: newType }
+            if (newType === "single") {
+              defaults.options = ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
+              defaults.answer = ""
+            } else if (newType === "multiple") {
+              defaults.options = ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
+              defaults.answer = []
+            } else if (newType === "boolean") {
+              defaults.options = [
+                { id: createId(), label: "T", text: "True" },
+                { id: createId(), label: "F", text: "False" },
+              ]
+              defaults.answer = ""
+            } else if (newType === "blank") {
+              defaults.options = []
+              defaults.answer = []
+            } else {
+              defaults.options = []
+              defaults.answer = ""
+            }
+            patch(defaults)
+          }}
         >
           {questionTypes.map((type) => (
             <option key={type} value={type}>

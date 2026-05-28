@@ -517,6 +517,7 @@ export const fr: Record<string, string> = {
   editorTitle: "Éditeur",
   unsavedConfirm: "Modifications non sauvegardées. Voulez-vous quitter ?",
   listNameRequired: "Le nom de la liste ne peut pas être vide",
+  modeProgressKept: "Mode changé. Votre progression est conservée.",
   selfFillApplied: "Résultats de complétion appliqués.",
   llmFillingStatus: "LLM en cours de complétion…",
 
