@@ -125,7 +125,11 @@ function normalizeAnswer(value: unknown, type: QuestionType): string | string[] 
     if (Array.isArray(value)) return value.map((item) => String(item))
     if (typeof value === "string") {
       if (type === "multiple") {
-        return value.includes("|") ? value.split("|").map((item) => item.trim()) : value ? [value] : []
+        return value.includes("|")
+          ? value.split("|").map((item) => item.trim())
+          : value
+            ? [value]
+            : []
       }
       return value ? [value] : []
     }

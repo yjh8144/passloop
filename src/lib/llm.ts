@@ -367,9 +367,7 @@ ${JSON.stringify(
               .split("|")
               .map((s) => s.trim())
       } else if (q.type === "blank" || q.type === "short") {
-        answer = Array.isArray(fill.answer)
-          ? fill.answer.map(String)
-          : [String(fill.answer)]
+        answer = Array.isArray(fill.answer) ? fill.answer.map(String) : [String(fill.answer)]
       } else {
         answer = String(fill.answer)
       }
