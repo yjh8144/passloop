@@ -259,14 +259,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
             },
           ],
         }))
-        if (data.settings.revealMode === "end") {
-          pushToast("info", t("submittedMsg"))
-        } else {
-          pushToast(
-            correct ? "success" : "info",
-            correct ? t("answerCorrect") : t("recordedAsWrong"),
-          )
-        }
         if (data.settings.autoNext) {
           if (data.settings.viewMode === "single") {
             const questionCount = practiceQuestions.length
