@@ -481,6 +481,7 @@ export const ko: Record<string, string> = {
   selectToEditDesc: "문제 행을 클릭하거나 새로 추가하여 편집을 시작하세요.",
   editorTitle: "편집기",
   unsavedConfirm: "저장되지 않은 변경이 있습니다. 종료하시겠습니까?",
+  listNameRequired: "목록 이름은 비어있을 수 없습니다",
   selfFillApplied: "보충 결과가 적용되었습니다.",
   llmFillingStatus: "LLM 보충 중…",
 

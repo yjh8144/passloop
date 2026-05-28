@@ -471,6 +471,7 @@ export const zh: Record<string, string> = {
   selectToEditDesc: "点击题目行或新增题目开始编辑。",
   editorTitle: "编辑器",
   unsavedConfirm: "编辑内容尚未保存，确认退出吗？",
+  listNameRequired: "题库名称不能为空",
   selfFillApplied: "已应用补充结果。",
   llmFillingStatus: "LLM 补充中…",
 

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Check, Plus, Trash2, X } from "lucide-react"
 import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
 import { createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
@@ -9,6 +9,7 @@ export function QuestionEditor(props: {
   question: Question
   onSave: (question: Question) => void
   onCancel: () => void
+  onDirtyChange?: (dirty: boolean) => void
 }) {
   const t = useT()
   const labels = getTypeLabels(t)
@@ -18,6 +19,16 @@ export function QuestionEditor(props: {
     setPrevQuestion(props.question)
     setDraft(props.question)
   }
+  const { question, onDirtyChange } = props
+  useEffect(() => {
+    const isDirty =
+      draft.type !== question.type ||
+      draft.title !== question.title ||
+      draft.explanation !== question.explanation ||
+      JSON.stringify(draft.answer) !== JSON.stringify(question.answer) ||
+      JSON.stringify(draft.options) !== JSON.stringify(question.options)
+    onDirtyChange?.(isDirty)
+  }, [draft, question, onDirtyChange])
   const patch = (value: Partial<Question>) =>
     setDraft((current) => ({ ...current, ...value, updatedAt: new Date().toISOString() }))
   const updateOption = (id: string, patchValue: Partial<ChoiceOption>) => {

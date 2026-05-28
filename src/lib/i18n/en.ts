@@ -502,6 +502,7 @@ export const en: Record<string, string> = {
   selectToEditDesc: "Click a question row or add a new one to start editing.",
   editorTitle: "Editor",
   unsavedConfirm: "Unsaved changes. Are you sure you want to exit?",
+  listNameRequired: "List name cannot be empty",
   selfFillApplied: "Fill results applied.",
   llmFillingStatus: "LLM filling...",
 

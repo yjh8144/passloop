@@ -29,6 +29,7 @@ export function ManagerPage(props: {
   const [filling, setFilling] = useState(false)
   const [fillStreamText, setFillStreamText] = useState("")
   const [editorFloatOpen, setEditorFloatOpen] = useState(false)
+  const [editorDirty, setEditorDirty] = useState(false)
   const editorRef = useRef<HTMLElement>(null)
 
   const [prevListId, setPrevListId] = useState(props.list.id)
@@ -44,12 +45,23 @@ export function ManagerPage(props: {
   }
   if (props.editing !== prevEditing) setPrevEditing(props.editing)
   if (filling !== prevFilling) setPrevFilling(filling)
+  if (!props.editing && prevEditing) setEditorDirty(false)
 
   useEffect(() => {
     if (props.editing && editorRef.current) {
       editorRef.current.scrollIntoView({ behavior: "smooth", block: "start" })
     }
   }, [props.editing])
+
+  const handleEditSwitch = (target: Question) => {
+    if (props.editing && props.editing.id !== target.id && editorDirty) {
+      showConfirm(t("unsavedConfirm"), () => {
+        props.setEditing(target)
+      })
+    } else {
+      props.setEditing(target)
+    }
+  }
 
   const handleFillAnswers = () => {
     const fillConfig = getConfigForScenario("fill")
@@ -158,7 +170,7 @@ export function ManagerPage(props: {
             </button>
             <button
               className="primary-button"
-              onClick={() => props.setEditing(createEmptyQuestion())}
+              onClick={() => handleEditSwitch(createEmptyQuestion())}
             >
               <Plus size={17} /> {t("addQuestion")}
             </button>
@@ -173,13 +185,21 @@ export function ManagerPage(props: {
           <input
             value={localListName}
             onChange={(event) => setLocalListName(event.target.value)}
-            onBlur={() =>
-              props.updateList((list) => ({
-                ...list,
-                name: localListName.trim() || list.name,
-                updatedAt: new Date().toISOString(),
-              }))
-            }
+            onBlur={() => {
+              const trimmed = localListName.trim()
+              if (!trimmed) {
+                setLocalListName(props.list.name)
+                pushToast("info", t("listNameRequired"))
+                return
+              }
+              if (trimmed !== props.list.name) {
+                props.updateList((list) => ({
+                  ...list,
+                  name: trimmed,
+                  updatedAt: new Date().toISOString(),
+                }))
+              }
+            }}
           />
           <textarea
             value={props.list.description}
@@ -199,7 +219,7 @@ export function ManagerPage(props: {
               <span>{index + 1}</span>
               <strong>{question.title}</strong>
               <small>{typeLabelsMap[question.type]}</small>
-              <button className="icon-button" onClick={() => props.setEditing(question)}>
+              <button className="icon-button" onClick={() => handleEditSwitch(question)}>
                 <Edit3 size={16} />
               </button>
               <button className="icon-button" onClick={() => deleteQuestion(question.id)}>
@@ -221,6 +241,7 @@ export function ManagerPage(props: {
             question={props.editing}
             onCancel={() => props.setEditing(null)}
             onSave={saveQuestion}
+            onDirtyChange={setEditorDirty}
           />
         ) : (
           <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />
@@ -237,12 +258,13 @@ export function ManagerPage(props: {
       <div
         className={`editor-float-backdrop ${editorFloatOpen ? "is-visible" : ""}`}
         onClick={() => {
-          if (props.editing) {
+          if (props.editing && editorDirty) {
             showConfirm(t("unsavedConfirm"), () => {
               props.setEditing(null)
               setEditorFloatOpen(false)
             })
           } else {
+            props.setEditing(null)
             setEditorFloatOpen(false)
           }
         }}
@@ -271,6 +293,7 @@ export function ManagerPage(props: {
                 saveQuestion(q)
                 setEditorFloatOpen(false)
               }}
+              onDirtyChange={setEditorDirty}
             />
           ) : (
             <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />

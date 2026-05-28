@@ -516,6 +516,7 @@ export const fr: Record<string, string> = {
   selectToEditDesc: "Cliquez sur une question ou ajoutez-en une pour commencer l'édition.",
   editorTitle: "Éditeur",
   unsavedConfirm: "Modifications non sauvegardées. Voulez-vous quitter ?",
+  listNameRequired: "Le nom de la liste ne peut pas être vide",
   selfFillApplied: "Résultats de complétion appliqués.",
   llmFillingStatus: "LLM en cours de complétion…",
 

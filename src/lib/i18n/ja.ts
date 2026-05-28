@@ -483,6 +483,7 @@ export const ja: Record<string, string> = {
   selectToEditDesc: "問題行をクリックするか新規追加で編集開始。",
   editorTitle: "エディタ",
   unsavedConfirm: "未保存の変更があります。終了しますか？",
+  listNameRequired: "リスト名を空にすることはできません",
   selfFillApplied: "補充結果を適用しました。",
   llmFillingStatus: "LLM 補充中…",
 
