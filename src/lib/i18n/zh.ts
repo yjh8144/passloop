@@ -570,6 +570,7 @@ export const zh: Record<string, string> = {
   backupOverwritten: "配置已覆盖恢复。",
   mergedLists: "已合并 {0} 个题单。",
   noWrongQuestions: "当前题单还没有错题。",
+  confirmRedoWrong: "重做错题将清除这些题目的当前作答记录，是否继续？",
   wrongListSuffix: "{0} - 错题",
   wrongListExportDesc: "由 PassLoop 根据答题记录导出的错题题单。",
   wrongListCreateDesc: "由 PassLoop 根据答题记录生成的错题题单。",

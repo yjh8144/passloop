@@ -45,3 +45,10 @@
 .submit-all-button:hover {
   opacity: 0.9;
 }
+
+.submit-all-button.compact {
+  width: auto;
+  padding: 8px 16px;
+  font-size: 14px;
+  margin-top: 0;
+}

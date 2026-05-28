@@ -152,6 +152,13 @@ export function PracticePage() {
             <p>{settings.practiceMode === "memorize" ? t("memorizeHint") : t("practiceHint")}</p>
           </div>
           <div className="stage-tools">
+            {settings.submitMode === "paper" &&
+              settings.practiceMode !== "memorize" &&
+              questions.some((q) => !(q.id in results)) && (
+                <button className="submit-all-button compact" onClick={submitAll}>
+                  <Check size={16} /> {t("submitAllAnswers")}
+                </button>
+              )}
             {settings.viewMode === "single" && (
               <div className="pager">
                 <button
@@ -196,15 +203,6 @@ export function PracticePage() {
           />
         </div>
         {content}
-        {settings.viewMode === "single" &&
-          settings.submitMode === "paper" &&
-          settings.practiceMode !== "memorize" &&
-          currentIndex >= questions.length - 1 &&
-          questions.some((q) => !(q.id in results)) && (
-            <button className="submit-all-button" onClick={submitAll}>
-              <Check size={18} /> {t("submitAllAnswers")}
-            </button>
-          )}
       </section>
 
       {!inspectorCollapsed && (

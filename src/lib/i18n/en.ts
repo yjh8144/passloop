@@ -603,6 +603,7 @@ export const en: Record<string, string> = {
   backupOverwritten: "Config overwritten and restored.",
   mergedLists: "Merged {0} lists.",
   noWrongQuestions: "No wrong questions in this list.",
+  confirmRedoWrong: "Redo will clear current answers for these questions. Continue?",
   wrongListSuffix: "{0} - Wrong",
   wrongListExportDesc: "Wrong questions exported from PassLoop based on attempt history.",
   wrongListCreateDesc: "Wrong questions generated from PassLoop based on attempt history.",

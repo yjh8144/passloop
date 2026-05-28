@@ -121,6 +121,23 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       t,
     })
 
+  const confirmStartWrongPractice = useCallback((): boolean => {
+    if (!wrongQuestions.length) {
+      pushToast("info", t("noWrongQuestions"))
+      return false
+    }
+    showConfirm(t("confirmRedoWrong"), () => startWrongPractice())
+    return true
+  }, [wrongQuestions.length, showConfirm, t, startWrongPractice, pushToast])
+
+  const confirmResetWrongPractice = useCallback(() => {
+    if (!wrongQuestions.length) {
+      resetWrongPractice()
+      return
+    }
+    showConfirm(t("confirmRedoWrong"), resetWrongPractice)
+  }, [wrongQuestions.length, showConfirm, t, resetWrongPractice])
+
   // When page transitions to "wrong" via NavigationContext, initialize wrong practice
   // if not already active. If start fails (no wrong questions), revert to practice.
   useEffect(() => {
@@ -332,8 +349,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       submitQuestion,
       submitAll,
       wrongSession: state.wrongSession,
-      startWrongPractice,
-      resetWrongPractice,
+      startWrongPractice: confirmStartWrongPractice,
+      resetWrongPractice: confirmResetWrongPractice,
       exportWrongList,
       createWrongList,
       practiceQuestions,
@@ -348,8 +365,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       submitQuestion,
       submitAll,
       state.wrongSession,
-      startWrongPractice,
-      resetWrongPractice,
+      confirmStartWrongPractice,
+      confirmResetWrongPractice,
       exportWrongList,
       createWrongList,
       practiceQuestions,
