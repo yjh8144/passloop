@@ -1,5 +1,12 @@
 import { Component, type ReactNode, type ErrorInfo } from "react"
 import { debugError } from "../lib/debug"
+import {
+  STORAGE_KEY,
+  LLM_CONFIG_STORAGE_KEY,
+  LLM_MULTI_CONFIG_STORAGE_KEY,
+  PROXY_STORAGE_KEY,
+  downloadJson,
+} from "../lib/storage"
 
 interface Props {
   children: ReactNode
@@ -93,6 +100,31 @@ export class ErrorBoundary extends Component<Props, State> {
     navigator.clipboard.writeText(text).catch(() => {})
   }
 
+  private handleExportConfig = () => {
+    const data: Record<string, unknown> = {}
+    const keys = [STORAGE_KEY, LLM_MULTI_CONFIG_STORAGE_KEY, PROXY_STORAGE_KEY, LLM_CONFIG_STORAGE_KEY]
+    for (const key of keys) {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        try { data[key] = JSON.parse(raw) } catch { data[key] = raw }
+      }
+    }
+    downloadJson(`passloop-backup-${Date.now()}.json`, data)
+  }
+
+  private handleClearConfig = () => {
+    const confirmed = confirm(
+      "确定要清除所有配置吗？这将重置应用到初始状态。\n" +
+      "Are you sure? This will reset the app to its initial state."
+    )
+    if (!confirmed) return
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(LLM_MULTI_CONFIG_STORAGE_KEY)
+    localStorage.removeItem(PROXY_STORAGE_KEY)
+    localStorage.removeItem(LLM_CONFIG_STORAGE_KEY)
+    location.reload()
+  }
+
   render() {
     if (!this.state.hasError) return this.props.children
 
@@ -156,6 +188,21 @@ export class ErrorBoundary extends Component<Props, State> {
               {fullError}
             </pre>
           )}
+          <p
+            style={{
+              color: "var(--muted, #666)",
+              fontSize: 12,
+              margin: "0 0 16px",
+              textAlign: "center",
+              lineHeight: 1.6,
+            }}
+          >
+            若重新加载后仍然出错，可能是保存的配置数据已损坏。
+            建议先导出配置作为备份，再清除配置以恢复应用。
+            <br />
+            If reloading doesn't help, your saved config may be corrupted.
+            Export your config as a backup first, then clear it to reset.
+          </p>
           <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
             <button
               onClick={() => location.reload()}
@@ -204,6 +251,36 @@ export class ErrorBoundary extends Component<Props, State> {
             >
               报告问题 / Report Issue
             </a>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
+            <button
+              onClick={this.handleExportConfig}
+              style={{
+                background: "var(--surface-2, #f0f0f0)",
+                color: "var(--text, #333)",
+                border: "1px solid var(--border, #e0e0e0)",
+                borderRadius: 8,
+                padding: "10px 20px",
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              导出配置 / Export Config
+            </button>
+            <button
+              onClick={this.handleClearConfig}
+              style={{
+                background: "#e53935",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                padding: "10px 20px",
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              清除配置 / Clear Config
+            </button>
           </div>
         </div>
       </div>
