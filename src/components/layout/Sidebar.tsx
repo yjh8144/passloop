@@ -110,16 +110,22 @@ export function Sidebar(props: {
           >
             <Edit3 size={17} /> {t("manager")}
           </button>
-          <button className={page === "llm" ? "active" : ""} onClick={() => {
-            changePage("llm")
-            setMobileSidebarCollapsed(true)
-          }}>
+          <button
+            className={page === "llm" ? "active" : ""}
+            onClick={() => {
+              changePage("llm")
+              setMobileSidebarCollapsed(true)
+            }}
+          >
             <Bot size={17} /> {t("llm")}
           </button>
-          <button className={page === "wrong" ? "active" : ""} onClick={() => {
-            changePage("wrong")
-            setMobileSidebarCollapsed(true)
-          }}>
+          <button
+            className={page === "wrong" ? "active" : ""}
+            onClick={() => {
+              changePage("wrong")
+              setMobileSidebarCollapsed(true)
+            }}
+          >
             <RotateCcw size={17} /> {t("wrong")}
           </button>
         </nav>

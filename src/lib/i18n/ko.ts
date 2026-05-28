@@ -276,8 +276,7 @@ export const ko: Record<string, string> = {
   obNext: "다음",
   obWelcome1:
     "PassLoop은 로컬에서 동작하는 프론트엔드 전용 문제 연습 플랫폼입니다. 모든 데이터는 브라우저에 저장되며 백엔드가 필요 없습니다.",
-  obWelcome2:
-    "5가지 문제 유형 지원: 단일 선택, 다중 선택, 참/거짓, 빈칸 채우기, 서술형.",
+  obWelcome2: "5가지 문제 유형 지원: 단일 선택, 다중 선택, 참/거짓, 빈칸 채우기, 서술형.",
   obWelcome3:
     "다음 페이지에서 모든 기능을 안내합니다. 화살표로 이동하고, 언제든 오른쪽 상단 ×를 눌러 시작할 수 있습니다.",
 
@@ -583,7 +582,8 @@ export const ko: Record<string, string> = {
   backupOverwritten: "설정이 덮어쓰기 복원됨.",
   mergedLists: "{0}개 목록 병합됨.",
   noWrongQuestions: "현재 목록에 오답이 없습니다.",
-  confirmRedoWrong: "오답 다시 풀기를 하면 해당 문제의 현재 답변 기록이 초기화됩니다. 계속하시겠습니까?",
+  confirmRedoWrong:
+    "오답 다시 풀기를 하면 해당 문제의 현재 답변 기록이 초기화됩니다. 계속하시겠습니까?",
   wrongListSuffix: "{0} - 오답",
   wrongListExportDesc: "PassLoop 답변 기록 기반 오답 목록.",
   wrongListCreateDesc: "PassLoop 답변 기록 기반 생성된 오답 목록.",

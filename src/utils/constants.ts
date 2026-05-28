@@ -1,12 +1,6 @@
 import type { LlmConfig, LlmMultiConfig, ProxySettings, QuestionType } from "../lib/types"
 
-export const questionTypes: QuestionType[] = [
-  "single",
-  "multiple",
-  "boolean",
-  "blank",
-  "short",
-]
+export const questionTypes: QuestionType[] = ["single", "multiple", "boolean", "blank", "short"]
 
 export const providerPlaceholders: Record<
   LlmConfig["provider"],

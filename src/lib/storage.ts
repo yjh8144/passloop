@@ -177,18 +177,27 @@ export function loadProxySettings(fallback: ProxySettings): ProxySettings {
         proxyEnabled:
           typeof source.proxyEnabled === "boolean" ? source.proxyEnabled : fallback.proxyEnabled,
         proxyUrl: typeof source.proxyUrl === "string" ? source.proxyUrl : fallback.proxyUrl,
-        proxyKey: deobfuscate(typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey),
+        proxyKey: deobfuscate(
+          typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey,
+        ),
       }
     }
     const rawMulti = localStorage.getItem(LLM_MULTI_CONFIG_STORAGE_KEY)
     if (rawMulti) {
-      const multi = JSON.parse(rawMulti) as { providers?: Array<Partial<LlmProvider & { proxyEnabled?: boolean; proxyUrl?: string; proxyKey?: string }>> }
+      const multi = JSON.parse(rawMulti) as {
+        providers?: Array<
+          Partial<LlmProvider & { proxyEnabled?: boolean; proxyUrl?: string; proxyKey?: string }>
+        >
+      }
       const first = multi.providers?.[0]
       if (first && typeof first.proxyUrl === "string" && first.proxyUrl) {
         const migrated: ProxySettings = {
-          proxyEnabled: typeof first.proxyEnabled === "boolean" ? first.proxyEnabled : fallback.proxyEnabled,
+          proxyEnabled:
+            typeof first.proxyEnabled === "boolean" ? first.proxyEnabled : fallback.proxyEnabled,
           proxyUrl: first.proxyUrl,
-          proxyKey: deobfuscate(typeof first.proxyKey === "string" ? first.proxyKey : fallback.proxyKey),
+          proxyKey: deobfuscate(
+            typeof first.proxyKey === "string" ? first.proxyKey : fallback.proxyKey,
+          ),
         }
         saveProxySettings(migrated)
         return migrated

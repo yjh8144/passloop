@@ -57,7 +57,12 @@ export function AnswerInput(props: {
                 const next = event.target.checked
                   ? [...selected, option.label]
                   : selected.filter((item) => item !== option.label)
-                debugLog("[AnswerInput] multiple toggle", question.id, option.label, event.target.checked)
+                debugLog(
+                  "[AnswerInput] multiple toggle",
+                  question.id,
+                  option.label,
+                  event.target.checked,
+                )
                 props.onChange(question.id, next)
               }}
               disabled={isDisabled}

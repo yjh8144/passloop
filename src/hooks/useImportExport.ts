@@ -102,8 +102,12 @@ export function useImportExport({
     }
     const fetchProxyConfig = {
       proxyEnabled: proxyConfig.proxyEnabled,
-      proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl : "",
-      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultProxySettings.proxyKey : "",
+      proxyUrl: proxyConfig.proxyEnabled
+        ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl
+        : "",
+      proxyKey: proxyConfig.proxyEnabled
+        ? proxyConfig.proxyKey || defaultProxySettings.proxyKey
+        : "",
     }
     try {
       const response = await fetchViaProxy(validatedUrl, fetchProxyConfig)
@@ -182,8 +186,12 @@ export function useImportExport({
     }
     const fetchProxyConfig = {
       proxyEnabled: proxyConfig.proxyEnabled,
-      proxyUrl: proxyConfig.proxyEnabled ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl : "",
-      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey || defaultProxySettings.proxyKey : "",
+      proxyUrl: proxyConfig.proxyEnabled
+        ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl
+        : "",
+      proxyKey: proxyConfig.proxyEnabled
+        ? proxyConfig.proxyKey || defaultProxySettings.proxyKey
+        : "",
     }
     try {
       const response = await fetchViaProxy(validatedUrl, fetchProxyConfig)

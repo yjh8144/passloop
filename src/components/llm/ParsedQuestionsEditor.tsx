@@ -143,7 +143,9 @@ export function ParsedQuestionsEditor(props: {
             </div>
           )}
           <label className="field-label">
-            {question.type === "single" || question.type === "multiple" || question.type === "boolean"
+            {question.type === "single" ||
+            question.type === "multiple" ||
+            question.type === "boolean"
               ? t("selectAnswerHint")
               : question.type === "blank"
                 ? t("answerSepLabel")

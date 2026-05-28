@@ -59,8 +59,15 @@ function createInitialState(): PracticeState {
 export function PracticeProvider({ children }: { children: ReactNode }) {
   const t = useT()
   const { page, setPage } = useNavigation()
-  const { activeList, displayedQuestions, wrongQuestions, data, updateData, resetHandlerRef, query } =
-    useAppData()
+  const {
+    activeList,
+    displayedQuestions,
+    wrongQuestions,
+    data,
+    updateData,
+    resetHandlerRef,
+    query,
+  } = useAppData()
   const { showConfirm } = useDialog()
   const pushToast = usePushToast()
 
@@ -97,7 +104,10 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       preSearchIndexRef.current = stateRef.current.currentIndex
     } else if (!query && prevQueryRef.current && preSearchIndexRef.current !== null) {
       const maxIndex = displayedQuestions.length - 1
-      dispatch({ type: "NAVIGATE", index: Math.min(preSearchIndexRef.current, Math.max(maxIndex, 0)) })
+      dispatch({
+        type: "NAVIGATE",
+        index: Math.min(preSearchIndexRef.current, Math.max(maxIndex, 0)),
+      })
       preSearchIndexRef.current = null
     }
     prevQueryRef.current = query

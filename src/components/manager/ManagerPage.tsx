@@ -7,7 +7,14 @@ import { debugLog } from "../../lib/debug"
 import { EmptyState } from "../ui/EmptyState"
 import { QuestionEditor } from "./QuestionEditor"
 import { SelfFillDialog } from "./SelfFillDialog"
-import { useT, usePushToast, useDialog, useLlmConfig, useProxy, useNavigation } from "../../contexts"
+import {
+  useT,
+  usePushToast,
+  useDialog,
+  useLlmConfig,
+  useProxy,
+  useNavigation,
+} from "../../contexts"
 
 export function ManagerPage(props: {
   list: QuestionList
@@ -33,7 +40,9 @@ export function ManagerPage(props: {
   const [editorDirty, setEditorDirty] = useState(false)
   const editorRef = useRef<HTMLElement>(null)
 
-  useEffect(() => { managerUnsavedRef.current = editorDirty }, [editorDirty, managerUnsavedRef])
+  useEffect(() => {
+    managerUnsavedRef.current = editorDirty
+  }, [editorDirty, managerUnsavedRef])
 
   const [prevListId, setPrevListId] = useState(props.list.id)
   if (props.list.id !== prevListId) {
@@ -284,19 +293,22 @@ export function ManagerPage(props: {
         <div className="editor-float-inner">
           <div className="editor-float-header">
             <span>{t("editorTitle")}</span>
-            <button className="icon-button" onClick={() => {
-              if (props.editing && editorDirty) {
-                showConfirm(t("unsavedConfirm"), () => {
-                  setEditorDirty(false)
-                  managerUnsavedRef.current = false
+            <button
+              className="icon-button"
+              onClick={() => {
+                if (props.editing && editorDirty) {
+                  showConfirm(t("unsavedConfirm"), () => {
+                    setEditorDirty(false)
+                    managerUnsavedRef.current = false
+                    props.setEditing(null)
+                    setEditorFloatOpen(false)
+                  })
+                } else {
                   props.setEditing(null)
                   setEditorFloatOpen(false)
-                })
-              } else {
-                props.setEditing(null)
-                setEditorFloatOpen(false)
-              }
-            }}>
+                }
+              }}
+            >
               <X size={16} />
             </button>
           </div>

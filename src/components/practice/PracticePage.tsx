@@ -59,7 +59,11 @@ export function PracticePage() {
   const [showCompletionBanner, setShowCompletionBanner] = useState(false)
   useEffect(() => {
     if (allSubmitted && !prevAllSubmitted.current) {
-      debugLog("[PracticePage] all questions submitted", { total: questions.length, correctCount, wrongCount })
+      debugLog("[PracticePage] all questions submitted", {
+        total: questions.length,
+        correctCount,
+        wrongCount,
+      })
       setShowCompletionBanner(true)
     }
     if (!allSubmitted) setShowCompletionBanner(false)

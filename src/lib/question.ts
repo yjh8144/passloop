@@ -62,7 +62,8 @@ export function normalizeQuestion(value: unknown, index = 0): Question {
     "",
   )
   const isDefaultTitle = !rawTitle || rawTitle === "New Question"
-  const title = isDefaultTitle && rawPrompt ? rawPrompt : rawTitle || rawPrompt || `Question ${index + 1}`
+  const title =
+    isDefaultTitle && rawPrompt ? rawPrompt : rawTitle || rawPrompt || `Question ${index + 1}`
   const rawOptions = source.options ?? source.choices ?? source.items
   return {
     id: asString(source.id, createId()),

@@ -102,11 +102,20 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleExportConfig = () => {
     const data: Record<string, unknown> = {}
-    const keys = [STORAGE_KEY, LLM_MULTI_CONFIG_STORAGE_KEY, PROXY_STORAGE_KEY, LLM_CONFIG_STORAGE_KEY]
+    const keys = [
+      STORAGE_KEY,
+      LLM_MULTI_CONFIG_STORAGE_KEY,
+      PROXY_STORAGE_KEY,
+      LLM_CONFIG_STORAGE_KEY,
+    ]
     for (const key of keys) {
       const raw = localStorage.getItem(key)
       if (raw) {
-        try { data[key] = JSON.parse(raw) } catch { data[key] = raw }
+        try {
+          data[key] = JSON.parse(raw)
+        } catch {
+          data[key] = raw
+        }
       }
     }
     downloadJson(`passloop-backup-${Date.now()}.json`, data)
@@ -115,7 +124,7 @@ export class ErrorBoundary extends Component<Props, State> {
   private handleClearConfig = () => {
     const confirmed = confirm(
       "确定要清除所有配置吗？这将重置应用到初始状态。\n" +
-      "Are you sure? This will reset the app to its initial state."
+        "Are you sure? This will reset the app to its initial state.",
     )
     if (!confirmed) return
     localStorage.removeItem(STORAGE_KEY)
@@ -200,8 +209,8 @@ export class ErrorBoundary extends Component<Props, State> {
             若重新加载后仍然出错，可能是保存的配置数据已损坏。
             建议先导出配置作为备份，再清除配置以恢复应用。
             <br />
-            If reloading doesn't help, your saved config may be corrupted.
-            Export your config as a backup first, then clear it to reset.
+            If reloading doesn't help, your saved config may be corrupted. Export your config as a
+            backup first, then clear it to reset.
           </p>
           <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
             <button
@@ -252,7 +261,15 @@ export class ErrorBoundary extends Component<Props, State> {
               报告问题 / Report Issue
             </a>
           </div>
-          <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 10,
+              flexWrap: "wrap",
+              marginTop: 10,
+            }}
+          >
             <button
               onClick={this.handleExportConfig}
               style={{

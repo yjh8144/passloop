@@ -96,12 +96,16 @@ export function AppDataProvider({
     const trimmed = query.trim().toLowerCase()
     if (!trimmed) return sorted
     return sorted.filter((question) =>
-      [question.title, labels[question.type]]
-        .join(" ")
-        .toLowerCase()
-        .includes(trimmed),
+      [question.title, labels[question.type]].join(" ").toLowerCase().includes(trimmed),
     )
-  }, [activeList.questions, data.settings.sortMode, data.settings.randomSeed, query, data.settings.language, t])
+  }, [
+    activeList.questions,
+    data.settings.sortMode,
+    data.settings.randomSeed,
+    query,
+    data.settings.language,
+    t,
+  ])
 
   const wrongQuestions = useMemo(
     () => activeList.questions.filter((question) => stats.wrongQuestionIds.has(question.id)),

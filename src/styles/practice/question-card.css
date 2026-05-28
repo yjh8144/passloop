@@ -138,7 +138,9 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   margin-bottom: 6px;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .memorize-display .option-display-row.is-correct {

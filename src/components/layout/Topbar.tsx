@@ -107,10 +107,7 @@ export function Topbar(props: {
               placeholder={t("questionSearch")}
             />
           </div>
-          <button
-            className="search-trigger icon-button"
-            onClick={() => setShowSearchOverlay(true)}
-          >
+          <button className="search-trigger icon-button" onClick={() => setShowSearchOverlay(true)}>
             <Search size={17} />
           </button>
           {showSearchOverlay && (
@@ -135,7 +132,10 @@ export function Topbar(props: {
           <span className="list-picker-count">
             {props.activeList.questions.length} {t("questionCount")}
           </span>
-          <ChevronDown size={15} className={`list-picker-chevron ${showListPicker ? "is-open" : ""}`} />
+          <ChevronDown
+            size={15}
+            className={`list-picker-chevron ${showListPicker ? "is-open" : ""}`}
+          />
         </button>
         {showListPicker && (
           <>

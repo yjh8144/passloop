@@ -61,14 +61,7 @@ export function App() {
 }
 
 function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] }) {
-  const {
-    data,
-    setData,
-    activeList,
-    updateActiveList,
-    deleteList,
-    addImportedList,
-  } = useAppData()
+  const { data, setData, activeList, updateActiveList, deleteList, addImportedList } = useAppData()
   const { clearLlmConfig: clearLlmConfigCtx } = useLlmConfig()
   const { resetProxySettings } = useProxy()
   const { page, desktopSidebarCollapsed, llmUnsavedRef } = useNavigation()
@@ -170,24 +163,28 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
 }
 
 function TopbarConnected() {
-  const { data, setData, activeList, createList, deleteList, query, setQuery, updateSettings } = useAppData()
+  const { data, setData, activeList, createList, deleteList, query, setQuery, updateSettings } =
+    useAppData()
   const { page } = useNavigation()
   const { answers } = usePracticeContext()
   const { showConfirm } = useDialog()
   const t = useT()
 
-  const changeActiveList = useCallback((id: string) => {
-    if (id === data.activeListId) return
-    debugLog("Switch active list", { from: data.activeListId, to: id })
-    const hasProgress = Object.keys(answers).length > 0
-    if (hasProgress) {
-      showConfirm(t("confirmSwitchList"), () => {
+  const changeActiveList = useCallback(
+    (id: string) => {
+      if (id === data.activeListId) return
+      debugLog("Switch active list", { from: data.activeListId, to: id })
+      const hasProgress = Object.keys(answers).length > 0
+      if (hasProgress) {
+        showConfirm(t("confirmSwitchList"), () => {
+          setData((current) => ({ ...current, activeListId: id }))
+        })
+      } else {
         setData((current) => ({ ...current, activeListId: id }))
-      })
-    } else {
-      setData((current) => ({ ...current, activeListId: id }))
-    }
-  }, [data.activeListId, answers, showConfirm, t, setData])
+      }
+    },
+    [data.activeListId, answers, showConfirm, t, setData],
+  )
 
   return (
     <Topbar

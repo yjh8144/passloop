@@ -26,9 +26,12 @@ export function ProxyConfigModal(props: {
     setProxyStatus((s) => ({ ...s, [url]: { status: "testing" } }))
     const start = Date.now()
     try {
-      const res = await fetch(`${url.replace(/\/+$/, "")}/?url=${encodeURIComponent("https://httpbin.org/get")}`, {
-        signal: AbortSignal.timeout(8000),
-      })
+      const res = await fetch(
+        `${url.replace(/\/+$/, "")}/?url=${encodeURIComponent("https://httpbin.org/get")}`,
+        {
+          signal: AbortSignal.timeout(8000),
+        },
+      )
       if (res.ok) {
         setProxyStatus((s) => ({ ...s, [url]: { status: "alive", latency: Date.now() - start } }))
       } else {
@@ -74,7 +77,10 @@ export function ProxyConfigModal(props: {
               {t("proxyDisabledHint")}
             </div>
           )}
-          <label className="field-label wide" style={{ opacity: proxySettings.proxyEnabled ? 1 : 0.5 }}>
+          <label
+            className="field-label wide"
+            style={{ opacity: proxySettings.proxyEnabled ? 1 : 0.5 }}
+          >
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
               {t("proxyUrlLabel")}
               <button
@@ -128,7 +134,10 @@ export function ProxyConfigModal(props: {
               )}
             </div>
           </label>
-          <label className="field-label wide" style={{ opacity: proxySettings.proxyEnabled ? 1 : 0.5 }}>
+          <label
+            className="field-label wide"
+            style={{ opacity: proxySettings.proxyEnabled ? 1 : 0.5 }}
+          >
             {t("proxyKeyLabel")}
             <div className="input-with-actions">
               <input
@@ -208,7 +217,9 @@ export function ProxyConfigModal(props: {
                   <br />
                   <span style={{ color: "var(--text-muted)" }}>{t("corsExplainFlow")}</span>
                 </p>
-                <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t("corsExplain5")}</p>
+                <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                  {t("corsExplain5")}
+                </p>
                 <p style={{ marginTop: 12 }}>
                   <a
                     href="https://github.com/yjh8144/passloop/tree/main/proxy"
@@ -297,7 +308,9 @@ export function ProxyConfigModal(props: {
                           </span>
                         )}
                         {status === "dead" && (
-                          <span style={{ fontSize: 12, color: "#ef4444" }}>{t("proxyListDead")}</span>
+                          <span style={{ fontSize: 12, color: "#ef4444" }}>
+                            {t("proxyListDead")}
+                          </span>
                         )}
                         <button
                           className="test-button"

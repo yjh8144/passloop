@@ -585,7 +585,8 @@ export const ja: Record<string, string> = {
   backupOverwritten: "設定を上書き復元しました。",
   mergedLists: "{0}個のリストをマージしました。",
   noWrongQuestions: "このリストに不正解はありません。",
-  confirmRedoWrong: "不正解の再挑戦を行うと、これらの問題の現在の回答記録がクリアされます。続行しますか？",
+  confirmRedoWrong:
+    "不正解の再挑戦を行うと、これらの問題の現在の回答記録がクリアされます。続行しますか？",
   wrongListSuffix: "{0} - 不正解",
   wrongListExportDesc: "PassLoopの回答履歴に基づいてエクスポートされた不正解リスト。",
   wrongListCreateDesc: "PassLoopの回答履歴に基づいて生成された不正解リスト。",
@@ -643,7 +644,8 @@ export const ja: Record<string, string> = {
   showOnboarding: "ガイドを表示",
 
   // UX confirmations
-  confirmSwitchList: "未完了の回答があります。リストを切り替えると進捗がクリアされます。続行しますか？",
+  confirmSwitchList:
+    "未完了の回答があります。リストを切り替えると進捗がクリアされます。続行しますか？",
   confirmTypeSwitch: "問題タイプを切り替えると選択肢と回答がクリアされます。続行しますか？",
   viewStats: "統計を見る",
   confirmLeaveManager: "未保存の変更があります。ページを離れると失われます。続行しますか？",

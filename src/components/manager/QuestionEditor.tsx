@@ -57,10 +57,18 @@ export function QuestionEditor(props: {
             const doSwitch = () => {
               const defaults: Partial<Question> = { type: newType }
               if (newType === "single") {
-                defaults.options = ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
+                defaults.options = ["A", "B", "C", "D"].map((label) => ({
+                  id: createId(),
+                  label,
+                  text: "",
+                }))
                 defaults.answer = ""
               } else if (newType === "multiple") {
-                defaults.options = ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
+                defaults.options = ["A", "B", "C", "D"].map((label) => ({
+                  id: createId(),
+                  label,
+                  text: "",
+                }))
                 defaults.answer = []
               } else if (newType === "boolean") {
                 defaults.options = [
@@ -77,7 +85,8 @@ export function QuestionEditor(props: {
               }
               patch(defaults)
             }
-            const hasContent = draft.options.some((o) => o.text.trim()) ||
+            const hasContent =
+              draft.options.some((o) => o.text.trim()) ||
               (Array.isArray(draft.answer)
                 ? draft.answer.some((a) => String(a).trim())
                 : !!String(draft.answer).trim())

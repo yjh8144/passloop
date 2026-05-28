@@ -38,7 +38,9 @@
   background: var(--surface);
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .list-picker-trigger:hover {
@@ -159,7 +161,10 @@
   color: var(--muted);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.12s, background 0.12s, color 0.12s;
+  transition:
+    opacity 0.12s,
+    background 0.12s,
+    color 0.12s;
   margin-right: 4px;
 }
 

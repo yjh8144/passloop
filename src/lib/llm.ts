@@ -187,7 +187,9 @@ async function streamGemini(
   const endpoint = stripApiKey(
     baseEndpoint.includes("streamGenerateContent")
       ? baseEndpoint
-      : baseEndpoint.replace(":generateContent", ":streamGenerateContent").replace(/\?/, "?alt=sse&"),
+      : baseEndpoint
+          .replace(":generateContent", ":streamGenerateContent")
+          .replace(/\?/, "?alt=sse&"),
   )
   const response = await fetchWithProxyFallback(
     endpoint,
@@ -446,7 +448,7 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
     const model = config.model.trim() || "gemini-1.5-pro"
     const endpoint = stripApiKey(
       config.endpoint.trim() ||
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     )
     assertConfigValid(config.apiKey, model, endpoint)
     await fetchWithProxyFallback(

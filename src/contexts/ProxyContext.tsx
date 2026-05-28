@@ -39,7 +39,13 @@ export function ProxyProvider({ children }: { children: ReactNode }) {
   const closeProxyConfig = useCallback(() => setShowModal(false), [])
 
   const value = useMemo<ProxyContextValue>(
-    () => ({ proxySettings: settings, updateProxySettings, resetProxySettings, openProxyConfig, closeProxyConfig }),
+    () => ({
+      proxySettings: settings,
+      updateProxySettings,
+      resetProxySettings,
+      openProxyConfig,
+      closeProxyConfig,
+    }),
     [settings, updateProxySettings, resetProxySettings, openProxyConfig, closeProxyConfig],
   )
 
