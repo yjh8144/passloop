@@ -55,20 +55,22 @@ export function PracticePage() {
     return () => document.removeEventListener("keydown", onKey)
   }, [inspectorFloatOpen])
 
-  const prevAllSubmitted = useRef(false)
+  const [prevAllSubmitted, setPrevAllSubmitted] = useState(false)
   const [showCompletionBanner, setShowCompletionBanner] = useState(false)
-  useEffect(() => {
-    if (allSubmitted && !prevAllSubmitted.current) {
-      debugLog("[PracticePage] all questions submitted", {
-        total: questions.length,
-        correctCount,
-        wrongCount,
-      })
-      setShowCompletionBanner(true)
-    }
-    if (!allSubmitted) setShowCompletionBanner(false)
-    prevAllSubmitted.current = allSubmitted
-  }, [allSubmitted, correctCount, questions.length, wrongCount])
+
+  if (allSubmitted && !prevAllSubmitted) {
+    debugLog("[PracticePage] all questions submitted", {
+      total: questions.length,
+      correctCount,
+      wrongCount,
+    })
+    setShowCompletionBanner(true)
+    setPrevAllSubmitted(true)
+  }
+  if (!allSubmitted && prevAllSubmitted) {
+    setShowCompletionBanner(false)
+    setPrevAllSubmitted(false)
+  }
 
   const paperStackRef = useRef<HTMLDivElement>(null)
 
