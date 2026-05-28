@@ -55,13 +55,16 @@ export function QuestionCard(props: {
         value={props.answers[props.question.id]}
         onChange={updateAnswer}
         practiceMode={props.practiceMode}
+        disabled={props.submitted}
       />
 
       {!props.compact && !props.hideSubmit && props.practiceMode !== "memorize" && (
         <div className="question-actions">
-          <button className="primary-button" onClick={props.onSubmit}>
-            <Check size={17} /> {t("submit")}
-          </button>
+          {!props.submitted && (
+            <button className="primary-button" onClick={props.onSubmit}>
+              <Check size={17} /> {t("submit")}
+            </button>
+          )}
           {props.submitted && props.onNext && (
             <button onClick={props.onNext}>
               {t("next")} <ChevronRight size={17} />

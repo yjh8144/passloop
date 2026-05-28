@@ -7,10 +7,12 @@ export function AnswerInput(props: {
   value?: string | string[]
   onChange: (id: string, value: string | string[]) => void
   practiceMode: PracticeMode
+  disabled?: boolean
 }) {
   const t = useT()
   const { question } = props
   const isMemorize = props.practiceMode === "memorize"
+  const isDisabled = isMemorize || !!props.disabled
   if (question.type === "single" || question.type === "boolean") {
     const correctAnswer = String(question.answer)
     return (
@@ -24,10 +26,10 @@ export function AnswerInput(props: {
                 name={question.id}
                 checked={isMemorize ? option.label === correctAnswer : props.value === option.label}
                 onChange={() => {
-                  if (isMemorize) return
+                  if (isDisabled) return
                   props.onChange(question.id, option.label)
                 }}
-                disabled={isMemorize}
+                disabled={isDisabled}
               />
               <span>{option.label}</span>
               <p>{option.text}</p>
@@ -50,13 +52,13 @@ export function AnswerInput(props: {
                 type="checkbox"
                 checked={selected.includes(option.label)}
                 onChange={(event) => {
-                  if (isMemorize) return
+                  if (isDisabled) return
                   const next = event.target.checked
                     ? [...selected, option.label]
                     : selected.filter((item) => item !== option.label)
                   props.onChange(question.id, next)
                 }}
-                disabled={isMemorize}
+                disabled={isDisabled}
               />
               <span>{option.label}</span>
               <p>{option.text}</p>
@@ -76,6 +78,7 @@ export function AnswerInput(props: {
             key={index}
             value={values[index] ?? ""}
             placeholder={t("blankPlaceholder", index + 1)}
+            disabled={isDisabled}
             onChange={(event) => {
               const next = [...values]
               next[index] = event.target.value
@@ -89,6 +92,7 @@ export function AnswerInput(props: {
   return (
     <textarea
       value={String(props.value ?? "")}
+      disabled={isDisabled}
       onChange={(event) => props.onChange(question.id, event.target.value)}
       placeholder={t("inputAnswer")}
     />
