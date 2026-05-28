@@ -164,17 +164,26 @@ export function normalizeImportedList(value: unknown): QuestionList {
   }
 }
 
+function seededRandom(seed: number) {
+  return function () {
+    seed = (seed * 1664525 + 1013904223) & 0xffffffff
+    return (seed >>> 0) / 0xffffffff
+  }
+}
+
 export function sortQuestions(
   questions: Question[],
   mode: SortMode,
   locale?: string,
   localizedLabels?: Record<QuestionType, string>,
+  seed?: number,
 ) {
   if (mode === "manual") return questions
   const copy = [...questions]
   if (mode === "random") {
+    const rng = seededRandom(seed ?? Date.now())
     return copy
-      .map((question) => ({ question, score: Math.random() }))
+      .map((question) => ({ question, score: rng() }))
       .sort((a, b) => a.score - b.score)
       .map((item) => item.question)
   }

@@ -26,6 +26,7 @@ export const defaultSettings: Settings = {
   sortMode: "manual",
   submitMode: "each",
   revealMode: "immediate",
+  randomSeed: Date.now(),
 }
 
 export function createEmptyQuestionList(name = "Default List"): QuestionList {

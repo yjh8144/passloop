@@ -55,10 +55,12 @@ export function PracticePage() {
   }, [inspectorFloatOpen])
 
   const prevAllSubmitted = useRef(false)
+  const [showCompletionBanner, setShowCompletionBanner] = useState(false)
   useEffect(() => {
     if (allSubmitted && !prevAllSubmitted.current) {
-      setShowCompletionDialog(true)
+      setShowCompletionBanner(true)
     }
+    if (!allSubmitted) setShowCompletionBanner(false)
     prevAllSubmitted.current = allSubmitted
   }, [allSubmitted])
 
@@ -191,6 +193,12 @@ export function PracticePage() {
             </button>
           </div>
         </div>
+        {showCompletionBanner && (
+          <div className="completion-banner">
+            <span>{t("completionSummary", questions.length, correctCount, wrongCount)}</span>
+            <button onClick={() => setShowCompletionDialog(true)}>{t("viewStats")}</button>
+          </div>
+        )}
         <div className="mobile-navigator">
           <Navigator
             questions={questions}

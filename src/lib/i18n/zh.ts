@@ -627,4 +627,12 @@ export const zh: Record<string, string> = {
   // Debug
   simulateCrash: "模拟崩溃",
   showOnboarding: "显示引导页",
+
+  // UX confirmations
+  confirmSwitchList: "当前有未完成的作答，切换题单后将清除进度。确定切换吗？",
+  confirmTypeSwitch: "切换题型会清除当前选项和答案，确定继续吗？",
+  viewStats: "查看统计",
+  confirmLeaveManager: "编辑内容尚未保存，离开后将丢失。确定离开吗？",
+  reshuffle: "重新洗牌",
+  confirmSwitchToWrongList: "错题题单已创建，是否立即切换？",
 }

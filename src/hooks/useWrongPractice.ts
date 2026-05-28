@@ -18,6 +18,7 @@ interface UseWrongPracticeParams {
   pushToast: PushToast
   startedAtRef: MutableRefObject<Record<string, number>>
   t: TFunc
+  showConfirm: (message: string, onConfirm: () => void) => void
 }
 
 export function useWrongPractice({
@@ -31,6 +32,7 @@ export function useWrongPractice({
   pushToast,
   startedAtRef,
   t,
+  showConfirm,
 }: UseWrongPracticeParams) {
   // Timer
   useEffect(() => {
@@ -118,10 +120,15 @@ export function useWrongPractice({
     updateData((current) => ({
       ...current,
       lists: [...current.lists, newList],
-      activeListId: newList.id,
     }))
     pushToast("success", t("wrongListCreated", newList.name, wrongQuestions.length))
-  }, [wrongQuestions, activeList.name, pushToast, t, updateData])
+    showConfirm(t("confirmSwitchToWrongList"), () => {
+      updateData((current) => ({
+        ...current,
+        activeListId: newList.id,
+      }))
+    })
+  }, [wrongQuestions, activeList.name, pushToast, t, updateData, showConfirm])
 
   return { startWrongPractice, resetWrongPractice, exportWrongList, createWrongList }
 }

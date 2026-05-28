@@ -15,10 +15,6 @@ export function Topbar(props: {
   lists: QuestionList[]
   setActiveListId: (id: string) => void
   createList: () => void
-  onRedoWrong: () => void
-  onExportWrong: () => void
-  onCreateWrongList: () => void
-  onClearListAttempts: () => void
 }) {
   const t = useT()
   const [showSettings, setShowSettings] = useState(false)
@@ -150,10 +146,6 @@ export function Topbar(props: {
                 <ControlPanel
                   settings={props.data.settings}
                   updateSettings={props.updateSettings}
-                  onRedoWrong={props.onRedoWrong}
-                  onExportWrong={props.onExportWrong}
-                  onCreateWrongList={props.onCreateWrongList}
-                  onClearListAttempts={props.onClearListAttempts}
                 />
               </div>
             )}

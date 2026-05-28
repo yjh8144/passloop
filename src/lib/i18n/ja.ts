@@ -640,4 +640,12 @@ export const ja: Record<string, string> = {
   // Debug
   simulateCrash: "クラッシュをシミュレート",
   showOnboarding: "ガイドを表示",
+
+  // UX confirmations
+  confirmSwitchList: "未完了の回答があります。リストを切り替えると進捗がクリアされます。続行しますか？",
+  confirmTypeSwitch: "問題タイプを切り替えると選択肢と回答がクリアされます。続行しますか？",
+  viewStats: "統計を見る",
+  confirmLeaveManager: "未保存の変更があります。ページを離れると失われます。続行しますか？",
+  reshuffle: "シャッフル",
+  confirmSwitchToWrongList: "間違いリストが作成されました。今すぐ切り替えますか？",
 }

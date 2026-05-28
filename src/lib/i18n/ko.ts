@@ -638,4 +638,12 @@ export const ko: Record<string, string> = {
   // Debug
   simulateCrash: "크래시 시뮬레이션",
   showOnboarding: "가이드 표시",
+
+  // UX confirmations
+  confirmSwitchList: "미완성 진행 상황이 있습니다. 목록을 전환하면 삭제됩니다. 계속하시겠습니까?",
+  confirmTypeSwitch: "유형을 변경하면 옵션과 답이 삭제됩니다. 계속하시겠습니까?",
+  viewStats: "통계 보기",
+  confirmLeaveManager: "저장되지 않은 변경사항이 있습니다. 나가면 손실됩니다. 계속하시겠습니까?",
+  reshuffle: "다시 섞기",
+  confirmSwitchToWrongList: "오답 목록이 생성되었습니다. 지금 전환하시겠습니까?",
 }

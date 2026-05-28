@@ -1,3 +1,4 @@
+import { Check } from "lucide-react"
 import type { PracticeMode, Question } from "../../lib/types"
 import { toArray } from "../../lib/question"
 import { useT } from "../../contexts"
@@ -12,59 +13,56 @@ export function AnswerInput(props: {
   const t = useT()
   const { question } = props
   const isMemorize = props.practiceMode === "memorize"
-  const isDisabled = isMemorize || !!props.disabled
+
+  if (isMemorize) {
+    return <MemorizeDisplay question={question} />
+  }
+
+  const isDisabled = !!props.disabled
   if (question.type === "single" || question.type === "boolean") {
-    const correctAnswer = String(question.answer)
     return (
       <div className="option-stack">
-        {question.options.map((option) => {
-          const isCorrect = isMemorize && option.label === correctAnswer
-          return (
-            <label key={option.id} className={`option-row ${isCorrect ? "memorize-correct" : ""}`}>
-              <input
-                type="radio"
-                name={question.id}
-                checked={isMemorize ? option.label === correctAnswer : props.value === option.label}
-                onChange={() => {
-                  if (isDisabled) return
-                  props.onChange(question.id, option.label)
-                }}
-                disabled={isDisabled}
-              />
-              <span>{option.label}</span>
-              <p>{option.text}</p>
-            </label>
-          )
-        })}
+        {question.options.map((option) => (
+          <label key={option.id} className="option-row">
+            <input
+              type="radio"
+              name={question.id}
+              checked={props.value === option.label}
+              onChange={() => {
+                if (isDisabled) return
+                props.onChange(question.id, option.label)
+              }}
+              disabled={isDisabled}
+            />
+            <span>{option.label}</span>
+            <p>{option.text}</p>
+          </label>
+        ))}
       </div>
     )
   }
   if (question.type === "multiple") {
-    const correctAnswers = toArray(question.answer)
-    const selected = isMemorize ? correctAnswers : toArray(props.value ?? [])
+    const selected = toArray(props.value ?? [])
     return (
       <div className="option-stack">
-        {question.options.map((option) => {
-          const isCorrect = isMemorize && correctAnswers.includes(option.label)
-          return (
-            <label key={option.id} className={`option-row ${isCorrect ? "memorize-correct" : ""}`}>
-              <input
-                type="checkbox"
-                checked={selected.includes(option.label)}
-                onChange={(event) => {
-                  if (isDisabled) return
-                  const next = event.target.checked
-                    ? [...selected, option.label]
-                    : selected.filter((item) => item !== option.label)
-                  props.onChange(question.id, next)
-                }}
-                disabled={isDisabled}
-              />
-              <span>{option.label}</span>
-              <p>{option.text}</p>
-            </label>
-          )
-        })}
+        {question.options.map((option) => (
+          <label key={option.id} className="option-row">
+            <input
+              type="checkbox"
+              checked={selected.includes(option.label)}
+              onChange={(event) => {
+                if (isDisabled) return
+                const next = event.target.checked
+                  ? [...selected, option.label]
+                  : selected.filter((item) => item !== option.label)
+                props.onChange(question.id, next)
+              }}
+              disabled={isDisabled}
+            />
+            <span>{option.label}</span>
+            <p>{option.text}</p>
+          </label>
+        ))}
       </div>
     )
   }
@@ -96,5 +94,60 @@ export function AnswerInput(props: {
       onChange={(event) => props.onChange(question.id, event.target.value)}
       placeholder={t("inputAnswer")}
     />
+  )
+}
+
+function MemorizeDisplay({ question }: { question: Question }) {
+  if (question.type === "single" || question.type === "boolean") {
+    const correctAnswer = String(question.answer)
+    return (
+      <div className="option-stack memorize-display">
+        {question.options.map((option) => (
+          <div
+            key={option.id}
+            className={`option-display-row ${option.label === correctAnswer ? "is-correct" : ""}`}
+          >
+            <span className="option-label">{option.label}</span>
+            <p>{option.text}</p>
+            {option.label === correctAnswer && <Check size={16} className="correct-icon" />}
+          </div>
+        ))}
+      </div>
+    )
+  }
+  if (question.type === "multiple") {
+    const correctAnswers = toArray(question.answer)
+    return (
+      <div className="option-stack memorize-display">
+        {question.options.map((option) => (
+          <div
+            key={option.id}
+            className={`option-display-row ${correctAnswers.includes(option.label) ? "is-correct" : ""}`}
+          >
+            <span className="option-label">{option.label}</span>
+            <p>{option.text}</p>
+            {correctAnswers.includes(option.label) && <Check size={16} className="correct-icon" />}
+          </div>
+        ))}
+      </div>
+    )
+  }
+  if (question.type === "blank") {
+    const answers = toArray(question.answer)
+    return (
+      <div className="memorize-answer-display blank-answers">
+        {answers.map((ans, index) => (
+          <div key={index} className="blank-answer-item">
+            <span className="blank-label">#{index + 1}</span>
+            <span className="blank-value">{ans}</span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return (
+    <div className="memorize-answer-display">
+      <p className="short-answer-value">{String(question.answer)}</p>
+    </div>
   )
 }

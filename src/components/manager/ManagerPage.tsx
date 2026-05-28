@@ -7,7 +7,7 @@ import { debugLog } from "../../lib/debug"
 import { EmptyState } from "../ui/EmptyState"
 import { QuestionEditor } from "./QuestionEditor"
 import { SelfFillDialog } from "./SelfFillDialog"
-import { useT, usePushToast, useDialog, useLlmConfig, useProxy } from "../../contexts"
+import { useT, usePushToast, useDialog, useLlmConfig, useProxy, useNavigation } from "../../contexts"
 
 export function ManagerPage(props: {
   list: QuestionList
@@ -21,6 +21,7 @@ export function ManagerPage(props: {
   const { showConfirm } = useDialog()
   const { getConfigForScenario, openLlmConfig } = useLlmConfig()
   const { proxySettings } = useProxy()
+  const { managerUnsavedRef } = useNavigation()
   const typeLabelsMap = getTypeLabels(t)
   const [localListName, setLocalListName] = useState(props.list.name)
   const [showFillChoice, setShowFillChoice] = useState(false)
@@ -31,6 +32,8 @@ export function ManagerPage(props: {
   const [editorFloatOpen, setEditorFloatOpen] = useState(false)
   const [editorDirty, setEditorDirty] = useState(false)
   const editorRef = useRef<HTMLElement>(null)
+
+  useEffect(() => { managerUnsavedRef.current = editorDirty }, [editorDirty, managerUnsavedRef])
 
   const [prevListId, setPrevListId] = useState(props.list.id)
   if (props.list.id !== prevListId) {

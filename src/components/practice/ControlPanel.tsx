@@ -1,19 +1,14 @@
-import { Eraser, Plus } from "lucide-react"
+import { Shuffle } from "lucide-react"
 import type { AppData, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
-import { useT, usePushToast, useAppData } from "../../contexts"
+import { useT, usePushToast } from "../../contexts"
 
 export function ControlPanel(props: {
   settings: AppData["settings"]
   updateSettings: (patch: Partial<AppData["settings"]>) => void
-  onRedoWrong: () => void
-  onExportWrong: () => void
-  onCreateWrongList: () => void
-  onClearListAttempts: () => void
 }) {
   const t = useT()
   const pushToast = usePushToast()
-  const { wrongQuestions } = useAppData()
   return (
     <section className="inspector-panel">
       <h3>{t("controls")}</h3>
@@ -62,34 +57,32 @@ export function ControlPanel(props: {
       )}
       <label className="field-label">
         {t("sort")}
-        <select
-          value={props.settings.sortMode}
-          onChange={(event) =>
-            props.updateSettings({
-              sortMode: event.target.value as AppData["settings"]["sortMode"],
-            })
-          }
-        >
-          <option value="manual">{t("manual")}</option>
-          <option value="random">{t("random")}</option>
-          <option value="name">{t("name")}</option>
-          <option value="type">{t("type")}</option>
-        </select>
+        <span className="sort-row">
+          <select
+            value={props.settings.sortMode}
+            onChange={(event) => {
+              const newSort = event.target.value as AppData["settings"]["sortMode"]
+              const patch: Partial<AppData["settings"]> = { sortMode: newSort }
+              if (newSort === "random") patch.randomSeed = Date.now()
+              props.updateSettings(patch)
+            }}
+          >
+            <option value="manual">{t("manual")}</option>
+            <option value="random">{t("random")}</option>
+            <option value="name">{t("name")}</option>
+            <option value="type">{t("type")}</option>
+          </select>
+          {props.settings.sortMode === "random" && (
+            <button
+              className="icon-button"
+              title={t("reshuffle")}
+              onClick={() => props.updateSettings({ randomSeed: Date.now() })}
+            >
+              <Shuffle size={16} />
+            </button>
+          )}
+        </span>
       </label>
-      <div className="two-col-actions">
-        <button onClick={props.onRedoWrong}>{t("redoWrong")}</button>
-        <button onClick={props.onExportWrong} disabled={!wrongQuestions.length}>{t("exportWrong")}</button>
-      </div>
-      <div className="two-col-actions">
-        <button onClick={props.onCreateWrongList} disabled={!wrongQuestions.length}>
-          <Plus size={16} /> {t("createWrongList")}
-        </button>
-      </div>
-      <div className="two-col-actions">
-        <button className="danger-outline" onClick={props.onClearListAttempts}>
-          <Eraser size={16} /> {t("clearListAttempts")}
-        </button>
-      </div>
     </section>
   )
 }

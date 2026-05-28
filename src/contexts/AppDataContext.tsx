@@ -91,6 +91,7 @@ export function AppDataProvider({
       data.settings.sortMode,
       data.settings.language,
       labels,
+      data.settings.randomSeed,
     )
     const trimmed = query.trim().toLowerCase()
     if (!trimmed) return sorted
@@ -100,7 +101,7 @@ export function AppDataProvider({
         .toLowerCase()
         .includes(trimmed),
     )
-  }, [activeList.questions, data.settings.sortMode, query, data.settings.language, t])
+  }, [activeList.questions, data.settings.sortMode, data.settings.randomSeed, query, data.settings.language, t])
 
   const wrongQuestions = useMemo(
     () => activeList.questions.filter((question) => stats.wrongQuestionIds.has(question.id)),

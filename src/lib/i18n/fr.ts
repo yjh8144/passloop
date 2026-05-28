@@ -676,4 +676,12 @@ export const fr: Record<string, string> = {
   // Debug
   simulateCrash: "Simuler un crash",
   showOnboarding: "Afficher le guide",
+
+  // UX confirmations
+  confirmSwitchList: "Vous avez des réponses en cours. Changer de liste les effacera. Continuer ?",
+  confirmTypeSwitch: "Changer le type effacera les options et la réponse. Continuer ?",
+  viewStats: "Voir les stats",
+  confirmLeaveManager: "Les modifications non enregistrées seront perdues. Continuer ?",
+  reshuffle: "Remélanger",
+  confirmSwitchToWrongList: "Liste d'erreurs créée. Y basculer maintenant ?",
 }

@@ -57,6 +57,7 @@ export interface Settings {
   sortMode: SortMode
   submitMode: SubmitMode
   revealMode: RevealMode
+  randomSeed: number
 }
 
 export interface AppData {

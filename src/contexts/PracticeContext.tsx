@@ -59,7 +59,7 @@ function createInitialState(): PracticeState {
 export function PracticeProvider({ children }: { children: ReactNode }) {
   const t = useT()
   const { page, setPage } = useNavigation()
-  const { activeList, displayedQuestions, wrongQuestions, data, updateData, resetHandlerRef } =
+  const { activeList, displayedQuestions, wrongQuestions, data, updateData, resetHandlerRef, query } =
     useAppData()
   const { showConfirm } = useDialog()
   const pushToast = usePushToast()
@@ -83,15 +83,34 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       prevListIdRef.current = activeList.id
       dispatch({ type: "LIST_RESET_FULL" })
       startedAtRef.current = {}
+      preSearchIndexRef.current = null
     }
   }, [activeList.id])
 
   // --- Reset index when displayed questions change (search, sort) ---
   const prevQuestionsRef = useRef(displayedQuestions)
+  const preSearchIndexRef = useRef<number | null>(null)
+  const prevQueryRef = useRef(query)
+
+  useEffect(() => {
+    if (query && !prevQueryRef.current) {
+      preSearchIndexRef.current = stateRef.current.currentIndex
+    } else if (!query && prevQueryRef.current && preSearchIndexRef.current !== null) {
+      const maxIndex = displayedQuestions.length - 1
+      dispatch({ type: "NAVIGATE", index: Math.min(preSearchIndexRef.current, Math.max(maxIndex, 0)) })
+      preSearchIndexRef.current = null
+    }
+    prevQueryRef.current = query
+  }, [query, displayedQuestions.length])
+
   useEffect(() => {
     if (displayedQuestions !== prevQuestionsRef.current) {
       prevQuestionsRef.current = displayedQuestions
-      dispatch({ type: "NAVIGATE", index: 0 })
+      if (preSearchIndexRef.current === null) {
+        dispatch({ type: "NAVIGATE", index: 0 })
+      } else {
+        dispatch({ type: "CLAMP_INDEX", maxIndex: Math.max(displayedQuestions.length - 1, 0) })
+      }
     }
   }, [displayedQuestions])
 
@@ -133,6 +152,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       pushToast,
       startedAtRef,
       t,
+      showConfirm,
     })
 
   const confirmStartWrongPractice = useCallback((): boolean => {
@@ -263,13 +283,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
             const questionIndex = practiceQuestions.findIndex((q) => q.id === question.id)
             if (questionIndex >= 0 && questionIndex < practiceQuestions.length - 1) {
               window.setTimeout(() => {
-                window.clearTimeout(paperScrollLockRef.current)
-                paperScrollLockRef.current = window.setTimeout(() => {
-                  paperScrollLockRef.current = 0
-                }, 600)
-                document
-                  .getElementById(`question-${questionIndex + 1}`)
-                  ?.scrollIntoView({ behavior: "smooth", block: "center" })
+                dispatch({ type: "NAVIGATE", index: questionIndex + 1 })
               }, 500)
             }
           }

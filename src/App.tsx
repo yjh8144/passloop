@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import type { AppData, Question } from "./lib/types"
 import { getTranslator } from "./lib/i18n/index"
 import {
@@ -67,7 +67,6 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
     activeList,
     updateActiveList,
     deleteList,
-    clearActiveListAttempts,
     addImportedList,
   } = useAppData()
   const { clearLlmConfig: clearLlmConfigCtx } = useLlmConfig()
@@ -101,7 +100,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
         />
 
         <main className="workspace">
-          <TopbarConnected onClearListAttempts={clearActiveListAttempts} />
+          <TopbarConnected />
 
           {page === "manager" ? (
             <ManagerPage
@@ -170,10 +169,24 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
   )
 }
 
-function TopbarConnected({ onClearListAttempts }: { onClearListAttempts: () => void }) {
+function TopbarConnected() {
   const { data, setData, activeList, createList, query, setQuery, updateSettings } = useAppData()
   const { page } = useNavigation()
-  const { resetWrongPractice, exportWrongList, createWrongList } = usePracticeContext()
+  const { answers } = usePracticeContext()
+  const { showConfirm } = useDialog()
+  const t = useT()
+
+  const changeActiveList = useCallback((id: string) => {
+    if (id === data.activeListId) return
+    const hasProgress = Object.keys(answers).length > 0
+    if (hasProgress) {
+      showConfirm(t("confirmSwitchList"), () => {
+        setData((current) => ({ ...current, activeListId: id }))
+      })
+    } else {
+      setData((current) => ({ ...current, activeListId: id }))
+    }
+  }, [data.activeListId, answers, showConfirm, t, setData])
 
   return (
     <Topbar
@@ -184,12 +197,8 @@ function TopbarConnected({ onClearListAttempts }: { onClearListAttempts: () => v
       updateSettings={updateSettings}
       activeList={activeList}
       lists={data.lists}
-      setActiveListId={(id) => setData((current) => ({ ...current, activeListId: id }))}
+      setActiveListId={changeActiveList}
       createList={createList}
-      onRedoWrong={resetWrongPractice}
-      onExportWrong={exportWrongList}
-      onCreateWrongList={createWrongList}
-      onClearListAttempts={onClearListAttempts}
     />
   )
 }

@@ -130,6 +130,83 @@
   background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 }
 
+.memorize-display .option-display-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.memorize-display .option-display-row.is-correct {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
+.memorize-display .option-display-row .option-label {
+  font-weight: 800;
+  min-width: 22px;
+}
+
+.memorize-display .option-display-row p {
+  margin: 0;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.memorize-display .option-display-row .correct-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.memorize-answer-display {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+
+.memorize-answer-display.blank-answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.blank-answer-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.blank-answer-item .blank-label {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+
+.blank-answer-item .blank-value {
+  font-weight: 500;
+}
+
+.memorize-answer-display .short-answer-value {
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.sort-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .blank-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

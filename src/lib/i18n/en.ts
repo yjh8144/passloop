@@ -661,4 +661,12 @@ export const en: Record<string, string> = {
   // Debug
   simulateCrash: "Simulate Crash",
   showOnboarding: "Show Onboarding",
+
+  // UX confirmations
+  confirmSwitchList: "You have unanswered progress. Switching list will clear it. Continue?",
+  confirmTypeSwitch: "Switching type will clear options and answer. Continue?",
+  viewStats: "View Stats",
+  confirmLeaveManager: "Unsaved changes will be lost if you leave. Continue?",
+  reshuffle: "Reshuffle",
+  confirmSwitchToWrongList: "Wrong list created. Switch to it now?",
 }

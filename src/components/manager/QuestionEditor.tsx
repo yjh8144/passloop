@@ -3,7 +3,7 @@ import { Check, Plus, Trash2, X } from "lucide-react"
 import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
 import { createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
-import { useT } from "../../contexts"
+import { useT, useDialog } from "../../contexts"
 
 export function QuestionEditor(props: {
   question: Question
@@ -12,6 +12,7 @@ export function QuestionEditor(props: {
   onDirtyChange?: (dirty: boolean) => void
 }) {
   const t = useT()
+  const { showConfirm } = useDialog()
   const labels = getTypeLabels(t)
   const [draft, setDraft] = useState<Question>(props.question)
   const [prevQuestion, setPrevQuestion] = useState(props.question)
@@ -53,27 +54,38 @@ export function QuestionEditor(props: {
           onChange={(event) => {
             const newType = event.target.value as QuestionType
             if (newType === draft.type) return
-            const defaults: Partial<Question> = { type: newType }
-            if (newType === "single") {
-              defaults.options = ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
-              defaults.answer = ""
-            } else if (newType === "multiple") {
-              defaults.options = ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
-              defaults.answer = []
-            } else if (newType === "boolean") {
-              defaults.options = [
-                { id: createId(), label: "T", text: "True" },
-                { id: createId(), label: "F", text: "False" },
-              ]
-              defaults.answer = ""
-            } else if (newType === "blank") {
-              defaults.options = []
-              defaults.answer = []
-            } else {
-              defaults.options = []
-              defaults.answer = ""
+            const doSwitch = () => {
+              const defaults: Partial<Question> = { type: newType }
+              if (newType === "single") {
+                defaults.options = ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
+                defaults.answer = ""
+              } else if (newType === "multiple") {
+                defaults.options = ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
+                defaults.answer = []
+              } else if (newType === "boolean") {
+                defaults.options = [
+                  { id: createId(), label: "T", text: "True" },
+                  { id: createId(), label: "F", text: "False" },
+                ]
+                defaults.answer = ""
+              } else if (newType === "blank") {
+                defaults.options = []
+                defaults.answer = []
+              } else {
+                defaults.options = []
+                defaults.answer = ""
+              }
+              patch(defaults)
             }
-            patch(defaults)
+            const hasContent = draft.options.some((o) => o.text.trim()) ||
+              (Array.isArray(draft.answer)
+                ? draft.answer.some((a) => String(a).trim())
+                : !!String(draft.answer).trim())
+            if (hasContent) {
+              showConfirm(t("confirmTypeSwitch"), doSwitch)
+            } else {
+              doSwitch()
+            }
           }}
         >
           {questionTypes.map((type) => (

@@ -14,6 +14,7 @@ interface NavigationContextValue {
   desktopSidebarCollapsed: boolean
   setDesktopSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>
   llmUnsavedRef: MutableRefObject<boolean>
+  managerUnsavedRef: MutableRefObject<boolean>
 }
 
 const NavigationContext = createContext<NavigationContextValue | null>(null)
@@ -25,6 +26,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [mobileSidebarCollapsed, setMobileSidebarCollapsed] = useState(false)
   const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(false)
   const llmUnsavedRef = useRef(false)
+  const managerUnsavedRef = useRef(false)
 
   const changePage = useCallback(
     (nextPage: Page) => {
@@ -32,6 +34,13 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       if (page === "llm" && nextPage !== "llm" && llmUnsavedRef.current) {
         showConfirm(t("confirmLeaveLlm"), () => {
           llmUnsavedRef.current = false
+          setPage(nextPage)
+        })
+        return
+      }
+      if (page === "manager" && nextPage !== "manager" && managerUnsavedRef.current) {
+        showConfirm(t("confirmLeaveManager"), () => {
+          managerUnsavedRef.current = false
           setPage(nextPage)
         })
         return
@@ -51,6 +60,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       desktopSidebarCollapsed,
       setDesktopSidebarCollapsed,
       llmUnsavedRef,
+      managerUnsavedRef,
     }),
     [page, changePage, mobileSidebarCollapsed, desktopSidebarCollapsed],
   )
