@@ -141,6 +141,8 @@ export function ManagerPage(props: {
         updatedAt: new Date().toISOString(),
       }
     })
+    setEditorDirty(false)
+    managerUnsavedRef.current = false
     props.setEditing(null)
     pushToast("success", t("questionSaved"))
   }
@@ -242,7 +244,11 @@ export function ManagerPage(props: {
         ) : props.editing ? (
           <QuestionEditor
             question={props.editing}
-            onCancel={() => props.setEditing(null)}
+            onCancel={() => {
+              setEditorDirty(false)
+              managerUnsavedRef.current = false
+              props.setEditing(null)
+            }}
             onSave={saveQuestion}
             onDirtyChange={setEditorDirty}
           />
@@ -263,6 +269,8 @@ export function ManagerPage(props: {
         onClick={() => {
           if (props.editing && editorDirty) {
             showConfirm(t("unsavedConfirm"), () => {
+              setEditorDirty(false)
+              managerUnsavedRef.current = false
               props.setEditing(null)
               setEditorFloatOpen(false)
             })
@@ -279,6 +287,8 @@ export function ManagerPage(props: {
             <button className="icon-button" onClick={() => {
               if (props.editing && editorDirty) {
                 showConfirm(t("unsavedConfirm"), () => {
+                  setEditorDirty(false)
+                  managerUnsavedRef.current = false
                   props.setEditing(null)
                   setEditorFloatOpen(false)
                 })
@@ -299,6 +309,8 @@ export function ManagerPage(props: {
             <QuestionEditor
               question={props.editing}
               onCancel={() => {
+                setEditorDirty(false)
+                managerUnsavedRef.current = false
                 props.setEditing(null)
                 setEditorFloatOpen(false)
               }}
