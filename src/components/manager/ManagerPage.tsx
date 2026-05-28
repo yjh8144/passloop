@@ -331,6 +331,7 @@ export function ManagerPage(props: {
                 setEditorFloatOpen(false)
               }}
               onDirtyChange={setEditorDirty}
+              hideClose
             />
           ) : (
             <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />

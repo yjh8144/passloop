@@ -10,6 +10,7 @@ export function QuestionEditor(props: {
   onSave: (question: Question) => void
   onCancel: () => void
   onDirtyChange?: (dirty: boolean) => void
+  hideClose?: boolean
 }) {
   const t = useT()
   const { showConfirm } = useDialog()
@@ -43,9 +44,11 @@ export function QuestionEditor(props: {
     <div className="question-editor">
       <div className="editor-title">
         <h2>{t("editQuestionTitle")}</h2>
-        <button className="icon-button" onClick={props.onCancel}>
-          <X size={18} />
-        </button>
+        {!props.hideClose && (
+          <button className="icon-button" onClick={props.onCancel}>
+            <X size={18} />
+          </button>
+        )}
       </div>
       <label className="field-label">
         {t("questionTypeLabel")}
