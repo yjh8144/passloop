@@ -74,17 +74,24 @@ export function PracticePage() {
     if (!container) return
     const stage = container.closest(".question-stage")
     const scrollRoot = stage && stage.scrollHeight > stage.clientHeight ? stage : null
+    const ratioMap = new Map<number, number>()
     const observer = new IntersectionObserver(
       (entries) => {
-        if (paperScrollLockRef.current) return
-        let best: { idx: number; ratio: number } | null = null
         for (const entry of entries) {
-          if (!entry.isIntersecting) continue
           const id = entry.target.id
           const idx = Number(id.replace("question-", ""))
           if (isNaN(idx)) continue
-          if (!best || entry.intersectionRatio > best.ratio) {
-            best = { idx, ratio: entry.intersectionRatio }
+          if (entry.isIntersecting) {
+            ratioMap.set(idx, entry.intersectionRatio)
+          } else {
+            ratioMap.delete(idx)
+          }
+        }
+        if (paperScrollLockRef.current) return
+        let best: { idx: number; ratio: number } | null = null
+        for (const [idx, ratio] of ratioMap) {
+          if (!best || ratio > best.ratio || (ratio === best.ratio && idx < best.idx)) {
+            best = { idx, ratio }
           }
         }
         if (best) setCurrentIndex(best.idx)
