@@ -169,7 +169,7 @@ export function Topbar(props: {
                           props.deleteList(list.id)
                         }}
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} />
                       </button>
                     )}
                   </div>

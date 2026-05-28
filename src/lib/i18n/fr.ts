@@ -635,6 +635,7 @@ export const fr: Record<string, string> = {
   defaultListName: "Liste {0}",
   confirmDeleteList: "Supprimer la liste supprimera aussi les questions et données. Continuer ?",
   defaultList: "Liste par défaut",
+  listCreated: 'Liste "{0}" créée.',
   listDeleted: "Liste supprimée.",
   confirmClearAttempts: 'Effacer les données de "{0}" ? Les questions seront conservées.',
   attemptsCleared: "Données de la liste actuelle effacées.",

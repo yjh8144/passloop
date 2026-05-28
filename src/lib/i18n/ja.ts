@@ -599,6 +599,7 @@ export const ja: Record<string, string> = {
   defaultListName: "リスト {0}",
   confirmDeleteList: "リストを削除すると、問題と回答データも削除されます。続行しますか？",
   defaultList: "デフォルトリスト",
+  listCreated: "リスト「{0}」を作成しました。",
   listDeleted: "リストを削除しました。",
   confirmClearAttempts: "「{0}」の回答データをクリアしますか？問題は保持されます。",
   attemptsCleared: "現在のリストの回答データをクリアしました。",

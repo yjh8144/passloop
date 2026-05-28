@@ -618,6 +618,7 @@ export const en: Record<string, string> = {
   defaultListName: "List {0}",
   confirmDeleteList: "Deleting a list also removes its questions and attempt data. Continue?",
   defaultList: "Default List",
+  listCreated: 'List "{0}" created.',
   listDeleted: "List deleted.",
   confirmClearAttempts: 'Clear all attempt data for "{0}"? Questions will be kept.',
   attemptsCleared: "Attempt data cleared for current list.",

@@ -269,6 +269,7 @@ export function LlmPage(props: {
                         questions: [...currentList.questions, ...edited.questions],
                         updatedAt: new Date().toISOString(),
                       }))
+                      pushToast("success", t("addedToCurrentList", edited.questions.length))
                       unsavedRef.current = false
                     }}
                   >

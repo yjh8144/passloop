@@ -128,8 +128,9 @@ export function AppDataProvider({
         lists: [...current.lists, list],
         activeListId: list.id,
       }))
+      pushToast("success", t("listCreated", name))
     })
-  }, [showPrompt, t, data.lists.length, updateData])
+  }, [showPrompt, t, data.lists.length, updateData, pushToast])
 
   const deleteList = useCallback(
     (id: string) => {

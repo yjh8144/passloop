@@ -154,6 +154,8 @@
   justify-content: center;
   width: 28px;
   height: 28px;
+  min-height: 28px;
+  padding: 0;
   flex-shrink: 0;
   border: none;
   border-radius: 6px;

@@ -596,6 +596,7 @@ export const ko: Record<string, string> = {
   defaultListName: "목록 {0}",
   confirmDeleteList: "목록을 삭제하면 문제와 연습 데이터도 삭제됩니다. 계속하시겠습니까?",
   defaultList: "기본 목록",
+  listCreated: '목록 "{0}"이(가) 생성되었습니다.',
   listDeleted: "목록이 삭제되었습니다.",
   confirmClearAttempts: "「{0}」의 연습 데이터를 초기화하시겠습니까? 문제는 유지됩니다.",
   attemptsCleared: "현재 목록의 연습 데이터가 초기화되었습니다.",

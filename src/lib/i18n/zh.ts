@@ -584,6 +584,7 @@ export const zh: Record<string, string> = {
   defaultListName: "题单 {0}",
   confirmDeleteList: "删除题单会同时移除其中题目和该题单刷题数据。确定删除吗？",
   defaultList: "默认题单",
+  listCreated: "题单「{0}」已创建。",
   listDeleted: "题单已删除。",
   confirmClearAttempts: "确定清空「{0}」的刷题数据吗？题目内容会保留。",
   attemptsCleared: "当前题单刷题数据已清空。",
