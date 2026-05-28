@@ -11,6 +11,7 @@ import { loadLlmMultiConfig, saveLlmMultiConfig, clearLlmMultiConfig } from "../
 import { defaultLlmMultiConfig } from "../utils/constants"
 import { createId } from "../lib/question"
 import { LlmConfigModal } from "../components/llm/LlmConfigModal"
+import { debugLog } from "../lib/debug"
 
 interface LlmConfigContextValue {
   providers: LlmProvider[]
@@ -48,6 +49,7 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
         createdAt: timestamp,
         updatedAt: timestamp,
       }
+      debugLog("[LlmConfigContext] addProvider", provider.name, provider.provider)
       setMultiConfig((prev) => {
         const next = { ...prev, providers: [...prev.providers, provider] }
         if (!prev.assignments.parse) next.assignments = { ...next.assignments, parse: provider.id }
@@ -60,6 +62,7 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
   )
 
   const updateProvider = useCallback((id: string, patch: Partial<LlmProvider>) => {
+    debugLog("[LlmConfigContext] updateProvider", id, patch)
     setMultiConfig((prev) => ({
       ...prev,
       providers: prev.providers.map((p) =>
@@ -69,6 +72,7 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const deleteProvider = useCallback((id: string) => {
+    debugLog("[LlmConfigContext] deleteProvider", id)
     setMultiConfig((prev) => ({
       ...prev,
       providers: prev.providers.filter((p) => p.id !== id),
@@ -80,6 +84,7 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const assignProvider = useCallback((scenario: LlmScenario, providerId: string | null) => {
+    debugLog("[LlmConfigContext] assignProvider", scenario, providerId)
     setMultiConfig((prev) => ({
       ...prev,
       assignments: { ...prev.assignments, [scenario]: providerId },
@@ -117,6 +122,7 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
   const openLlmConfig = useCallback(() => setShowModal(true), [])
   const closeLlmConfig = useCallback(() => setShowModal(false), [])
   const clearConfig = useCallback(() => {
+    debugLog("[LlmConfigContext] clearLlmConfig")
     clearLlmMultiConfig()
     setMultiConfig(defaultLlmMultiConfig)
   }, [])

@@ -1,4 +1,5 @@
 import type { AnswerMap, ResultMap } from "./types"
+import { debugLog } from "../lib/debug"
 
 export interface WrongSession {
   id: string
@@ -36,6 +37,9 @@ export type PracticeAction =
   | { type: "CLAMP_INDEX"; maxIndex: number }
 
 export function practiceReducer(state: PracticeState, action: PracticeAction): PracticeState {
+  if (action.type !== "TICK_TIMER") {
+    debugLog("[practiceReducer]", action.type, action)
+  }
   switch (action.type) {
     case "SET_ANSWER":
       return { ...state, answers: { ...state.answers, [action.questionId]: action.value } }

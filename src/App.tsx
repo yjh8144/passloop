@@ -178,6 +178,7 @@ function TopbarConnected() {
 
   const changeActiveList = useCallback((id: string) => {
     if (id === data.activeListId) return
+    debugLog("Switch active list", { from: data.activeListId, to: id })
     const hasProgress = Object.keys(answers).length > 0
     if (hasProgress) {
       showConfirm(t("confirmSwitchList"), () => {

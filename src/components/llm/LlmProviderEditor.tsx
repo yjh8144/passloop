@@ -4,6 +4,7 @@ import type { LlmProvider, LlmProviderType } from "../../lib/types"
 import { testLlmConnection, fetchModelList } from "../../lib/llm"
 import { providerPlaceholders } from "../../utils/constants"
 import { useT, usePushToast, useProxy } from "../../contexts"
+import { debugLog, debugError } from "../../lib/debug"
 
 interface LlmProviderEditorProps {
   provider: Omit<LlmProvider, "id" | "createdAt" | "updatedAt">
@@ -57,11 +58,14 @@ export function LlmProviderEditor({
   })
 
   const runTest = async () => {
+    debugLog("[LlmProviderEditor] testConnection start", provider.provider, provider.model)
     setTesting(true)
     try {
       const model = await testLlmConnection(resolveConfig())
+      debugLog("[LlmProviderEditor] testConnection success", model)
       pushToast("success", t("connectionSuccess", model))
     } catch (error) {
+      debugError("[LlmProviderEditor] testConnection failed", error)
       pushToast("error", error instanceof Error ? error.message : t("connectionFailed"))
     } finally {
       setTesting(false)
@@ -69,9 +73,11 @@ export function LlmProviderEditor({
   }
 
   const runFetchModels = async () => {
+    debugLog("[LlmProviderEditor] fetchModels start", provider.provider, provider.endpoint)
     setFetchingModels(true)
     try {
       const models = await fetchModelList(resolveConfig())
+      debugLog("[LlmProviderEditor] fetchModels result", models.length, "models")
       setModelList(models)
       if (!models.length) {
         pushToast("info", t("noModelsFound"))
@@ -79,6 +85,7 @@ export function LlmProviderEditor({
         pushToast("success", t("modelsFound", models.length))
       }
     } catch (error) {
+      debugError("[LlmProviderEditor] fetchModels failed", error)
       pushToast("error", error instanceof Error ? error.message : t("fetchModelsFailed"))
     } finally {
       setFetchingModels(false)
@@ -86,6 +93,7 @@ export function LlmProviderEditor({
   }
 
   const updateProviderType = (type: LlmProviderType) => {
+    debugLog("[LlmProviderEditor] updateProviderType", type)
     onChange({ ...provider, provider: type, endpoint: "", model: "" })
   }
 

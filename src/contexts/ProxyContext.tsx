@@ -4,6 +4,7 @@ import type { ProxySettings } from "../lib/types"
 import { loadProxySettings, saveProxySettings, PROXY_STORAGE_KEY } from "../lib/storage"
 import { defaultProxySettings } from "../utils/constants"
 import { ProxyConfigModal } from "../components/proxy/ProxyConfigModal"
+import { debugLog } from "../lib/debug"
 
 interface ProxyContextValue {
   proxySettings: ProxySettings
@@ -24,10 +25,12 @@ export function ProxyProvider({ children }: { children: ReactNode }) {
   useEffect(() => saveProxySettings(settings), [settings])
 
   const updateProxySettings = useCallback((patch: Partial<ProxySettings>) => {
+    debugLog("[ProxyContext] updateProxySettings", patch)
     setSettings((prev) => ({ ...prev, ...patch }))
   }, [])
 
   const resetProxySettings = useCallback(() => {
+    debugLog("[ProxyContext] resetProxySettings")
     localStorage.removeItem(PROXY_STORAGE_KEY)
     setSettings(defaultProxySettings)
   }, [])

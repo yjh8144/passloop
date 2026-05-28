@@ -2,6 +2,7 @@ import { Download, Plus, Shuffle, Undo2, X } from "lucide-react"
 import type { Question } from "../../lib/types"
 import type { ResultMap } from "../../hooks/types"
 import { useT } from "../../contexts"
+import { debugLog } from "../../lib/debug"
 
 interface CompletionDialogProps {
   open: boolean
@@ -20,6 +21,8 @@ export function CompletionDialog(props: CompletionDialogProps) {
 
   const correctCount = props.questions.filter((q) => props.results[q.id] === true).length
   const wrongCount = props.questions.filter((q) => props.results[q.id] === false).length
+
+  debugLog("[CompletionDialog] opened", { total: props.questions.length, correctCount, wrongCount })
 
   return (
     <div className="modal-overlay" onClick={props.onClose}>
@@ -57,6 +60,7 @@ export function CompletionDialog(props: CompletionDialogProps) {
           <button
             className="btn-danger"
             onClick={() => {
+              debugLog("[CompletionDialog] action: redoAll")
               props.onClose()
               props.onClearListAttempts()
             }}
@@ -65,6 +69,7 @@ export function CompletionDialog(props: CompletionDialogProps) {
           </button>
           <button
             onClick={() => {
+              debugLog("[CompletionDialog] action: redoWrong")
               props.onClose()
               props.onRedoWrong()
             }}
@@ -73,6 +78,7 @@ export function CompletionDialog(props: CompletionDialogProps) {
           </button>
           <button
             onClick={() => {
+              debugLog("[CompletionDialog] action: exportWrong")
               props.onClose()
               props.onExportWrong()
             }}
@@ -81,6 +87,7 @@ export function CompletionDialog(props: CompletionDialogProps) {
           </button>
           <button
             onClick={() => {
+              debugLog("[CompletionDialog] action: createWrongList")
               props.onClose()
               props.onCreateWrongList()
             }}

@@ -2,6 +2,7 @@ import { Check } from "lucide-react"
 import type { PracticeMode, Question } from "../../lib/types"
 import { toArray } from "../../lib/question"
 import { useT } from "../../contexts"
+import { debugLog } from "../../lib/debug"
 
 export function AnswerInput(props: {
   question: Question
@@ -30,6 +31,7 @@ export function AnswerInput(props: {
               checked={props.value === option.label}
               onChange={() => {
                 if (isDisabled) return
+                debugLog("[AnswerInput] single/boolean select", question.id, option.label)
                 props.onChange(question.id, option.label)
               }}
               disabled={isDisabled}
@@ -55,6 +57,7 @@ export function AnswerInput(props: {
                 const next = event.target.checked
                   ? [...selected, option.label]
                   : selected.filter((item) => item !== option.label)
+                debugLog("[AnswerInput] multiple toggle", question.id, option.label, event.target.checked)
                 props.onChange(question.id, next)
               }}
               disabled={isDisabled}

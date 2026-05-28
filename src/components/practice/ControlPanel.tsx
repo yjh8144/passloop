@@ -2,6 +2,7 @@ import { Shuffle } from "lucide-react"
 import type { AppData, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
 import { useT, usePushToast } from "../../contexts"
+import { debugLog } from "../../lib/debug"
 
 export function ControlPanel(props: {
   settings: AppData["settings"]
@@ -18,7 +19,10 @@ export function ControlPanel(props: {
           ["single", t("singleQuestion")],
           ["paper", t("allQuestions")],
         ]}
-        onChange={(value) => props.updateSettings({ viewMode: value as ViewMode })}
+        onChange={(value) => {
+          debugLog("[ControlPanel] viewMode changed", value)
+          props.updateSettings({ viewMode: value as ViewMode })
+        }}
       />
       <Segmented
         value={props.settings.practiceMode}
@@ -27,6 +31,7 @@ export function ControlPanel(props: {
           ["memorize", t("memorize")],
         ]}
         onChange={(value) => {
+          debugLog("[ControlPanel] practiceMode changed", value)
           props.updateSettings({ practiceMode: value as PracticeMode })
           pushToast("info", t("modeProgressKept"))
         }}
@@ -39,6 +44,7 @@ export function ControlPanel(props: {
             ["paper", t("paperSubmit")],
           ]}
           onChange={(value) => {
+            debugLog("[ControlPanel] submitMode changed", value)
             const patch: Partial<AppData["settings"]> = { submitMode: value as SubmitMode }
             if (value === "each") patch.revealMode = "immediate"
             props.updateSettings(patch)
@@ -62,6 +68,7 @@ export function ControlPanel(props: {
             value={props.settings.sortMode}
             onChange={(event) => {
               const newSort = event.target.value as AppData["settings"]["sortMode"]
+              debugLog("[ControlPanel] sortMode changed", newSort)
               const patch: Partial<AppData["settings"]> = { sortMode: newSort }
               if (newSort === "random") patch.randomSeed = Date.now()
               props.updateSettings(patch)

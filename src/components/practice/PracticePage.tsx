@@ -6,6 +6,7 @@ import { QuestionCard } from "./QuestionCard"
 import { InspectorContent } from "./InspectorContent"
 import { CompletionDialog } from "./CompletionDialog"
 import { useT, usePracticeContext, useAppData, useNavigation } from "../../contexts"
+import { debugLog } from "../../lib/debug"
 
 export function PracticePage() {
   const t = useT()
@@ -58,6 +59,7 @@ export function PracticePage() {
   const [showCompletionBanner, setShowCompletionBanner] = useState(false)
   useEffect(() => {
     if (allSubmitted && !prevAllSubmitted.current) {
+      debugLog("[PracticePage] all questions submitted", { total: questions.length, correctCount, wrongCount })
       setShowCompletionBanner(true)
     }
     if (!allSubmitted) setShowCompletionBanner(false)

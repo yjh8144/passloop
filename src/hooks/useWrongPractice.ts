@@ -109,6 +109,7 @@ export function useWrongPractice({
       pushToast("info", t("noWrongQuestions"))
       return
     }
+    debugLog("Create wrong list", { count: wrongQuestions.length, listName: activeList.name })
     const newList = {
       id: createId(),
       name: t("wrongListSuffix", activeList.name),
