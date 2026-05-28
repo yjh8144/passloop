@@ -1,5 +1,5 @@
 import { Eraser, Plus } from "lucide-react"
-import type { AppData, PracticeMode, SubmitMode, ViewMode, RevealMode } from "../../lib/types"
+import type { AppData, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
 import { useT } from "../../contexts"
 
@@ -38,17 +38,11 @@ export function ControlPanel(props: {
             ["each", t("eachSubmit")],
             ["paper", t("paperSubmit")],
           ]}
-          onChange={(value) => props.updateSettings({ submitMode: value as SubmitMode })}
-        />
-      )}
-      {props.settings.practiceMode !== "memorize" && props.settings.submitMode !== "paper" && (
-        <Segmented
-          value={props.settings.revealMode}
-          options={[
-            ["immediate", t("revealImmediate")],
-            ["end", t("revealEnd")],
-          ]}
-          onChange={(value) => props.updateSettings({ revealMode: value as RevealMode })}
+          onChange={(value) => {
+            const patch: Partial<AppData["settings"]> = { submitMode: value as SubmitMode }
+            if (value === "each") patch.revealMode = "immediate"
+            props.updateSettings(patch)
+          }}
         />
       )}
       {props.settings.practiceMode !== "memorize" && props.settings.submitMode !== "paper" && (

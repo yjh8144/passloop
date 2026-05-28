@@ -264,13 +264,17 @@ export function normalizeAppData(value: unknown): AppData {
     safeLists.some((list) => list.id === source.activeListId)
       ? source.activeListId
       : safeLists[0].id
-  return {
+  const result: AppData = {
     version: 1,
     lists: safeLists,
     activeListId,
     attempts: Array.isArray(source.attempts) ? source.attempts : [],
     settings: { ...defaultSettings, ...(source.settings ?? {}) },
   }
+  if (result.settings.submitMode === "each" && result.settings.revealMode === "end") {
+    result.settings = { ...result.settings, revealMode: "immediate" }
+  }
+  return result
 }
 
 function deduplicateListIds(lists: QuestionList[]): QuestionList[] {
