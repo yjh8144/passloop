@@ -96,6 +96,8 @@ const SYSTEM_PROMPT = `你是题库整理助手。请把用户提供的未整理
 每题字段：type(single|multiple|boolean|blank|short), title, options, answer, explanation, hint。
 title 为题干内容。
 options 使用 [{"label":"A","text":"选项内容"}]。
+多选题 answer 用数组，如 ["A","B"]。
+填空题/简答题 answer 用数组，每个元素对应一个空，如 ["答案1","答案2"]。同一个空有多个可选正确答案时用 | 分隔，如 ["Paris|巴黎","London|伦敦"]。
 解析字段 explanation 可以为空。`
 
 export async function parseWithLlm(input: string, config: LlmConfig) {
@@ -322,7 +324,8 @@ export async function fillAnswersWithLlm(
   const fillPrompt = `你是题库整理助手。请为以下题目${mode === "answer" ? "补充答案" : mode === "explanation" ? "补充解析" : "补充答案和解析"}。
 只返回 JSON 数组，不要 Markdown。
 ${modeInstruction}
-多选题/填空题的答案用数组，如 ["A","B"]。
+多选题答案用数组，如 ["A","B"]。
+填空题/简答题答案用数组，每个元素对应一个空，如 ["答案1","答案2"]。同一个空有多个可选正确答案时用 | 分隔，如 ["Paris|巴黎"]。
 判断题答案用 "T" 或 "F"。
 
 题目列表：
@@ -357,14 +360,19 @@ ${JSON.stringify(
     let answer = q.answer
     let explanation = q.explanation
     if (mode !== "explanation" && fill.answer !== undefined) {
-      answer =
-        q.type === "multiple" || q.type === "blank"
-          ? Array.isArray(fill.answer)
-            ? fill.answer.map(String)
-            : String(fill.answer)
-                .split("|")
-                .map((s) => s.trim())
+      if (q.type === "multiple") {
+        answer = Array.isArray(fill.answer)
+          ? fill.answer.map(String)
           : String(fill.answer)
+              .split("|")
+              .map((s) => s.trim())
+      } else if (q.type === "blank" || q.type === "short") {
+        answer = Array.isArray(fill.answer)
+          ? fill.answer.map(String)
+          : [String(fill.answer)]
+      } else {
+        answer = String(fill.answer)
+      }
     }
     if (mode !== "answer" && typeof fill.explanation === "string" && fill.explanation) {
       explanation = fill.explanation

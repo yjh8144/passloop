@@ -55,6 +55,7 @@ export const ko: Record<string, string> = {
   revealImmediate: "즉시 답 표시",
   revealEnd: "마지막에 답 표시",
   blankPlaceholder: "빈칸 {0}",
+  shortPlaceholder: "답변 {0}",
   wrongPractice: "오답 연습",
   sessionAccuracy: "정답률",
   sessionTime: "시간",
@@ -104,7 +105,8 @@ export const ko: Record<string, string> = {
   title: "제목",
   prompt: "지문",
   options: "선택지",
-  answerSepHint: "답 (빈칸은 |로 구분)",
+  answerSepHint: "답 (대체 답은 |로 구분)",
+  answerFieldsLabel: "답 필드 (대체 답은 |로 구분)",
   selectAnswerHint: "클릭하여 정답 선택",
 
   // Self-fill dialog

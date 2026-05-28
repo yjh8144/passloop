@@ -118,14 +118,19 @@ ${questionsData}`
       let answer = q.answer
       let explanation = q.explanation
       if (props.mode !== "explanation" && fill.answer !== undefined) {
-        answer =
-          q.type === "multiple" || q.type === "blank"
-            ? Array.isArray(fill.answer)
-              ? fill.answer.map(String)
-              : String(fill.answer)
-                  .split("|")
-                  .map((s) => s.trim())
+        if (q.type === "multiple") {
+          answer = Array.isArray(fill.answer)
+            ? fill.answer.map(String)
             : String(fill.answer)
+                .split("|")
+                .map((s) => s.trim())
+        } else if (q.type === "blank" || q.type === "short") {
+          answer = Array.isArray(fill.answer)
+            ? fill.answer.map(String)
+            : [String(fill.answer)]
+        } else {
+          answer = String(fill.answer)
+        }
       }
       if (props.mode !== "answer" && typeof fill.explanation === "string" && fill.explanation) {
         explanation = fill.explanation

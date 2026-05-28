@@ -55,6 +55,7 @@ export const zh: Record<string, string> = {
   revealImmediate: "立即显示答案",
   revealEnd: "最后显示答案",
   blankPlaceholder: "空 {0}",
+  shortPlaceholder: "答案 {0}",
   wrongPractice: "错题重练",
   sessionAccuracy: "本次正确率",
   sessionTime: "本次用时",
@@ -104,7 +105,8 @@ export const zh: Record<string, string> = {
   title: "标题",
   prompt: "题干",
   options: "选项",
-  answerSepHint: "答案（填空用 | 分隔）",
+  answerSepHint: "答案（同一空多个正确答案用 | 分隔）",
+  answerFieldsLabel: "答案字段（用 | 分隔可选答案）",
   selectAnswerHint: "点击选择正确答案",
 
   // Self-fill dialog

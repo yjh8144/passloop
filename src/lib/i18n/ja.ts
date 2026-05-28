@@ -55,6 +55,7 @@ export const ja: Record<string, string> = {
   revealImmediate: "すぐに答えを表示",
   revealEnd: "最後に答えを表示",
   blankPlaceholder: "空欄 {0}",
+  shortPlaceholder: "解答 {0}",
   wrongPractice: "間違い練習",
   sessionAccuracy: "正答率",
   sessionTime: "時間",
@@ -104,7 +105,8 @@ export const ja: Record<string, string> = {
   title: "タイトル",
   prompt: "問題文",
   options: "選択肢",
-  answerSepHint: "答え（空欄は | で区切る）",
+  answerSepHint: "答え（代替答えは | で区切る）",
+  answerFieldsLabel: "解答欄（代替答えは | で区切る）",
   selectAnswerHint: "クリックして正解を選択",
 
   // Self-fill dialog

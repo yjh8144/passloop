@@ -95,14 +95,28 @@ export function AnswerInput(props: {
       </div>
     )
   }
-  return (
-    <textarea
-      value={String(props.value ?? "")}
-      disabled={isDisabled}
-      onChange={(event) => props.onChange(question.id, event.target.value)}
-      placeholder={t("inputAnswer")}
-    />
-  )
+  if (question.type === "short") {
+    const blanks = Math.max(1, toArray(question.answer).length)
+    const values = toArray(props.value ?? Array.from({ length: blanks }, () => ""))
+    return (
+      <div className="blank-grid">
+        {Array.from({ length: blanks }).map((_, index) => (
+          <textarea
+            key={index}
+            value={values[index] ?? ""}
+            placeholder={blanks > 1 ? t("shortPlaceholder", index + 1) : t("inputAnswer")}
+            disabled={isDisabled}
+            onChange={(event) => {
+              const next = [...values]
+              next[index] = event.target.value
+              props.onChange(question.id, next)
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
+  return null
 }
 
 function MemorizeDisplay({ question }: { question: Question }) {
@@ -154,8 +168,19 @@ function MemorizeDisplay({ question }: { question: Question }) {
     )
   }
   return (
-    <div className="memorize-answer-display">
-      <p className="short-answer-value">{String(question.answer)}</p>
+    <div className="memorize-answer-display short-answers">
+      {(() => {
+        const answers = toArray(question.answer)
+        if (answers.length <= 1) {
+          return <p className="short-answer-value">{answers[0] ?? ""}</p>
+        }
+        return answers.map((ans, index) => (
+          <div key={index} className="blank-answer-item">
+            <span className="blank-label">#{index + 1}</span>
+            <span className="blank-value">{ans}</span>
+          </div>
+        ))
+      })()}
     </div>
   )
 }

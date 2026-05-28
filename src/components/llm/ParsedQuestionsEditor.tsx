@@ -189,21 +189,62 @@ export function ParsedQuestionsEditor(props: {
                 })}
               </div>
             ) : (
-              <input
-                value={Array.isArray(question.answer) ? question.answer.join("|") : question.answer}
-                disabled={props.readOnly}
-                onChange={(e) =>
-                  updateQuestion(qIndex, {
-                    answer:
-                      question.type === "blank"
-                        ? e.target.value
-                            .split("|")
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        : e.target.value,
-                  })
-                }
-              />
+              <div className="multi-answer-editor compact">
+                {(() => {
+                  const answers = Array.isArray(question.answer)
+                    ? question.answer.length > 0
+                      ? question.answer
+                      : [""]
+                    : question.answer
+                      ? [question.answer]
+                      : [""]
+                  return (
+                    <>
+                      {answers.map((ans, aIndex) => (
+                        <div className="multi-answer-row" key={aIndex}>
+                          <span className="answer-index">#{aIndex + 1}</span>
+                          <input
+                            value={String(ans)}
+                            disabled={props.readOnly}
+                            placeholder={
+                              question.type === "blank"
+                                ? t("blankPlaceholder", aIndex + 1)
+                                : t("shortPlaceholder", aIndex + 1)
+                            }
+                            onChange={(e) => {
+                              const next = [...answers]
+                              next[aIndex] = e.target.value
+                              updateQuestion(qIndex, { answer: next })
+                            }}
+                          />
+                          {!props.readOnly && answers.length > 1 && (
+                            <button
+                              type="button"
+                              className="icon-button"
+                              onClick={() =>
+                                updateQuestion(qIndex, {
+                                  answer: answers.filter((_, i) => i !== aIndex),
+                                })
+                              }
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {!props.readOnly && (
+                        <button
+                          type="button"
+                          className="icon-button add-answer-btn"
+                          onClick={() => updateQuestion(qIndex, { answer: [...answers, ""] })}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      )}
+                    </>
+                  )
+                })()}
+              </div>
             )}
           </label>
           <label className="field-label">

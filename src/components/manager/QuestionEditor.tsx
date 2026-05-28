@@ -84,7 +84,7 @@ export function QuestionEditor(props: {
                 defaults.answer = []
               } else {
                 defaults.options = []
-                defaults.answer = ""
+                defaults.answer = []
               }
               patch(defaults)
             }
@@ -162,7 +162,7 @@ export function QuestionEditor(props: {
       <label className="field-label">
         {draft.type === "single" || draft.type === "multiple" || draft.type === "boolean"
           ? t("selectAnswerHint")
-          : t("answerSepHint")}
+          : t("answerFieldsLabel")}
         {draft.type === "single" || draft.type === "boolean" ? (
           <div className="answer-toggle-group">
             {draft.options.map((option) => (
@@ -200,20 +200,63 @@ export function QuestionEditor(props: {
             })}
           </div>
         ) : (
-          <input
-            value={Array.isArray(draft.answer) ? draft.answer.join("|") : draft.answer}
-            onChange={(event) =>
-              patch({
-                answer:
-                  draft.type === "blank"
-                    ? event.target.value
-                        .split("|")
-                        .map((item) => item.trim())
-                        .filter(Boolean)
-                    : event.target.value,
-              })
-            }
-          />
+          <div className="multi-answer-editor">
+            {(() => {
+              const answers = Array.isArray(draft.answer)
+                ? draft.answer.length > 0
+                  ? draft.answer
+                  : [""]
+                : draft.answer
+                  ? [draft.answer]
+                  : [""]
+              return (
+                <>
+                  {answers.map((ans, index) => (
+                    <div className="multi-answer-row" key={index}>
+                      <span className="answer-index">#{index + 1}</span>
+                      {draft.type === "short" ? (
+                        <textarea
+                          value={String(ans)}
+                          placeholder={t("shortPlaceholder", index + 1)}
+                          onChange={(e) => {
+                            const next = [...answers]
+                            next[index] = e.target.value
+                            patch({ answer: next })
+                          }}
+                        />
+                      ) : (
+                        <input
+                          value={String(ans)}
+                          placeholder={t("blankPlaceholder", index + 1)}
+                          onChange={(e) => {
+                            const next = [...answers]
+                            next[index] = e.target.value
+                            patch({ answer: next })
+                          }}
+                        />
+                      )}
+                      {answers.length > 1 && (
+                        <button
+                          type="button"
+                          className="icon-button"
+                          onClick={() => patch({ answer: answers.filter((_, i) => i !== index) })}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="icon-button add-answer-btn"
+                    onClick={() => patch({ answer: [...answers, ""] })}
+                  >
+                    <Plus size={16} />
+                  </button>
+                </>
+              )
+            })()}
+          </div>
         )}
       </label>
       <label className="field-label">

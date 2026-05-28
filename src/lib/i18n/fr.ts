@@ -55,6 +55,7 @@ export const fr: Record<string, string> = {
   revealImmediate: "Afficher la réponse immédiatement",
   revealEnd: "Afficher la réponse à la fin",
   blankPlaceholder: "Champ {0}",
+  shortPlaceholder: "Réponse {0}",
   wrongPractice: "Pratique erreurs",
   sessionAccuracy: "Précision",
   sessionTime: "Temps",
@@ -104,7 +105,8 @@ export const fr: Record<string, string> = {
   title: "Titre",
   prompt: "Énoncé",
   options: "Options",
-  answerSepHint: "Réponse (utiliser | pour blancs)",
+  answerSepHint: "Réponse (utiliser | pour alternatives)",
+  answerFieldsLabel: "Champs de réponse (utiliser | pour alternatives)",
   selectAnswerHint: "Cliquer pour sélectionner la bonne réponse",
 
   // Self-fill dialog

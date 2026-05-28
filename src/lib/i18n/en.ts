@@ -55,6 +55,7 @@ export const en: Record<string, string> = {
   revealImmediate: "Show answer immediately",
   revealEnd: "Show answer at end",
   blankPlaceholder: "Blank {0}",
+  shortPlaceholder: "Answer {0}",
   wrongPractice: "Wrong Practice",
   sessionAccuracy: "Accuracy",
   sessionTime: "Time",
@@ -105,7 +106,8 @@ export const en: Record<string, string> = {
   title: "Title",
   prompt: "Prompt",
   options: "Options",
-  answerSepHint: "Answer (use | for blank)",
+  answerSepHint: "Answer (use | for alternatives)",
+  answerFieldsLabel: "Answer fields (use | for alternatives)",
   selectAnswerHint: "Click to select correct answer",
 
   // Self-fill dialog

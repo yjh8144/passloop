@@ -42,7 +42,7 @@ export function createEmptyQuestion(type: QuestionType = "single"): Question {
       type === "single" || type === "multiple"
         ? ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" }))
         : [],
-    answer: type === "multiple" || type === "blank" ? [] : "",
+    answer: type === "multiple" || type === "blank" || type === "short" ? [] : "",
     explanation: "",
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -121,10 +121,13 @@ function optionLabel(index: number) {
 }
 
 function normalizeAnswer(value: unknown, type: QuestionType): string | string[] {
-  if (type === "multiple" || type === "blank") {
+  if (type === "multiple" || type === "blank" || type === "short") {
     if (Array.isArray(value)) return value.map((item) => String(item))
     if (typeof value === "string") {
-      return value.includes("|") ? value.split("|").map((item) => item.trim()) : [value]
+      if (type === "multiple") {
+        return value.includes("|") ? value.split("|").map((item) => item.trim()) : value ? [value] : []
+      }
+      return value ? [value] : []
     }
     return []
   }
@@ -195,12 +198,16 @@ export function sortQuestions(
 }
 
 export function isAnswerCorrect(question: Question, answer: string | string[]) {
-  if (question.type === "short") {
-    return (
-      normalizeText(answer).length > 0 && normalizeText(answer) === normalizeText(question.answer)
-    )
+  if (question.type === "blank" || question.type === "short") {
+    const expected = toArray(question.answer)
+    const actual = toArray(answer).map(normalizeText)
+    if (expected.length !== actual.length) return false
+    return expected.every((item, i) => {
+      const alternatives = item.split("|").map((s) => normalizeText(s))
+      return alternatives.includes(actual[i])
+    })
   }
-  if (question.type === "multiple" || question.type === "blank") {
+  if (question.type === "multiple") {
     const expected = toArray(question.answer).map(normalizeText).sort()
     const actual = toArray(answer).map(normalizeText).sort()
     return (
