@@ -104,9 +104,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   // Skip questions that are in the current wrong practice session (they should be re-answerable)
   useEffect(() => {
     const derived: Record<string, boolean> = {}
-    const wrongIds = state.wrongSession
-      ? new Set<string>()
-      : null
+    const wrongIds = state.wrongSession ? new Set<string>() : null
     if (wrongIds && page === "wrong") {
       for (const q of wrongQuestions) wrongIds.add(q.id)
     }

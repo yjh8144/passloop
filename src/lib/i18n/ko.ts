@@ -600,6 +600,7 @@ export const ko: Record<string, string> = {
   listDeleted: "목록이 삭제되었습니다.",
   confirmClearAttempts: "「{0}」의 연습 데이터를 초기화하시겠습니까? 문제는 유지됩니다.",
   attemptsCleared: "현재 목록의 연습 데이터가 초기화되었습니다.",
+  clearAttemptData: "연습 데이터 초기화",
   importedToLocal: "로컬 목록에 가져왔습니다.",
   defaultListDesc: "JSON에서 문제를 가져오거나 수동으로 추가하세요.",
   unnamedList: "이름 없는 목록",

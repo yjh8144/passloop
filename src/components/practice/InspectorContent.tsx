@@ -1,4 +1,4 @@
-import { Download, Plus, Shuffle, Undo2 } from "lucide-react"
+import { Download, Plus, Shuffle, Trash2, Undo2 } from "lucide-react"
 import type { Question } from "../../lib/types"
 import type { getListStats } from "../../lib/question"
 import type { Page, ResultMap } from "../../hooks/types"
@@ -66,6 +66,17 @@ export function InspectorContent(props: InspectorContentProps) {
         </section>
       )}
       <StatsPanel stats={props.stats} revealMode={props.settings.revealMode} />
+      {!props.allSubmitted && props.stats.attempted > 0 && (
+        <section className="inspector-panel" style={{ padding: "10px 14px" }}>
+          <button
+            className="btn-danger"
+            onClick={props.onClearListAttempts}
+            style={{ width: "100%" }}
+          >
+            <Trash2 size={16} /> {t("clearAttemptData")}
+          </button>
+        </section>
+      )}
       {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
       {props.navigatorClassName ? (
         <div className={props.navigatorClassName}>{navigator}</div>

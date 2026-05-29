@@ -639,6 +639,7 @@ export const fr: Record<string, string> = {
   listDeleted: "Liste supprimée.",
   confirmClearAttempts: 'Effacer les données de "{0}" ? Les questions seront conservées.',
   attemptsCleared: "Données de la liste actuelle effacées.",
+  clearAttemptData: "Effacer les données",
   importedToLocal: "Importé dans la liste locale.",
   defaultListDesc: "Importez des questions depuis un JSON ou ajoutez-les manuellement.",
   unnamedList: "Liste sans nom",

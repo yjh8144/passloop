@@ -588,6 +588,7 @@ export const zh: Record<string, string> = {
   listDeleted: "题单已删除。",
   confirmClearAttempts: "确定清空「{0}」的刷题数据吗？题目内容会保留。",
   attemptsCleared: "当前题单刷题数据已清空。",
+  clearAttemptData: "清空答题数据",
   importedToLocal: "已导入到本地题单。",
   defaultListDesc: "从 JSON 导入题目，或手动新增题目。",
   unnamedList: "未命名题单",

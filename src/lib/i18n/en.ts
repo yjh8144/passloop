@@ -622,6 +622,7 @@ export const en: Record<string, string> = {
   listDeleted: "List deleted.",
   confirmClearAttempts: 'Clear all attempt data for "{0}"? Questions will be kept.',
   attemptsCleared: "Attempt data cleared for current list.",
+  clearAttemptData: "Clear attempt data",
   importedToLocal: "Imported to local list.",
   defaultListDesc: "Import questions from JSON or add manually.",
   unnamedList: "Unnamed List",

@@ -603,6 +603,7 @@ export const ja: Record<string, string> = {
   listDeleted: "リストを削除しました。",
   confirmClearAttempts: "「{0}」の回答データをクリアしますか？問題は保持されます。",
   attemptsCleared: "現在のリストの回答データをクリアしました。",
+  clearAttemptData: "回答データをクリア",
   importedToLocal: "ローカルリストにインポートしました。",
   defaultListDesc: "JSONから問題をインポートするか、手動で追加してください。",
   unnamedList: "名前なしリスト",
