@@ -92,6 +92,7 @@ export async function fetchViaProxy(
 
 const SYSTEM_PROMPT = `你是题库整理助手。请把用户提供的未整理题目转换为 PassLoop 标准 JSON。
 只返回 JSON，不要 Markdown。
+注意 JSON 字符串转义规则：字符串内的双引号必须转义为 \\"，反斜杠必须转义为 \\\\，换行用 \\n 表示不能直接换行，JSON 的键和值必须使用 ASCII 半角双引号（"）包裹，禁止使用「」『』“”等中文引号作为 JSON 结构符号，确保输出可被 JSON.parse() 直接解析。
 输出结构为：{"name":"题单名称","description":"","questions":[...]}。
 每题字段：type(single|multiple|boolean|blank|short), title, options, answer, explanation, hint。
 title 为题干内容。
@@ -323,6 +324,7 @@ export async function fillAnswersWithLlm(
 
   const fillPrompt = `你是题库整理助手。请为以下题目${mode === "answer" ? "补充答案" : mode === "explanation" ? "补充解析" : "补充答案和解析"}。
 只返回 JSON 数组，不要 Markdown。
+注意 JSON 字符串转义规则：字符串内的双引号必须转义为 \\"，反斜杠必须转义为 \\\\，换行用 \\n 表示不能直接换行，JSON 的键和值必须使用 ASCII 半角双引号（"）包裹，禁止使用「」『』“”等中文引号作为 JSON 结构符号，确保输出可被 JSON.parse() 直接解析。
 ${modeInstruction}
 多选题答案用数组，如 ["A","B"]。
 填空题/简答题答案用数组，每个元素对应一个空，如 ["答案1","答案2"]。同一个空有多个可选正确答案时用 | 分隔，如 ["Paris|巴黎"]。

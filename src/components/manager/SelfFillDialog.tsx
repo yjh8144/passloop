@@ -40,6 +40,7 @@ export function SelfFillDialog(props: {
 
   const prompt = `你是题库整理助手。请为以下题目${props.mode === "answer" ? "补充答案" : props.mode === "explanation" ? "补充解析" : "补充答案和解析"}。
 只返回 JSON 数组，不要 Markdown。
+注意 JSON 字符串转义规则：字符串内的双引号必须转义为 \\"，反斜杠必须转义为 \\\\，换行用 \\n 表示不能直接换行，JSON 的键和值必须使用 ASCII 半角双引号（"）包裹，禁止使用「」『』“”等中文引号作为 JSON 结构符号，确保输出可被 JSON.parse() 直接解析。
 ${modeInstruction}
 多选题/填空题的答案用数组，如 ["A","B"]。
 判断题答案用 "T" 或 "F"。

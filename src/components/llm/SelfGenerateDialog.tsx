@@ -43,6 +43,7 @@ export function SelfGenerateDialog(props: {
 
   const prompt = `你是题库整理助手。请把我提供的题目转换为以下 JSON 格式。${fillInstruction}
 只返回 JSON，不要使用 Markdown 代码块包裹。
+注意 JSON 字符串转义规则：字符串内的双引号必须转义为 \\"，反斜杠必须转义为 \\\\，换行用 \\n 表示不能直接换行，JSON 的键和值必须使用 ASCII 半角双引号（"）包裹，禁止使用「」『』“”等中文引号作为 JSON 结构符号，确保输出可被 JSON.parse() 直接解析。
 
 type 可选值：single（单选）、multiple（多选）、boolean（判断）、blank（填空）、short（简答）。
 options 格式：[{"label":"A","text":"选项内容"}]，判断题用 [{"label":"T","text":"正确"},{"label":"F","text":"错误"}]。
