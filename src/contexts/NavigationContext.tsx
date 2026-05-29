@@ -1,9 +1,10 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import type { MutableRefObject, ReactNode } from "react"
 import type { Page } from "../hooks/types"
 import { debugLog } from "../lib/debug"
 import { useDialog } from "./DialogContext"
 import { useT } from "./I18nContext"
+import { loadSessionPage, saveSessionPage } from "../utils/session"
 
 interface NavigationContextValue {
   page: Page
@@ -22,11 +23,15 @@ const NavigationContext = createContext<NavigationContextValue | null>(null)
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const t = useT()
   const { showConfirm } = useDialog()
-  const [page, setPage] = useState<Page>("practice")
+  const [page, setPage] = useState<Page>(() => (loadSessionPage() as Page) || "practice")
   const [mobileSidebarCollapsed, setMobileSidebarCollapsed] = useState(false)
   const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(false)
   const llmUnsavedRef = useRef(false)
   const managerUnsavedRef = useRef(false)
+
+  useEffect(() => {
+    saveSessionPage(page)
+  }, [page])
 
   const changePage = useCallback(
     (nextPage: Page) => {

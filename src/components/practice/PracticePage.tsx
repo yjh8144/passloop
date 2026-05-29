@@ -26,7 +26,6 @@ export function PracticePage() {
     exportWrongList,
     createWrongList,
     startedAtRef,
-    paperScrollLockRef,
   } = usePracticeContext()
 
   const settings = data.settings
@@ -93,7 +92,6 @@ export function PracticePage() {
             ratioMap.delete(idx)
           }
         }
-        if (paperScrollLockRef.current) return
         let best: { idx: number; ratio: number } | null = null
         for (const [idx, ratio] of ratioMap) {
           if (!best || ratio > best.ratio || (ratio === best.ratio && idx < best.idx)) {
@@ -107,7 +105,7 @@ export function PracticePage() {
     const cards = container.querySelectorAll("[id^='question-']")
     cards.forEach((card) => observer.observe(card))
     return () => observer.disconnect()
-  }, [settings.viewMode, questions.length, setCurrentIndex, paperScrollLockRef])
+  }, [settings.viewMode, questions.length, setCurrentIndex])
 
   const content =
     questions.length === 0 ? (

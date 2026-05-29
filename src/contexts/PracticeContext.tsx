@@ -20,7 +20,13 @@ import { useWrongPractice } from "../hooks/useWrongPractice"
 import { evaluateQuestion } from "../utils/evaluate"
 import { createId } from "../lib/question"
 import { debugLog } from "../lib/debug"
-import { loadSessionAnswers, loadSessionIndex } from "../utils/session"
+import {
+  loadSessionAnswers,
+  loadPosition,
+  loadWrongSession,
+  clearPosition,
+  savePosition,
+} from "../utils/session"
 import type { AppData, Question } from "../lib/types"
 import type { AnswerMap, ResultMap, SetState } from "../hooks/types"
 
@@ -31,7 +37,6 @@ interface PracticeContextValue {
   currentIndex: number
   setCurrentIndex: SetState<number>
   startedAtRef: MutableRefObject<Record<string, number>>
-  paperScrollLockRef: MutableRefObject<number>
   submitQuestion: (question: Question) => void
   submitAll: () => void
 
@@ -51,8 +56,8 @@ function createInitialState(): PracticeState {
   return {
     answers: loadSessionAnswers(),
     results: {},
-    currentIndex: loadSessionIndex(),
-    wrongSession: null,
+    currentIndex: 0,
+    wrongSession: loadWrongSession(),
   }
 }
 
@@ -78,10 +83,58 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   })
 
   const startedAtRef = useRef<Record<string, number>>({})
-  const paperScrollLockRef = useRef<number>(0)
+  const positionRestoredRef = useRef(false)
+  const positionRestoredForListRef = useRef<string | null>(null)
 
   // --- Persistence ---
-  useSessionPersistence(state.answers, state.currentIndex)
+  useSessionPersistence(state.answers, state.currentIndex, state.wrongSession)
+
+  // --- Save position to localStorage (skip initial 0 before restore, skip in wrong mode) ---
+  useEffect(() => {
+    if (
+      positionRestoredRef.current &&
+      positionRestoredForListRef.current === activeList.id &&
+      page !== "wrong"
+    ) {
+      savePosition(activeList.id, state.currentIndex)
+    }
+  }, [state.currentIndex, activeList.id, page])
+
+  // --- Restore results from localStorage attempts to prevent duplicate submissions ---
+  // Skip questions that are in the current wrong practice session (they should be re-answerable)
+  useEffect(() => {
+    const derived: Record<string, boolean> = {}
+    const wrongIds = state.wrongSession
+      ? new Set<string>()
+      : null
+    if (wrongIds && page === "wrong") {
+      for (const q of wrongQuestions) wrongIds.add(q.id)
+    }
+    for (const attempt of data.attempts) {
+      if (attempt.listId === activeList.id) {
+        if (wrongIds && wrongIds.has(attempt.questionId)) continue
+        derived[attempt.questionId] = attempt.correct
+      }
+    }
+    dispatch({ type: "RESTORE_RESULTS", results: derived })
+  }, [activeList.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // --- beforeunload warning for paper mode with unsubmitted answers ---
+  useEffect(() => {
+    if (data.settings.submitMode !== "paper") return
+    const hasUnsubmitted = Object.keys(state.answers).some((id) => {
+      if (id in state.results) return false
+      const val = state.answers[id]
+      if (Array.isArray(val)) return val.some((s) => s.trim())
+      return typeof val === "string" && val.trim().length > 0
+    })
+    if (!hasUnsubmitted) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [data.settings.submitMode, state.answers, state.results])
 
   // --- Reset when switching lists ---
   const prevListIdRef = useRef(activeList.id)
@@ -98,6 +151,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const prevQuestionsRef = useRef(displayedQuestions)
   const preSearchIndexRef = useRef<number | null>(null)
   const prevQueryRef = useRef(query)
+
+  // Restore position on initial mount
+  useEffect(() => {
+    if (positionRestoredForListRef.current === null) {
+      positionRestoredForListRef.current = activeList.id
+      const saved = loadPosition(activeList.id)
+      if (saved > 0) {
+        const maxIndex = Math.max(displayedQuestions.length - 1, 0)
+        dispatch({ type: "NAVIGATE", index: Math.min(saved, maxIndex) })
+      }
+      positionRestoredRef.current = true
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (query && !prevQueryRef.current) {
@@ -117,13 +183,23 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (displayedQuestions !== prevQuestionsRef.current) {
       prevQuestionsRef.current = displayedQuestions
+      if (positionRestoredForListRef.current !== activeList.id) {
+        positionRestoredForListRef.current = activeList.id
+        positionRestoredRef.current = true
+        const saved = loadPosition(activeList.id)
+        if (saved > 0) {
+          const maxIndex = Math.max(displayedQuestions.length - 1, 0)
+          dispatch({ type: "NAVIGATE", index: Math.min(saved, maxIndex) })
+          return
+        }
+      }
       if (preSearchIndexRef.current === null) {
         dispatch({ type: "NAVIGATE", index: 0 })
       } else {
         dispatch({ type: "CLAMP_INDEX", maxIndex: Math.max(displayedQuestions.length - 1, 0) })
       }
     }
-  }, [displayedQuestions])
+  }, [displayedQuestions, activeList.id])
 
   // --- Register reset handler for AppDataContext ---
   const pageRef = useRef(page)
@@ -136,13 +212,14 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       if (mode === "full") {
         dispatch({ type: "LIST_RESET_FULL" })
         startedAtRef.current = {}
+        clearPosition(activeList.id)
       } else {
         dispatch({ type: "LIST_RESET_SELECTIVE", questionIds })
         for (const id of questionIds) delete startedAtRef.current[id]
         if (pageRef.current === "wrong") setPage("practice")
       }
     },
-    [setPage],
+    [setPage, activeList.id],
   )
   useEffect(() => {
     resetHandlerRef.current = handleListReset
@@ -366,7 +443,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const resetAll = useCallback(() => {
     dispatch({ type: "LIST_RESET_FULL" })
     startedAtRef.current = {}
-  }, [])
+    clearPosition(activeList.id)
+  }, [activeList.id])
 
   const value = useMemo(
     () => ({
@@ -376,7 +454,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       currentIndex: state.currentIndex,
       setCurrentIndex,
       startedAtRef,
-      paperScrollLockRef,
       submitQuestion,
       submitAll,
       wrongSession: state.wrongSession,
