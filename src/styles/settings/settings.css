@@ -19,6 +19,10 @@
   box-shadow: var(--shadow);
   padding: 8px;
   min-width: 260px;
+  /* 80px ≈ topbar (58) + dropdown offset (8) + breathing room */
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .topbar-settings-dropdown .inspector-panel {
@@ -102,14 +106,9 @@
   }
 
   .topbar-settings-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
+    /* inherits max-height + overflow-y from desktop rule */
     left: auto;
-    min-width: 260px;
     width: max-content;
     max-width: calc(100vw - 24px);
-    max-height: 70vh;
-    overflow-y: auto;
   }
 }
