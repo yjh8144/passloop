@@ -678,6 +678,9 @@ export const en: Record<string, string> = {
   // Debug
   simulateCrash: "Simulate Crash",
   showOnboarding: "Show Onboarding",
+  createTestListBtn: "Create Test List",
+  testListName: "Test List (All Types)",
+  testListDesc: "Contains 2 questions of every type, for testing.",
 
   // UX confirmations
   confirmSwitchList: "You have unanswered progress. Switching list will clear it. Continue?",
@@ -686,4 +689,5 @@ export const en: Record<string, string> = {
   confirmLeaveManager: "Unsaved changes will be lost if you leave. Continue?",
   reshuffle: "Reshuffle",
   confirmSwitchToWrongList: "Wrong list created. Switch to it now?",
+  saveFailed: "Storage save failed (storage may be full). Recent changes are kept in memory but won't persist.",
 }

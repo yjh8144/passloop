@@ -113,7 +113,18 @@ export function AppDataProvider({
     [activeList.questions, stats.wrongQuestionIds],
   )
 
-  useEffect(() => saveData(data), [data])
+  const saveFailedRef = useRef(false)
+  useEffect(() => {
+    const ok = saveData(data)
+    if (!ok) {
+      if (!saveFailedRef.current) {
+        saveFailedRef.current = true
+        pushToast("error", t("saveFailed"))
+      }
+    } else if (saveFailedRef.current) {
+      saveFailedRef.current = false
+    }
+  }, [data, pushToast, t])
   useEffect(() => {
     const body = document.body
     body.dataset.theme = data.settings.theme

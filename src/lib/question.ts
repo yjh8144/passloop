@@ -53,6 +53,105 @@ export function createEmptyQuestion(type: QuestionType = "single"): Question {
   }
 }
 
+export function createTestQuestionList(t: TFunc): QuestionList {
+  const timestamp = now()
+  const labels = getTypeLabels(t)
+  const choiceOptions = (texts: string[]): ChoiceOption[] =>
+    texts.map((text, index) => ({ id: createId(), label: optionLabel(index), text }))
+  const booleanOptions = (): ChoiceOption[] => [
+    { id: createId(), label: "T", text: "True" },
+    { id: createId(), label: "F", text: "False" },
+  ]
+  const make = (
+    type: QuestionType,
+    n: number,
+    title: string,
+    options: ChoiceOption[],
+    answer: string | string[],
+    explanation: string,
+  ): Question => ({
+    id: createId(),
+    type,
+    title: `[${labels[type]} ${n}] ${title}`,
+    options,
+    answer,
+    explanation,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  })
+
+  const questions: Question[] = [
+    make(
+      "single",
+      1,
+      "1 + 1 = ?",
+      choiceOptions(["1", "2", "3", "4"]),
+      "B",
+      "1 + 1 = 2",
+    ),
+    make(
+      "single",
+      2,
+      "Which is a primary color?",
+      choiceOptions(["Green", "Orange", "Red", "Purple"]),
+      "C",
+      "Red is a primary color.",
+    ),
+    make(
+      "multiple",
+      1,
+      "Which are even numbers?",
+      choiceOptions(["1", "2", "3", "4"]),
+      ["B", "D"],
+      "2 and 4 are even.",
+    ),
+    make(
+      "multiple",
+      2,
+      "Which are programming languages?",
+      choiceOptions(["Python", "HTML", "Rust", "JSON"]),
+      ["A", "C"],
+      "Python and Rust are programming languages.",
+    ),
+    make("boolean", 1, "The earth is round.", booleanOptions(), "T", "True."),
+    make("boolean", 2, "Water boils at 200°C at sea level.", booleanOptions(), "F", "It boils at 100°C."),
+    make("blank", 1, "The capital of France is ___.", [], ["Paris"], "Paris is the capital of France."),
+    make(
+      "blank",
+      2,
+      "___ + ___ = 10 (two numbers that sum to 10)",
+      [],
+      ["4", "6"],
+      "Example: 4 + 6 = 10.",
+    ),
+    make(
+      "short",
+      1,
+      "Briefly explain what HTTP stands for.",
+      [],
+      ["HyperText Transfer Protocol"],
+      "HTTP = HyperText Transfer Protocol.",
+    ),
+    make(
+      "short",
+      2,
+      "Name one benefit of automated testing.",
+      [],
+      ["Catches regressions early"],
+      "Automated testing catches regressions early.",
+    ),
+  ]
+
+  return {
+    id: createId(),
+    name: t("testListName"),
+    description: t("testListDesc"),
+    questions,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+}
+
 export function normalizeQuestion(value: unknown, index = 0): Question {
   const timestamp = now()
   if (!value || typeof value !== "object") {

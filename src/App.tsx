@@ -19,6 +19,7 @@ import {
   useT,
 } from "./contexts"
 import { createDefaultData, downloadJson, loadData } from "./lib/storage"
+import { createTestQuestionList } from "./lib/question"
 import { debugLog } from "./lib/debug"
 import { ONBOARDING_KEY } from "./utils/constants"
 import { useToast } from "./hooks/useToast"
@@ -155,6 +156,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           open={showDebugDialog}
           onClose={() => setShowDebugDialog(false)}
           onShowOnboarding={() => setShowOnboarding(true)}
+          onCreateTestList={() => addImportedList(createTestQuestionList(t))}
         />
         <OfflineDialog open={showOfflineDialog} onClose={() => setShowOfflineDialog(false)} />
       </div>

@@ -103,8 +103,14 @@ export function loadData(): AppData {
   }
 }
 
-export function saveData(data: AppData) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+export function saveData(data: AppData): boolean {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    return true
+  } catch (e) {
+    debugError("saveData failed", e)
+    return false
+  }
 }
 
 export function loadLlmConfig(fallback: LlmConfig): LlmConfig {

@@ -17,10 +17,12 @@ export function DebugDialog({
   open,
   onClose,
   onShowOnboarding,
+  onCreateTestList,
 }: {
   open: boolean
   onClose: () => void
   onShowOnboarding?: () => void
+  onCreateTestList?: () => void
 }) {
   const t = useT()
   const [debugEnabled, setDebugState] = useState(() => isDebugEnabled())
@@ -57,6 +59,16 @@ export function DebugDialog({
               }}
             >
               {t("showOnboarding")}
+            </button>
+          )}
+          {debugEnabled && onCreateTestList && (
+            <button
+              onClick={() => {
+                onCreateTestList()
+                onClose()
+              }}
+            >
+              {t("createTestListBtn")}
             </button>
           )}
           <button onClick={onClose}>{t("cancel")}</button>

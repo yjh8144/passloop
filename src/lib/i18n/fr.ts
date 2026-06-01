@@ -695,6 +695,9 @@ export const fr: Record<string, string> = {
   // Debug
   simulateCrash: "Simuler un crash",
   showOnboarding: "Afficher le guide",
+  createTestListBtn: "Créer une liste de test",
+  testListName: "Liste de test (tous les types)",
+  testListDesc: "Contient 2 questions de chaque type, pour les tests.",
 
   // UX confirmations
   confirmSwitchList: "Vous avez des réponses en cours. Changer de liste les effacera. Continuer ?",
@@ -703,4 +706,5 @@ export const fr: Record<string, string> = {
   confirmLeaveManager: "Les modifications non enregistrées seront perdues. Continuer ?",
   reshuffle: "Remélanger",
   confirmSwitchToWrongList: "Liste d'erreurs créée. Y basculer maintenant ?",
+  saveFailed: "Échec de l'enregistrement local (stockage peut-être plein). Les modifications restent en mémoire mais ne seront pas conservées.",
 }

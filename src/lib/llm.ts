@@ -177,6 +177,15 @@ async function streamOpenAiCompatible(
   )
 }
 
+function toGeminiSseEndpoint(input: string): string {
+  let url = input
+  if (!url.includes("streamGenerateContent")) {
+    url = url.replace(":generateContent", ":streamGenerateContent")
+  }
+  if (/[?&]alt=sse(\b|$)/.test(url)) return url
+  return url + (url.includes("?") ? "&" : "?") + "alt=sse"
+}
+
 async function streamGemini(
   prompt: string,
   config: LlmConfig,
@@ -187,13 +196,7 @@ async function streamGemini(
     config.endpoint.trim() ||
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`
   assertConfigValid(config.apiKey, model, baseEndpoint)
-  const endpoint = stripApiKey(
-    baseEndpoint.includes("streamGenerateContent")
-      ? baseEndpoint
-      : baseEndpoint
-          .replace(":generateContent", ":streamGenerateContent")
-          .replace(/\?/, "?alt=sse&"),
-  )
+  const endpoint = stripApiKey(toGeminiSseEndpoint(baseEndpoint))
   const response = await fetchWithProxyFallback(
     endpoint,
     {

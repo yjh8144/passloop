@@ -644,6 +644,9 @@ export const zh: Record<string, string> = {
   // Debug
   simulateCrash: "模拟崩溃",
   showOnboarding: "显示引导页",
+  createTestListBtn: "创建测试题单",
+  testListName: "测试题单（全题型）",
+  testListDesc: "包含全部题型各 2 道，用于测试。",
 
   // UX confirmations
   confirmSwitchList: "当前有未完成的作答，切换题单后将清除进度。确定切换吗？",
@@ -652,4 +655,5 @@ export const zh: Record<string, string> = {
   confirmLeaveManager: "编辑内容尚未保存，离开后将丢失。确定离开吗？",
   reshuffle: "重新洗牌",
   confirmSwitchToWrongList: "错题题单已创建，是否立即切换？",
+  saveFailed: "本地存储保存失败（可能空间已满）。当前更改仍在内存中，但不会持久化。",
 }

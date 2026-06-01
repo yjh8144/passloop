@@ -90,6 +90,14 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const startedAtRef = useRef<Record<string, number>>({})
   const positionRestoredRef = useRef(false)
   const positionRestoredForListRef = useRef<string | null>(null)
+  const autoNextTimerRef = useRef<number | null>(null)
+  const clearAutoNextTimer = useCallback(() => {
+    if (autoNextTimerRef.current !== null) {
+      window.clearTimeout(autoNextTimerRef.current)
+      autoNextTimerRef.current = null
+    }
+  }, [])
+  useEffect(() => clearAutoNextTimer, [clearAutoNextTimer])
 
   // --- Persistence ---
   useSessionPersistence(state.answers, state.currentIndex, state.wrongSession)
@@ -107,7 +115,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   // --- Restore results from localStorage attempts to prevent duplicate submissions ---
   // Skip questions that are in the current wrong practice session (they should be re-answerable)
+  // On list switch, reset state first, then restore from attempts in the same effect so the
+  // reset doesn't wipe out the restored values (dispatch order is reduce order).
+  const prevListIdRef = useRef(activeList.id)
+  const preSearchIndexRef = useRef<number | null>(null)
   useEffect(() => {
+    const isListSwitch = activeList.id !== prevListIdRef.current
+    if (isListSwitch) {
+      prevListIdRef.current = activeList.id
+      dispatch({ type: "LIST_RESET_FULL" })
+      startedAtRef.current = {}
+      preSearchIndexRef.current = null
+      clearAutoNextTimer()
+    }
     const derived: Record<string, boolean> = {}
     const derivedAnswers: AnswerMap = {}
     const wrongIds = state.wrongSession ? new Set<string>() : null
@@ -142,20 +162,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("beforeunload", handler)
   }, [data.settings.submitMode, state.answers, state.results])
 
-  // --- Reset when switching lists ---
-  const prevListIdRef = useRef(activeList.id)
-  useEffect(() => {
-    if (activeList.id !== prevListIdRef.current) {
-      prevListIdRef.current = activeList.id
-      dispatch({ type: "LIST_RESET_FULL" })
-      startedAtRef.current = {}
-      preSearchIndexRef.current = null
-    }
-  }, [activeList.id])
-
   // --- Reset index when displayed questions change (search, sort) ---
   const prevQuestionsRef = useRef(displayedQuestions)
-  const preSearchIndexRef = useRef<number | null>(null)
   const prevQueryRef = useRef(query)
 
   // Restore position on initial mount
@@ -215,6 +223,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   const handleListReset = useCallback(
     (mode: "full" | "selective", questionIds: string[]) => {
+      clearAutoNextTimer()
       if (mode === "full") {
         dispatch({ type: "LIST_RESET_FULL" })
         startedAtRef.current = {}
@@ -225,7 +234,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         if (pageRef.current === "wrong") setPage("practice")
       }
     },
-    [setPage, activeList.id],
+    [setPage, activeList.id, clearAutoNextTimer],
   )
   useEffect(() => {
     resetHandlerRef.current = handleListReset
@@ -363,7 +372,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
             const questionCount = practiceQuestions.length
             const idx = stateRef.current.currentIndex
             if (idx < questionCount - 1) {
-              window.setTimeout(() => {
+              clearAutoNextTimer()
+              autoNextTimerRef.current = window.setTimeout(() => {
+                autoNextTimerRef.current = null
                 dispatch({
                   type: "NAVIGATE_FN",
                   updater: (i) => Math.min(i + 1, questionCount - 1),
@@ -373,7 +384,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           } else if (shouldAdvance && data.settings.viewMode === "paper") {
             const questionIndex = practiceQuestions.findIndex((q) => q.id === question.id)
             if (questionIndex >= 0 && questionIndex < practiceQuestions.length - 1) {
-              window.setTimeout(() => {
+              clearAutoNextTimer()
+              autoNextTimerRef.current = window.setTimeout(() => {
+                autoNextTimerRef.current = null
                 dispatch({ type: "NAVIGATE", index: questionIndex + 1 })
               }, delay)
             }
@@ -408,6 +421,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       t,
       updateData,
       isAnswerEmpty,
+      clearAutoNextTimer,
     ],
   )
 
@@ -474,10 +488,11 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, [practiceQuestions, page, activeList.id, pushToast, showConfirm, t, updateData, isAnswerEmpty])
 
   const resetAll = useCallback(() => {
+    clearAutoNextTimer()
     dispatch({ type: "LIST_RESET_FULL" })
     startedAtRef.current = {}
     clearPosition(activeList.id)
-  }, [activeList.id])
+  }, [activeList.id, clearAutoNextTimer])
 
   const value = useMemo(
     () => ({

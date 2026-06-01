@@ -85,10 +85,10 @@ export function practiceReducer(state: PracticeState, action: PracticeAction): P
     }
 
     case "RESTORE_RESULTS":
-      return { ...state, results: { ...action.results, ...state.results } }
+      return { ...state, results: { ...state.results, ...action.results } }
 
     case "RESTORE_ANSWERS":
-      return { ...state, answers: { ...action.answers, ...state.answers } }
+      return { ...state, answers: { ...state.answers, ...action.answers } }
 
     case "START_WRONG_PRACTICE": {
       const nextAnswers = { ...state.answers }
