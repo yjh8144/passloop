@@ -199,6 +199,9 @@ export const ja: Record<string, string> = {
   addToWhere: "どこに追加しますか？",
   addToCurrentList: "現在のリストに追加",
   createNewListBtn: "新規リスト作成",
+  mergeToOtherList: "他のリストに統合…",
+  selectTargetList: "対象リストを選択",
+  currentListTag: "現在",
 
   // Backup import dialog
   importConfigTitle: "設定をインポート",
@@ -580,6 +583,7 @@ export const ja: Record<string, string> = {
   requestFailed: "リクエスト失敗：{0}",
   urlImportFailed: "URLインポートに失敗しました。",
   addedToCurrentList: "現在のリストに{0}問追加しました。",
+  addedToListName: "リスト「{1}」に{0}問追加しました。",
   importedListName: "インポートリスト",
   createdNewList: "新しいリスト「{0}」を作成しました（{1}問）。",
   invalidBackupFile: "有効なPassLoop設定ファイルではありません。",

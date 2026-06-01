@@ -200,6 +200,9 @@ export const ko: Record<string, string> = {
   addToWhere: "어디에 추가할까요?",
   addToCurrentList: "현재 목록에 추가",
   createNewListBtn: "새 목록 만들기",
+  mergeToOtherList: "다른 목록에 병합…",
+  selectTargetList: "대상 목록 선택",
+  currentListTag: "현재",
 
   // Backup import dialog
   importConfigTitle: "설정 가져오기",
@@ -577,6 +580,7 @@ export const ko: Record<string, string> = {
   requestFailed: "요청 실패: {0}",
   urlImportFailed: "URL 가져오기 실패.",
   addedToCurrentList: "현재 목록에 {0}문제 추가됨.",
+  addedToListName: "목록「{1}」에 {0}문제 추가됨.",
   importedListName: "가져온 목록",
   createdNewList: "새 목록 「{0}」 생성됨 ({1}문제).",
   invalidBackupFile: "유효한 PassLoop 설정 파일이 아닙니다.",

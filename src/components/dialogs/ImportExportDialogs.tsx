@@ -55,6 +55,8 @@ export function ImportExportDialogs({
       />
       <ImportChoiceDialog
         lists={importExport.pendingImportLists}
+        existingLists={data.lists}
+        activeListId={activeList.id}
         activeListName={activeList.name}
         onClose={() => importExport.setPendingImportLists(null)}
         onChoose={importExport.commitImport}

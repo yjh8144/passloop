@@ -6,7 +6,7 @@ import { normalizeAppData, readFileAsText } from "../lib/storage"
 import { debugLog } from "../lib/debug"
 import { fetchViaProxy } from "../lib/llm"
 import { defaultProxySettings } from "../utils/constants"
-import type { PushToast, UpdateActiveList, UpdateData, SetState } from "./types"
+import type { PushToast, UpdateActiveList, UpdateData, SetState, ImportCommitMode } from "./types"
 
 function validateImportUrl(url: string): string {
   const trimmed = url.trim()
@@ -126,7 +126,7 @@ export function useImportExport({
     }
   }
 
-  const commitImport = (mode: "current" | "new") => {
+  const commitImport = (mode: ImportCommitMode) => {
     if (!pendingImportLists) return
     const questions = pendingImportLists
       .flatMap((l) => l.questions)
@@ -139,7 +139,7 @@ export function useImportExport({
         updatedAt: new Date().toISOString(),
       }))
       pushToast("success", t("addedToCurrentList", questions.length))
-    } else {
+    } else if (mode === "new") {
       const name =
         pendingImportLists.length === 1 ? pendingImportLists[0].name : t("importedListName")
       debugLog("Import as new list", { name, questionCount: questions.length })
@@ -155,6 +155,27 @@ export function useImportExport({
         return { ...current, lists: [...current.lists, newList], activeListId: newList.id }
       })
       pushToast("success", t("createdNewList", name, questions.length))
+    } else {
+      const target = data.lists.find((l) => l.id === mode.listId)
+      if (!target) {
+        pushToast("error", t("importFailed"))
+        setPendingImportLists(null)
+        return
+      }
+      debugLog("Import to list", { listId: mode.listId, questionCount: questions.length })
+      updateData((current) => ({
+        ...current,
+        lists: current.lists.map((l) =>
+          l.id === mode.listId
+            ? {
+                ...l,
+                questions: [...l.questions, ...questions],
+                updatedAt: new Date().toISOString(),
+              }
+            : l,
+        ),
+      }))
+      pushToast("success", t("addedToListName", questions.length, target.name))
     }
     setPendingImportLists(null)
   }

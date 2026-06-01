@@ -199,6 +199,9 @@ export const zh: Record<string, string> = {
   addToWhere: "要添加到哪里？",
   addToCurrentList: "添加到当前题单",
   createNewListBtn: "创建新题单",
+  mergeToOtherList: "合并到其他题单…",
+  selectTargetList: "选择目标题单",
+  currentListTag: "当前",
 
   // Backup import dialog
   importConfigTitle: "导入配置",
@@ -567,6 +570,7 @@ export const zh: Record<string, string> = {
   requestFailed: "请求失败：{0}",
   urlImportFailed: "URL 导入失败。",
   addedToCurrentList: "已添加 {0} 道题到当前题单。",
+  addedToListName: "已添加 {0} 道题到题单「{1}」。",
   importedListName: "导入题单",
   createdNewList: "已创建新题单「{0}」，共 {1} 道题。",
   invalidBackupFile: "文件不是有效的 PassLoop 配置数据。",

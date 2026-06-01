@@ -205,6 +205,9 @@ export const fr: Record<string, string> = {
   addToWhere: "Où ajouter ?",
   addToCurrentList: "Ajouter à la liste actuelle",
   createNewListBtn: "Créer une nouvelle liste",
+  mergeToOtherList: "Fusionner dans une autre liste…",
+  selectTargetList: "Sélectionner la liste cible",
+  currentListTag: "Actuelle",
 
   // Backup import dialog
   importConfigTitle: "Importer la configuration",
@@ -616,6 +619,7 @@ export const fr: Record<string, string> = {
   requestFailed: "Échec de la requête : {0}",
   urlImportFailed: "Échec de l'importation URL.",
   addedToCurrentList: "{0} questions ajoutées à la liste actuelle.",
+  addedToListName: "{0} questions ajoutées à la liste « {1} ».",
   importedListName: "Liste importée",
   createdNewList: 'Nouvelle liste "{0}" créée avec {1} questions.',
   invalidBackupFile: "Le fichier n'est pas une configuration PassLoop valide.",
