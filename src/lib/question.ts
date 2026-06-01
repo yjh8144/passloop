@@ -81,14 +81,7 @@ export function createTestQuestionList(t: TFunc): QuestionList {
   })
 
   const questions: Question[] = [
-    make(
-      "single",
-      1,
-      "1 + 1 = ?",
-      choiceOptions(["1", "2", "3", "4"]),
-      "B",
-      "1 + 1 = 2",
-    ),
+    make("single", 1, "1 + 1 = ?", choiceOptions(["1", "2", "3", "4"]), "B", "1 + 1 = 2"),
     make(
       "single",
       2,
@@ -114,8 +107,22 @@ export function createTestQuestionList(t: TFunc): QuestionList {
       "Python and Rust are programming languages.",
     ),
     make("boolean", 1, "The earth is round.", booleanOptions(), "T", "True."),
-    make("boolean", 2, "Water boils at 200°C at sea level.", booleanOptions(), "F", "It boils at 100°C."),
-    make("blank", 1, "The capital of France is ___.", [], ["Paris"], "Paris is the capital of France."),
+    make(
+      "boolean",
+      2,
+      "Water boils at 200°C at sea level.",
+      booleanOptions(),
+      "F",
+      "It boils at 100°C.",
+    ),
+    make(
+      "blank",
+      1,
+      "The capital of France is ___.",
+      [],
+      ["Paris"],
+      "Paris is the capital of France.",
+    ),
     make(
       "blank",
       2,
@@ -268,7 +275,9 @@ export function normalizeImportedList(value: unknown): QuestionList {
     name: asString(source.name ?? source.title, "Imported List"),
     description: asString(source.description ?? source.desc, ""),
     questions: Array.isArray(source.questions)
-      ? deduplicateQuestionIds(source.questions.map((item, index) => normalizeQuestion(item, index)))
+      ? deduplicateQuestionIds(
+          source.questions.map((item, index) => normalizeQuestion(item, index)),
+        )
       : [],
     createdAt: asString(source.createdAt, timestamp),
     updatedAt: timestamp,

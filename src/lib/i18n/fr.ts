@@ -706,5 +706,6 @@ export const fr: Record<string, string> = {
   confirmLeaveManager: "Les modifications non enregistrées seront perdues. Continuer ?",
   reshuffle: "Remélanger",
   confirmSwitchToWrongList: "Liste d'erreurs créée. Y basculer maintenant ?",
-  saveFailed: "Échec de l'enregistrement local (stockage peut-être plein). Les modifications restent en mémoire mais ne seront pas conservées.",
+  saveFailed:
+    "Échec de l'enregistrement local (stockage peut-être plein). Les modifications restent en mémoire mais ne seront pas conservées.",
 }

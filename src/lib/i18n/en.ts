@@ -689,5 +689,6 @@ export const en: Record<string, string> = {
   confirmLeaveManager: "Unsaved changes will be lost if you leave. Continue?",
   reshuffle: "Reshuffle",
   confirmSwitchToWrongList: "Wrong list created. Switch to it now?",
-  saveFailed: "Storage save failed (storage may be full). Recent changes are kept in memory but won't persist.",
+  saveFailed:
+    "Storage save failed (storage may be full). Recent changes are kept in memory but won't persist.",
 }

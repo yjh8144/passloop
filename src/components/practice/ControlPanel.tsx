@@ -72,9 +72,7 @@ export function ControlPanel(props: {
               <input
                 type="checkbox"
                 checked={props.settings.autoNextPause}
-                onChange={(event) =>
-                  props.updateSettings({ autoNextPause: event.target.checked })
-                }
+                onChange={(event) => props.updateSettings({ autoNextPause: event.target.checked })}
               />
               {t("autoNextPause")}
             </label>

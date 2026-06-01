@@ -667,5 +667,6 @@ export const ko: Record<string, string> = {
   confirmLeaveManager: "저장되지 않은 변경사항이 있습니다. 나가면 손실됩니다. 계속하시겠습니까?",
   reshuffle: "다시 섞기",
   confirmSwitchToWrongList: "오답 목록이 생성되었습니다. 지금 전환하시겠습니까?",
-  saveFailed: "로컬 저장에 실패했습니다(용량 초과일 수 있음). 변경 사항은 메모리에만 남고 유지되지 않습니다.",
+  saveFailed:
+    "로컬 저장에 실패했습니다(용량 초과일 수 있음). 변경 사항은 메모리에만 남고 유지되지 않습니다.",
 }

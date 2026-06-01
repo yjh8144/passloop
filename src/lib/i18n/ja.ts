@@ -671,5 +671,6 @@ export const ja: Record<string, string> = {
   confirmLeaveManager: "未保存の変更があります。ページを離れると失われます。続行しますか？",
   reshuffle: "シャッフル",
   confirmSwitchToWrongList: "間違いリストが作成されました。今すぐ切り替えますか？",
-  saveFailed: "ローカル保存に失敗しました（容量不足の可能性）。変更はメモリ上にあり、永続化されません。",
+  saveFailed:
+    "ローカル保存に失敗しました（容量不足の可能性）。変更はメモリ上にあり、永続化されません。",
 }
