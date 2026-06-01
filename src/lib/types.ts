@@ -1,6 +1,6 @@
 export type QuestionType = "single" | "multiple" | "boolean" | "blank" | "short"
 
-export type SortMode = "manual" | "random" | "name" | "type"
+export type SortMode = "manual" | "random" | "name" | "type" | "type-random"
 export type ViewMode = "single" | "paper"
 export type PracticeMode = "practice" | "memorize"
 export type ThemeName = "mint" | "paper" | "night"

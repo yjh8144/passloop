@@ -102,7 +102,7 @@ export function ControlPanel(props: {
               const newSort = event.target.value as AppData["settings"]["sortMode"]
               debugLog("[ControlPanel] sortMode changed", newSort)
               const patch: Partial<AppData["settings"]> = { sortMode: newSort }
-              if (newSort === "random") patch.randomSeed = Date.now()
+              if (newSort === "random" || newSort === "type-random") patch.randomSeed = Date.now()
               props.updateSettings(patch)
             }}
           >
@@ -110,8 +110,9 @@ export function ControlPanel(props: {
             <option value="random">{t("random")}</option>
             <option value="name">{t("name")}</option>
             <option value="type">{t("type")}</option>
+            <option value="type-random">{t("typeRandom")}</option>
           </select>
-          {props.settings.sortMode === "random" && (
+          {(props.settings.sortMode === "random" || props.settings.sortMode === "type-random") && (
             <button
               className="icon-button"
               title={t("reshuffle")}
@@ -122,7 +123,7 @@ export function ControlPanel(props: {
           )}
         </span>
       </label>
-      {props.settings.sortMode === "type" && (
+      {(props.settings.sortMode === "type" || props.settings.sortMode === "type-random") && (
         <TypeOrderEditor
           order={props.settings.typeOrder}
           onChange={(next) => props.updateSettings({ typeOrder: next })}

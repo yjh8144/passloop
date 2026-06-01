@@ -191,7 +191,17 @@ export function sortQuestions(
   const loc = locale ?? "zh"
   if (mode === "name") return copy.sort((a, b) => a.title.localeCompare(b.title, loc))
   const order = typeOrder ?? questionTypes
-  return copy.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
+  if (mode === "type") {
+    return copy.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
+  }
+  const rng = seededRandom(seed ?? Date.now())
+  return copy
+    .map((question) => ({ question, score: rng() }))
+    .sort((a, b) => {
+      const byType = order.indexOf(a.question.type) - order.indexOf(b.question.type)
+      return byType !== 0 ? byType : a.score - b.score
+    })
+    .map((item) => item.question)
 }
 
 export function isAnswerCorrect(question: Question, answer: string | string[]) {
