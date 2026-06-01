@@ -47,11 +47,14 @@ export interface AttemptRecord {
 
 export type SubmitMode = "each" | "paper"
 export type RevealMode = "immediate" | "end"
+export type AutoNextScope = "all" | "correct"
 
 export interface Settings {
   theme: ThemeName
   language: LanguageName
   autoNext: boolean
+  autoNextPause: boolean
+  autoNextScope: AutoNextScope
   viewMode: ViewMode
   practiceMode: PracticeMode
   sortMode: SortMode

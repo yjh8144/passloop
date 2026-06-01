@@ -20,9 +20,17 @@ export function QuestionCard(props: {
   hideSubmit?: boolean
   revealMode?: "immediate" | "end"
   allSubmitted?: boolean
+  autoNext?: boolean
+  onAutoSubmit?: (value: string) => void
 }) {
   const t = useT()
   const labels = getTypeLabels(t)
+  const autoSubmitSelect =
+    !!props.autoNext &&
+    !props.hideSubmit &&
+    !props.submitted &&
+    props.practiceMode !== "memorize" &&
+    (props.question.type === "single" || props.question.type === "boolean")
   const showAnswer =
     props.practiceMode === "memorize" ||
     (props.submitted && (props.revealMode !== "end" || !!props.allSubmitted))
@@ -56,11 +64,13 @@ export function QuestionCard(props: {
         onChange={updateAnswer}
         practiceMode={props.practiceMode}
         disabled={props.submitted}
+        autoSubmit={autoSubmitSelect}
+        onAutoSubmit={props.onAutoSubmit}
       />
 
       {!props.compact && !props.hideSubmit && props.practiceMode !== "memorize" && (
         <div className="question-actions">
-          {!props.submitted && (
+          {!props.submitted && !autoSubmitSelect && (
             <button className="primary-button" onClick={props.onSubmit}>
               <Check size={17} /> {t("submit")}
             </button>

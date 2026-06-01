@@ -151,6 +151,8 @@ export function PracticePage() {
             submitted={question.id in results}
             practiceMode={settings.practiceMode}
             onSubmit={() => submitQuestion(question)}
+            onAutoSubmit={(value) => submitQuestion(question, value)}
+            autoNext={settings.autoNext}
             hideSubmit={settings.submitMode === "paper"}
             revealMode={settings.revealMode}
             allSubmitted={allSubmitted}
@@ -175,6 +177,8 @@ export function PracticePage() {
           submitted={activeQuestion.id in results}
           practiceMode={settings.practiceMode}
           onSubmit={() => submitQuestion(activeQuestion)}
+          onAutoSubmit={(value) => submitQuestion(activeQuestion, value)}
+          autoNext={settings.autoNext}
           onNext={
             currentIndex < questions.length - 1 ? () => setCurrentIndex((i) => i + 1) : undefined
           }

@@ -41,6 +41,8 @@ export const defaultSettings: Settings = {
   theme: "mint",
   language: "zh",
   autoNext: false,
+  autoNextPause: true,
+  autoNextScope: "all",
   viewMode: "single",
   practiceMode: "practice",
   sortMode: "manual",

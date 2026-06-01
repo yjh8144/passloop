@@ -37,7 +37,7 @@ interface PracticeContextValue {
   currentIndex: number
   setCurrentIndex: SetState<number>
   startedAtRef: MutableRefObject<Record<string, number>>
-  submitQuestion: (question: Question) => void
+  submitQuestion: (question: Question, overrideAnswer?: string | string[]) => void
   submitAll: () => void
 
   wrongSession: WrongSession | null
@@ -51,6 +51,9 @@ interface PracticeContextValue {
 }
 
 const PracticeContext = createContext<PracticeContextValue | null>(null)
+
+const AUTO_NEXT_PAUSE_MS = 500
+const AUTO_NEXT_FAST_MS = 120
 
 function createInitialState(): PracticeState {
   return {
@@ -312,7 +315,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const submitQuestion = useCallback(
-    (question: Question) => {
+    (question: Question, overrideAnswer?: string | string[]) => {
       const { results } = stateRef.current
       if (question.id in results) {
         const allDone =
@@ -321,7 +324,10 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         return
       }
       const doSubmit = () => {
-        const { answers } = stateRef.current
+        const answers =
+          overrideAnswer === undefined
+            ? stateRef.current.answers
+            : { ...stateRef.current.answers, [question.id]: overrideAnswer }
         const startedAt = startedAtRef.current[question.id] ?? Date.now()
         const correct = evaluateQuestion(question, answers)
         const inWrongMode = page === "wrong"
@@ -349,7 +355,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           ],
         }))
         if (data.settings.autoNext) {
-          if (data.settings.viewMode === "single") {
+          const shouldAdvance = correct || data.settings.autoNextScope === "all"
+          const delay = data.settings.autoNextPause ? AUTO_NEXT_PAUSE_MS : AUTO_NEXT_FAST_MS
+          if (shouldAdvance && data.settings.viewMode === "single") {
             const questionCount = practiceQuestions.length
             const idx = stateRef.current.currentIndex
             if (idx < questionCount - 1) {
@@ -358,19 +366,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
                   type: "NAVIGATE_FN",
                   updater: (i) => Math.min(i + 1, questionCount - 1),
                 })
-              }, 500)
+              }, delay)
             }
-          } else if (data.settings.viewMode === "paper") {
+          } else if (shouldAdvance && data.settings.viewMode === "paper") {
             const questionIndex = practiceQuestions.findIndex((q) => q.id === question.id)
             if (questionIndex >= 0 && questionIndex < practiceQuestions.length - 1) {
               window.setTimeout(() => {
                 dispatch({ type: "NAVIGATE", index: questionIndex + 1 })
-              }, 500)
+              }, delay)
             }
           }
         }
       }
-      if (isAnswerEmpty(question)) {
+      if (overrideAnswer === undefined && isAnswerEmpty(question)) {
         const idx = practiceQuestions.findIndex((q) => q.id === question.id)
         showConfirm(t("confirmEmptySubmit", idx + 1), doSubmit)
       } else {

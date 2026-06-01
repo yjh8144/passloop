@@ -1,5 +1,5 @@
 import { Shuffle, Trash2 } from "lucide-react"
-import type { AppData, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
+import type { AppData, AutoNextScope, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
 import { useT, usePushToast } from "../../contexts"
 import { debugLog } from "../../lib/debug"
@@ -63,6 +63,35 @@ export function ControlPanel(props: {
           {t("autoNext")}
         </label>
       )}
+      {props.settings.practiceMode !== "memorize" &&
+        props.settings.submitMode !== "paper" &&
+        props.settings.autoNext && (
+          <>
+            <label className="toggle-row">
+              <input
+                type="checkbox"
+                checked={props.settings.autoNextPause}
+                onChange={(event) =>
+                  props.updateSettings({ autoNextPause: event.target.checked })
+                }
+              />
+              {t("autoNextPause")}
+            </label>
+            <label className="field-label">
+              {t("autoNextScopeLabel")}
+              <Segmented
+                value={props.settings.autoNextScope}
+                options={[
+                  ["all", t("autoNextScopeAll")],
+                  ["correct", t("autoNextScopeCorrect")],
+                ]}
+                onChange={(value) =>
+                  props.updateSettings({ autoNextScope: value as AutoNextScope })
+                }
+              />
+            </label>
+          </>
+        )}
       <label className="field-label">
         {t("sort")}
         <span className="sort-row">

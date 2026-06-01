@@ -10,6 +10,8 @@ export function AnswerInput(props: {
   onChange: (id: string, value: string | string[]) => void
   practiceMode: PracticeMode
   disabled?: boolean
+  autoSubmit?: boolean
+  onAutoSubmit?: (value: string) => void
 }) {
   const t = useT()
   const { question } = props
@@ -33,6 +35,7 @@ export function AnswerInput(props: {
                 if (isDisabled) return
                 debugLog("[AnswerInput] single/boolean select", question.id, option.label)
                 props.onChange(question.id, option.label)
+                if (props.autoSubmit) props.onAutoSubmit?.(option.label)
               }}
               disabled={isDisabled}
             />
