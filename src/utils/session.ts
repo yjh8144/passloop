@@ -4,6 +4,7 @@ import {
   POSITIONS_STORAGE_KEY,
   WRONG_SESSION_KEY,
   PAGE_SESSION_KEY,
+  SUPPRESS_EMPTY_CONFIRM_KEY,
 } from "./constants"
 import type { AnswerMap } from "../hooks/types"
 import type { WrongSession } from "../hooks/practiceReducer"
@@ -92,4 +93,17 @@ export function loadSessionPage(): string | null {
 
 export function saveSessionPage(page: string) {
   sessionStorage.setItem(PAGE_SESSION_KEY, page)
+}
+
+export function loadSuppressEmptyConfirm(): boolean {
+  try {
+    return sessionStorage.getItem(SUPPRESS_EMPTY_CONFIRM_KEY) === "1"
+  } catch {
+    return false
+  }
+}
+
+export function saveSuppressEmptyConfirm(value: boolean) {
+  if (value) sessionStorage.setItem(SUPPRESS_EMPTY_CONFIRM_KEY, "1")
+  else sessionStorage.removeItem(SUPPRESS_EMPTY_CONFIRM_KEY)
 }

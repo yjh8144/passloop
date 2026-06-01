@@ -4,7 +4,8 @@ import { useT } from "../../contexts"
 
 export type ConfirmDialogState = {
   message: string
-  onConfirm: () => void
+  onConfirm: (dontAskAgain: boolean) => void
+  dismissLabel?: string
 } | null
 
 export function ConfirmDialog({
@@ -15,6 +16,12 @@ export function ConfirmDialog({
   onClose: () => void
 }) {
   const t = useT()
+  const [dontAskAgain, setDontAskAgain] = useState(false)
+  const [prevState, setPrevState] = useState(state)
+  if (state !== prevState) {
+    setDontAskAgain(false)
+    setPrevState(state)
+  }
   if (!state) return null
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -26,12 +33,22 @@ export function ConfirmDialog({
           </button>
         </div>
         <p style={{ margin: "8px 0 0", lineHeight: 1.6 }}>{state.message}</p>
+        {state.dismissLabel && (
+          <label className="modal-dismiss-option">
+            <input
+              type="checkbox"
+              checked={dontAskAgain}
+              onChange={(e) => setDontAskAgain(e.target.checked)}
+            />
+            {state.dismissLabel}
+          </label>
+        )}
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
           <button
             className="danger-button"
             onClick={() => {
-              state.onConfirm()
+              state.onConfirm(dontAskAgain)
               onClose()
             }}
           >

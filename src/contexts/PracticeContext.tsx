@@ -26,6 +26,8 @@ import {
   loadWrongSession,
   clearPosition,
   savePosition,
+  loadSuppressEmptyConfirm,
+  saveSuppressEmptyConfirm,
 } from "../utils/session"
 import type { AppData, Question } from "../lib/types"
 import type { AnswerMap, ResultMap, SetState } from "../hooks/types"
@@ -379,8 +381,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         }
       }
       if (overrideAnswer === undefined && isAnswerEmpty(question)) {
+        if (loadSuppressEmptyConfirm()) {
+          doSubmit()
+          return
+        }
         const idx = practiceQuestions.findIndex((q) => q.id === question.id)
-        showConfirm(t("confirmEmptySubmit", idx + 1), doSubmit)
+        showConfirm(
+          t("confirmEmptySubmit", idx + 1),
+          (dontAskAgain) => {
+            if (dontAskAgain) saveSuppressEmptyConfirm(true)
+            doSubmit()
+          },
+          { dismissLabel: t("dontAskThisSession") },
+        )
       } else {
         doSubmit()
       }
@@ -442,8 +455,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       pushToast("success", t("submitAllResult", unsubmitted.length, correctCount))
     }
     if (emptyQuestions.length) {
+      if (loadSuppressEmptyConfirm()) {
+        doSubmitAll()
+        return
+      }
       const nums = emptyQuestions.map((q) => practiceQuestions.indexOf(q) + 1).join(", ")
-      showConfirm(t("confirmEmptySubmitAll", nums), doSubmitAll)
+      showConfirm(
+        t("confirmEmptySubmitAll", nums),
+        (dontAskAgain) => {
+          if (dontAskAgain) saveSuppressEmptyConfirm(true)
+          doSubmitAll()
+        },
+        { dismissLabel: t("dontAskThisSession") },
+      )
     } else {
       doSubmitAll()
     }

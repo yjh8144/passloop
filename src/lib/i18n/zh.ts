@@ -574,6 +574,7 @@ export const zh: Record<string, string> = {
   confirmEmptySubmit: "第 {0} 题尚未作答，将被判为错误。确定提交吗？",
   submitAllResult: "已提交 {0} 题，正确 {1} 题。",
   confirmEmptySubmitAll: "第 {0} 题尚未作答，将被判为错误。确定提交全部吗？",
+  dontAskThisSession: "本次不再提示",
   importFailed: "导入失败。",
   requestFailed: "请求失败：{0}",
   urlImportFailed: "URL 导入失败。",

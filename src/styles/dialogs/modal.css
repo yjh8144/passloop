@@ -48,6 +48,19 @@
   max-width: 380px;
 }
 
+.modal-dismiss-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.modal-dismiss-option input {
+  cursor: pointer;
+}
+
 .modal-wide {
   max-width: 680px;
 }

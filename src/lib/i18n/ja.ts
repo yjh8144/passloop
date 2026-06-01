@@ -587,6 +587,7 @@ export const ja: Record<string, string> = {
   confirmEmptySubmit: "第{0}問が未回答です。提出しますか？",
   submitAllResult: "{0}問提出、{1}問正解。",
   confirmEmptySubmitAll: "第{0}問が未回答です。全て提出しますか？",
+  dontAskThisSession: "今回のみ表示しない",
   importFailed: "インポートに失敗しました。",
   requestFailed: "リクエスト失敗：{0}",
   urlImportFailed: "URLインポートに失敗しました。",

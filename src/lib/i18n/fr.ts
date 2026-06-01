@@ -623,6 +623,7 @@ export const fr: Record<string, string> = {
   confirmEmptySubmit: "La question {0} n'a pas de réponse. Soumettre quand même ?",
   submitAllResult: "{0} questions soumises, {1} correctes.",
   confirmEmptySubmitAll: "La question {0} n'a pas de réponse. Tout soumettre quand même ?",
+  dontAskThisSession: "Ne plus demander cette session",
   importFailed: "Échec de l'importation.",
   requestFailed: "Échec de la requête : {0}",
   urlImportFailed: "Échec de l'importation URL.",

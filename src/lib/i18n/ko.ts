@@ -584,6 +584,7 @@ export const ko: Record<string, string> = {
   confirmEmptySubmit: "{0}번 문제가 미답입니다. 제출하시겠습니까?",
   submitAllResult: "{0}문제 제출, {1}문제 정답.",
   confirmEmptySubmitAll: "{0}번 문제가 미답입니다. 전체 제출하시겠습니까?",
+  dontAskThisSession: "이번 세션에서 다시 표시 안 함",
   importFailed: "가져오기 실패.",
   requestFailed: "요청 실패: {0}",
   urlImportFailed: "URL 가져오기 실패.",

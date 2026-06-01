@@ -607,6 +607,7 @@ export const en: Record<string, string> = {
   confirmEmptySubmit: "Question {0} is unanswered and will be marked incorrect. Submit anyway?",
   submitAllResult: "Submitted {0} questions, {1} correct.",
   confirmEmptySubmitAll: "Question {0} unanswered — they will be marked incorrect. Submit all?",
+  dontAskThisSession: "Don't ask again this session",
   importFailed: "Import failed.",
   requestFailed: "Request failed: {0}",
   urlImportFailed: "URL import failed.",
