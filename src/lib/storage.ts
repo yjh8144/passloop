@@ -8,7 +8,7 @@ import type {
   QuestionType,
   Settings,
 } from "./types"
-import { createId, normalizeQuestion } from "./question"
+import { createId, deduplicateQuestionIds, normalizeQuestion } from "./question"
 import { questionTypes } from "../utils/constants"
 import { debugError } from "./debug"
 
@@ -354,7 +354,9 @@ export function normalizeList(value: unknown): QuestionList | null {
     id: typeof source.id === "string" ? source.id : createId(),
     name: typeof source.name === "string" ? source.name : "Unnamed List",
     description: typeof source.description === "string" ? source.description : "",
-    questions: Array.isArray(source.questions) ? source.questions.map(normalizeQuestion) : [],
+    questions: Array.isArray(source.questions)
+      ? deduplicateQuestionIds(source.questions.map(normalizeQuestion))
+      : [],
     createdAt: typeof source.createdAt === "string" ? source.createdAt : timestamp,
     updatedAt: timestamp,
   }

@@ -13,6 +13,17 @@ export function createId() {
   return crypto.randomUUID?.() ?? `id-${Date.now()}-${Math.random()}`
 }
 
+export function deduplicateQuestionIds(questions: Question[]): Question[] {
+  const seen = new Set<string>()
+  return questions.map((question) => {
+    if (seen.has(question.id)) {
+      return { ...question, id: createId() }
+    }
+    seen.add(question.id)
+    return question
+  })
+}
+
 const now = () => new Date().toISOString()
 
 export function getTypeLabels(t: TFunc): Record<QuestionType, string> {
@@ -158,7 +169,7 @@ export function normalizeImportedList(value: unknown): QuestionList {
     name: asString(source.name ?? source.title, "Imported List"),
     description: asString(source.description ?? source.desc, ""),
     questions: Array.isArray(source.questions)
-      ? source.questions.map((item, index) => normalizeQuestion(item, index))
+      ? deduplicateQuestionIds(source.questions.map((item, index) => normalizeQuestion(item, index)))
       : [],
     createdAt: asString(source.createdAt, timestamp),
     updatedAt: timestamp,

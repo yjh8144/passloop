@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react"
 import type { QuestionList } from "../../lib/types"
-import { normalizeImportedList, parseQuestionJson } from "../../lib/question"
+import { createId, normalizeImportedList, parseQuestionJson } from "../../lib/question"
 import { streamParseLlm, extractJsonText } from "../../lib/llm"
 import { downloadJson } from "../../lib/storage"
 import { debugLog } from "../../lib/debug"
@@ -264,9 +264,10 @@ export function LlmPage(props: {
                       const edited = getEditedList()
                       if (!edited) return
                       debugLog("Import to current list", { questionCount: edited.questions.length })
+                      const incoming = edited.questions.map((q) => ({ ...q, id: createId() }))
                       updateActiveList((currentList) => ({
                         ...currentList,
-                        questions: [...currentList.questions, ...edited.questions],
+                        questions: [...currentList.questions, ...incoming],
                         updatedAt: new Date().toISOString(),
                       }))
                       pushToast("success", t("addedToCurrentList", edited.questions.length))
