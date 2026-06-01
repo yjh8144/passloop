@@ -31,6 +31,7 @@ export type PracticeAction =
       inWrongMode: boolean
     }
   | { type: "RESTORE_RESULTS"; results: ResultMap }
+  | { type: "RESTORE_ANSWERS"; answers: AnswerMap }
   | { type: "START_WRONG_PRACTICE"; sessionId: string; startedAt: number; questionIds: string[] }
   | { type: "TICK_TIMER"; elapsedSeconds: number }
   | { type: "LIST_RESET_FULL" }
@@ -85,6 +86,9 @@ export function practiceReducer(state: PracticeState, action: PracticeAction): P
 
     case "RESTORE_RESULTS":
       return { ...state, results: { ...action.results, ...state.results } }
+
+    case "RESTORE_ANSWERS":
+      return { ...state, answers: { ...action.answers, ...state.answers } }
 
     case "START_WRONG_PRACTICE": {
       const nextAnswers = { ...state.answers }

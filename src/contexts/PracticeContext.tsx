@@ -104,6 +104,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   // Skip questions that are in the current wrong practice session (they should be re-answerable)
   useEffect(() => {
     const derived: Record<string, boolean> = {}
+    const derivedAnswers: AnswerMap = {}
     const wrongIds = state.wrongSession ? new Set<string>() : null
     if (wrongIds && page === "wrong") {
       for (const q of wrongQuestions) wrongIds.add(q.id)
@@ -112,9 +113,11 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       if (attempt.listId === activeList.id) {
         if (wrongIds && wrongIds.has(attempt.questionId)) continue
         derived[attempt.questionId] = attempt.correct
+        derivedAnswers[attempt.questionId] = attempt.answer
       }
     }
     dispatch({ type: "RESTORE_RESULTS", results: derived })
+    dispatch({ type: "RESTORE_ANSWERS", answers: derivedAnswers })
   }, [activeList.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- beforeunload warning for paper mode with unsubmitted answers ---
