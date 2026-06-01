@@ -39,6 +39,13 @@ export function ManagerPage(props: {
   const [editorFloatOpen, setEditorFloatOpen] = useState(false)
   const [editorDirty, setEditorDirty] = useState(false)
   const editorRef = useRef<HTMLElement>(null)
+  const fillAbortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    return () => {
+      fillAbortRef.current?.abort()
+    }
+  }, [])
 
   useEffect(() => {
     managerUnsavedRef.current = editorDirty
@@ -104,6 +111,9 @@ export function ManagerPage(props: {
     setShowFillChoice(false)
     setFilling(true)
     setFillStreamText("")
+    fillAbortRef.current?.abort()
+    const controller = new AbortController()
+    fillAbortRef.current = controller
     try {
       const updated = await fillAnswersWithLlm(
         props.list.questions,
@@ -112,6 +122,7 @@ export function ManagerPage(props: {
         (accumulated) => {
           setFillStreamText(accumulated)
         },
+        controller.signal,
       )
       debugLog("LLM fill completed", { mode, updatedCount: updated.length })
       props.updateList((list) => ({
@@ -131,11 +142,20 @@ export function ManagerPage(props: {
             : t("fillLabelBoth")
       pushToast("success", t("llmFillDone", label))
     } catch (error) {
-      debugLog("LLM fill failed", error)
-      pushToast("error", error instanceof Error ? error.message : t("llmFillFailed"))
+      if (controller.signal.aborted || (error as { name?: string })?.name === "AbortError") {
+        debugLog("LLM fill cancelled")
+      } else {
+        debugLog("LLM fill failed", error)
+        pushToast("error", error instanceof Error ? error.message : t("llmFillFailed"))
+      }
     } finally {
+      if (fillAbortRef.current === controller) fillAbortRef.current = null
       setFilling(false)
     }
+  }
+
+  const cancelFill = () => {
+    fillAbortRef.current?.abort()
   }
 
   const saveQuestion = (question: Question) => {
@@ -179,8 +199,8 @@ export function ManagerPage(props: {
             <button onClick={() => setShowSelfFill(true)}>
               <Copy size={17} /> {t("selfFill")}
             </button>
-            <button onClick={handleFillAnswers} disabled={filling}>
-              <Sparkles size={17} /> {filling ? t("filling") : t("llmFill")}
+            <button onClick={filling ? cancelFill : handleFillAnswers}>
+              <Sparkles size={17} /> {filling ? t("cancel") : t("llmFill")}
             </button>
             <button
               className="primary-button"

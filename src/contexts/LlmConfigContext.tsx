@@ -38,7 +38,9 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
   )
   const [showModal, setShowModal] = useState(false)
 
-  useEffect(() => saveLlmMultiConfig(multiConfig), [multiConfig])
+  useEffect(() => {
+    saveLlmMultiConfig(multiConfig)
+  }, [multiConfig])
 
   const addProvider = useCallback(
     (data: Omit<LlmProvider, "id" | "createdAt" | "updatedAt">): LlmProvider => {

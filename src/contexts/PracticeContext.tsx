@@ -181,7 +181,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (query && !prevQueryRef.current) {
-      // eslint-disable-next-line react-hooks/immutability
       preSearchIndexRef.current = stateRef.current.currentIndex
     } else if (!query && prevQueryRef.current && preSearchIndexRef.current !== null) {
       const maxIndex = displayedQuestions.length - 1

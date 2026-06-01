@@ -11,15 +11,20 @@ export function Navigator(props: {
   viewMode: "single" | "paper"
   revealMode?: "immediate" | "end"
   allSubmitted?: boolean
+  onPaperJump?: (index: number) => void
 }) {
   const t = useT()
   const handleClick = (index: number) => {
-    debugLog("Navigate to question", { index, questionId: props.questions[index]?.id })
-    props.setCurrentIndex(index)
-    if (props.viewMode === "paper") {
-      const el = document.getElementById(`question-${index}`)
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+    debugLog("Navigate to question", {
+      index,
+      questionId: props.questions[index]?.id,
+      viaPaperJump: props.viewMode === "paper" && !!props.onPaperJump,
+    })
+    if (props.viewMode === "paper" && props.onPaperJump) {
+      props.onPaperJump(index)
+      return
     }
+    props.setCurrentIndex(index)
   }
   const showResult = props.revealMode !== "end" || !!props.allSubmitted
   return (

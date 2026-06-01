@@ -22,7 +22,9 @@ export function ProxyProvider({ children }: { children: ReactNode }) {
   )
   const [showModal, setShowModal] = useState(false)
 
-  useEffect(() => saveProxySettings(settings), [settings])
+  useEffect(() => {
+    saveProxySettings(settings)
+  }, [settings])
 
   const updateProxySettings = useCallback((patch: Partial<ProxySettings>) => {
     debugLog("[ProxyContext] updateProxySettings", patch)

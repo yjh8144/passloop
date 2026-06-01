@@ -140,21 +140,27 @@ export function loadLlmConfig(fallback: LlmConfig): LlmConfig {
   }
 }
 
-export function saveLlmConfig(config: LlmConfig) {
-  localStorage.setItem(
-    LLM_CONFIG_STORAGE_KEY,
-    JSON.stringify({
-      provider: config.provider,
-      model: config.model,
-      endpoint: config.endpoint,
-      apiKey: config.apiKey,
-      proxyEnabled: config.proxyEnabled,
-      proxyUrl: config.proxyUrl,
-      proxyKey: config.proxyKey,
-      fillAnswer: config.fillAnswer,
-      fillExplanation: config.fillExplanation,
-    }),
-  )
+export function saveLlmConfig(config: LlmConfig): boolean {
+  try {
+    localStorage.setItem(
+      LLM_CONFIG_STORAGE_KEY,
+      JSON.stringify({
+        provider: config.provider,
+        model: config.model,
+        endpoint: config.endpoint,
+        apiKey: config.apiKey,
+        proxyEnabled: config.proxyEnabled,
+        proxyUrl: config.proxyUrl,
+        proxyKey: config.proxyKey,
+        fillAnswer: config.fillAnswer,
+        fillExplanation: config.fillExplanation,
+      }),
+    )
+    return true
+  } catch (e) {
+    debugError("saveLlmConfig failed", e)
+    return false
+  }
 }
 
 export function clearLlmConfig() {
@@ -182,12 +188,18 @@ export function loadLlmMultiConfig(fallback: LlmMultiConfig): LlmMultiConfig {
   }
 }
 
-export function saveLlmMultiConfig(config: LlmMultiConfig) {
-  const toStore = {
-    ...config,
-    providers: config.providers.map((p) => ({ ...p, apiKey: obfuscate(p.apiKey) })),
+export function saveLlmMultiConfig(config: LlmMultiConfig): boolean {
+  try {
+    const toStore = {
+      ...config,
+      providers: config.providers.map((p) => ({ ...p, apiKey: obfuscate(p.apiKey) })),
+    }
+    localStorage.setItem(LLM_MULTI_CONFIG_STORAGE_KEY, JSON.stringify(toStore))
+    return true
+  } catch (e) {
+    debugError("saveLlmMultiConfig failed", e)
+    return false
   }
-  localStorage.setItem(LLM_MULTI_CONFIG_STORAGE_KEY, JSON.stringify(toStore))
 }
 
 export function clearLlmMultiConfig() {
@@ -236,9 +248,15 @@ export function loadProxySettings(fallback: ProxySettings): ProxySettings {
   }
 }
 
-export function saveProxySettings(settings: ProxySettings) {
-  const toStore = { ...settings, proxyKey: obfuscate(settings.proxyKey) }
-  localStorage.setItem(PROXY_STORAGE_KEY, JSON.stringify(toStore))
+export function saveProxySettings(settings: ProxySettings): boolean {
+  try {
+    const toStore = { ...settings, proxyKey: obfuscate(settings.proxyKey) }
+    localStorage.setItem(PROXY_STORAGE_KEY, JSON.stringify(toStore))
+    return true
+  } catch (e) {
+    debugError("saveProxySettings failed", e)
+    return false
+  }
 }
 
 function migrateV1ToV2(v1: Partial<LlmConfig>, _fallback: LlmMultiConfig): LlmMultiConfig {

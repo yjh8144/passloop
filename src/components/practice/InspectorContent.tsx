@@ -26,6 +26,7 @@ export interface InspectorContentProps {
   onRedoWrong: () => void
   onExportWrong: () => void
   onCreateWrongList: () => void
+  onPaperJump?: (index: number) => void
 }
 
 export function InspectorContent(props: InspectorContentProps) {
@@ -39,6 +40,7 @@ export function InspectorContent(props: InspectorContentProps) {
       viewMode={props.settings.viewMode}
       revealMode={props.settings.revealMode}
       allSubmitted={props.allSubmitted}
+      onPaperJump={props.onPaperJump}
     />
   )
   return (

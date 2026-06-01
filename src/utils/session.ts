@@ -43,7 +43,8 @@ export function loadPosition(listId: string): number {
     const raw = localStorage.getItem(POSITIONS_STORAGE_KEY)
     const positions = raw ? JSON.parse(raw) : {}
     return typeof positions[listId] === "number" ? positions[listId] : 0
-  } catch {
+  } catch (e) {
+    debugError("loadPosition failed", e)
     return 0
   }
 }
@@ -54,8 +55,8 @@ export function savePosition(listId: string, index: number) {
     const positions = raw ? JSON.parse(raw) : {}
     positions[listId] = index
     localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(positions))
-  } catch {
-    /* ignore */
+  } catch (e) {
+    debugError("savePosition failed", e)
   }
 }
 
@@ -65,8 +66,8 @@ export function clearPosition(listId: string) {
     const positions = raw ? JSON.parse(raw) : {}
     delete positions[listId]
     localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(positions))
-  } catch {
-    /* ignore */
+  } catch (e) {
+    debugError("clearPosition failed", e)
   }
 }
 
@@ -74,7 +75,8 @@ export function loadWrongSession(): WrongSession | null {
   try {
     const raw = sessionStorage.getItem(WRONG_SESSION_KEY)
     return raw ? JSON.parse(raw) : null
-  } catch {
+  } catch (e) {
+    debugError("loadWrongSession failed", e)
     return null
   }
 }
@@ -98,7 +100,8 @@ export function saveSessionPage(page: string) {
 export function loadSuppressEmptyConfirm(): boolean {
   try {
     return sessionStorage.getItem(SUPPRESS_EMPTY_CONFIRM_KEY) === "1"
-  } catch {
+  } catch (e) {
+    debugError("loadSuppressEmptyConfirm failed", e)
     return false
   }
 }

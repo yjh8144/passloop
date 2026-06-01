@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { BarChart3, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { EmptyState } from "../ui/EmptyState"
 import { Navigator } from "./Navigator"
@@ -8,6 +8,8 @@ import { CompletionDialog } from "./CompletionDialog"
 import { useT, usePracticeContext, useAppData, useNavigation } from "../../contexts"
 import { loadPosition } from "../../utils/session"
 import { debugLog } from "../../lib/debug"
+
+const PAPER_SCROLL_LOCK_MS = 650
 
 export function PracticePage() {
   const t = useT()
@@ -75,6 +77,35 @@ export function PracticePage() {
   const paperStackRef = useRef<HTMLDivElement>(null)
   const initialScrollDoneRef = useRef<string | null>(null)
   const restoringRef = useRef(false)
+  // Suppresses the paper-mode IntersectionObserver during programmatic smooth scrolls.
+  // Without this, mid-scroll the observer can pick the next neighbour as "best visible"
+  // and overwrite the index just set by a Navigator click. 0 = no lock; otherwise a timeout id.
+  const paperScrollLockRef = useRef<number>(0)
+
+  useEffect(
+    () => () => {
+      if (paperScrollLockRef.current) {
+        window.clearTimeout(paperScrollLockRef.current)
+        paperScrollLockRef.current = 0
+      }
+    },
+    [],
+  )
+
+  const jumpToPaperIndex = useCallback(
+    (index: number) => {
+      if (paperScrollLockRef.current) {
+        window.clearTimeout(paperScrollLockRef.current)
+      }
+      paperScrollLockRef.current = window.setTimeout(() => {
+        paperScrollLockRef.current = 0
+      }, PAPER_SCROLL_LOCK_MS)
+      setCurrentIndex(index)
+      const el = document.getElementById(`question-${index}`)
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+    },
+    [setCurrentIndex],
+  )
 
   useEffect(() => {
     if (settings.viewMode !== "paper" || !questions.length) return
@@ -101,7 +132,8 @@ export function PracticePage() {
             best = { idx, ratio }
           }
         }
-        if (best && !restoringRef.current) setCurrentIndex(best.idx)
+        if (best && !restoringRef.current && paperScrollLockRef.current === 0)
+          setCurrentIndex(best.idx)
       },
       { root: scrollRoot, threshold: [0, 0.25, 0.5, 0.75, 1] },
     )
@@ -252,6 +284,7 @@ export function PracticePage() {
             viewMode={settings.viewMode}
             revealMode={settings.revealMode}
             allSubmitted={allSubmitted}
+            onPaperJump={jumpToPaperIndex}
           />
         </div>
         {content}
@@ -276,6 +309,7 @@ export function PracticePage() {
             onRedoWrong={resetWrongPractice}
             onExportWrong={exportWrongList}
             onCreateWrongList={createWrongList}
+            onPaperJump={jumpToPaperIndex}
           />
         </aside>
       )}
@@ -312,6 +346,10 @@ export function PracticePage() {
             onRedoWrong={resetWrongPractice}
             onExportWrong={exportWrongList}
             onCreateWrongList={createWrongList}
+            onPaperJump={(idx) => {
+              jumpToPaperIndex(idx)
+              setInspectorFloatOpen(false)
+            }}
           />
         </div>
       </div>

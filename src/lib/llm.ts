@@ -43,6 +43,7 @@ async function safeFetch(url: string, options?: RequestInit): Promise<Response> 
   try {
     response = await fetch(url, options)
   } catch (error) {
+    if ((error as { name?: string })?.name === "AbortError") throw error
     if (error instanceof TypeError) {
       throw new NetworkError(
         "网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。",
@@ -51,7 +52,7 @@ async function safeFetch(url: string, options?: RequestInit): Promise<Response> 
     throw error
   }
   if (!response.ok) {
-    const text = await response.text()
+    const text = (await response.text()).slice(0, 4096)
     throw new Error(text || `请求失败：${response.status}`)
   }
   return response
@@ -111,6 +112,7 @@ export async function streamParseLlm(
   config: LlmConfig,
   mode: "both" | "answer" | "explanation" | "none",
   onChunk: (accumulated: string) => void,
+  signal?: AbortSignal,
 ): Promise<string> {
   const fillAnswer = mode === "both" || mode === "answer"
   const fillExplanation = mode === "both" || mode === "explanation"
@@ -122,18 +124,19 @@ export async function streamParseLlm(
 ${input}`
 
   if (config.provider === "gemini") {
-    return streamGemini(prompt, config, onChunk)
+    return streamGemini(prompt, config, onChunk, signal)
   }
   if (config.provider === "anthropic") {
-    return streamAnthropic(prompt, config, onChunk)
+    return streamAnthropic(prompt, config, onChunk, signal)
   }
-  return streamOpenAiCompatible(prompt, config, onChunk)
+  return streamOpenAiCompatible(prompt, config, onChunk, signal)
 }
 
 async function streamOpenAiCompatible(
   prompt: string,
   config: LlmConfig,
   onChunk: (accumulated: string) => void,
+  signal?: AbortSignal,
 ) {
   const endpoint = normalizeOpenAiChatEndpoint(
     config.endpoint.trim() || "https://api.openai.com/v1/chat/completions",
@@ -158,6 +161,7 @@ async function streamOpenAiCompatible(
         Authorization: `Bearer ${config.apiKey}`,
       },
       body: JSON.stringify(body),
+      signal,
     },
     config,
   )
@@ -174,6 +178,7 @@ async function streamOpenAiCompatible(
       }
     },
     onChunk,
+    signal,
   )
 }
 
@@ -190,6 +195,7 @@ async function streamGemini(
   prompt: string,
   config: LlmConfig,
   onChunk: (accumulated: string) => void,
+  signal?: AbortSignal,
 ) {
   const model = config.model.trim() || "gemini-1.5-pro"
   const baseEndpoint =
@@ -209,6 +215,7 @@ async function streamGemini(
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
       }),
+      signal,
     },
     config,
   )
@@ -228,6 +235,7 @@ async function streamGemini(
       }
     },
     onChunk,
+    signal,
   )
 }
 
@@ -235,6 +243,7 @@ async function streamAnthropic(
   prompt: string,
   config: LlmConfig,
   onChunk: (accumulated: string) => void,
+  signal?: AbortSignal,
 ) {
   const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages"
   const model = config.model.trim() || "claude-sonnet-4-20250514"
@@ -255,6 +264,7 @@ async function streamAnthropic(
         stream: true,
         messages: [{ role: "user", content: prompt }],
       }),
+      signal,
     },
     config,
   )
@@ -274,6 +284,7 @@ async function streamAnthropic(
       }
     },
     onChunk,
+    signal,
   )
 }
 
@@ -281,33 +292,48 @@ async function readSSEStream(
   response: Response,
   extractDelta: (data: string) => string | null,
   onChunk: (accumulated: string) => void,
+  signal?: AbortSignal,
 ): Promise<string> {
   const reader = response.body?.getReader()
   if (!reader) throw new Error("无法读取响应流。")
+  const onAbort = () => {
+    reader.cancel().catch(() => {})
+  }
+  if (signal) {
+    if (signal.aborted) onAbort()
+    else signal.addEventListener("abort", onAbort, { once: true })
+  }
   const decoder = new TextDecoder()
   let accumulated = ""
   let buffer = ""
   let streamDone = false
-  while (!streamDone) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split("\n")
-    buffer = lines.pop() ?? ""
-    for (const line of lines) {
-      if (!line.startsWith("data:")) continue
-      const data = line.slice(5).trim()
-      if (!data) continue
-      const delta = extractDelta(data)
-      if (delta === null) {
-        streamDone = true
-        break
-      }
-      if (delta) {
-        accumulated += delta
-        onChunk(accumulated)
+  try {
+    while (!streamDone) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split("\n")
+      buffer = lines.pop() ?? ""
+      for (const line of lines) {
+        if (!line.startsWith("data:")) continue
+        const data = line.slice(5).trim()
+        if (!data) continue
+        const delta = extractDelta(data)
+        if (delta === null) {
+          streamDone = true
+          break
+        }
+        if (delta) {
+          accumulated += delta
+          onChunk(accumulated)
+        }
       }
     }
+  } finally {
+    if (signal) signal.removeEventListener("abort", onAbort)
+  }
+  if (signal?.aborted) {
+    throw new DOMException("Aborted", "AbortError")
   }
   return accumulated
 }
@@ -317,6 +343,7 @@ export async function fillAnswersWithLlm(
   config: LlmConfig,
   mode: "answer" | "explanation" | "both",
   onChunk: (accumulated: string) => void,
+  signal?: AbortSignal,
 ): Promise<Question[]> {
   const modeInstruction =
     mode === "answer"
@@ -346,10 +373,10 @@ ${JSON.stringify(
 )}`
 
   const fullText = await (config.provider === "gemini"
-    ? streamGemini(fillPrompt, config, onChunk)
+    ? streamGemini(fillPrompt, config, onChunk, signal)
     : config.provider === "anthropic"
-      ? streamAnthropic(fillPrompt, config, onChunk)
-      : streamOpenAiCompatible(fillPrompt, config, onChunk))
+      ? streamAnthropic(fillPrompt, config, onChunk, signal)
+      : streamOpenAiCompatible(fillPrompt, config, onChunk, signal))
 
   const parsed = JSON.parse(extractJsonText(fullText))
   const results: Array<{ id?: string; answer?: unknown; explanation?: string }> = Array.isArray(

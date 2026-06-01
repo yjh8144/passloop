@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { MutableRefObject } from "react"
 import {
   BookOpen,
@@ -53,6 +53,13 @@ export function LlmPage(props: {
   const [manualJsonText, setManualJsonText] = useState("")
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false)
   const [showParseChoice, setShowParseChoice] = useState(false)
+  const parseAbortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    return () => {
+      parseAbortRef.current?.abort()
+    }
+  }, [])
 
   useEffect(() => {
     unsavedRef.current = parsedList !== null
@@ -92,10 +99,19 @@ export function LlmPage(props: {
     setParsedJsonText("")
     setManualInput(false)
     setManualJsonText("")
+    parseAbortRef.current?.abort()
+    const controller = new AbortController()
+    parseAbortRef.current = controller
     try {
-      const fullText = await streamParseLlm(rawText, config, mode, (accumulated) => {
-        setStreamingText(accumulated)
-      })
+      const fullText = await streamParseLlm(
+        rawText,
+        config,
+        mode,
+        (accumulated) => {
+          setStreamingText(accumulated)
+        },
+        controller.signal,
+      )
       const lists = parseQuestionJson(extractJsonText(fullText))
       if (!lists.length) {
         throw new Error(t("llmParseFailed"))
@@ -107,11 +123,20 @@ export function LlmPage(props: {
       setSaved(false)
       pushToast("success", t("llmParseComplete"))
     } catch (error) {
-      debugLog("LLM parse failed", error)
-      pushToast("error", error instanceof Error ? error.message : t("llmParseFailed"))
+      if (controller.signal.aborted || (error as { name?: string })?.name === "AbortError") {
+        debugLog("LLM parse cancelled")
+      } else {
+        debugLog("LLM parse failed", error)
+        pushToast("error", error instanceof Error ? error.message : t("llmParseFailed"))
+      }
     } finally {
+      if (parseAbortRef.current === controller) parseAbortRef.current = null
       setLoading(false)
     }
+  }
+
+  const cancelParser = () => {
+    parseAbortRef.current?.abort()
   }
 
   const getEditedList = () => {
@@ -179,8 +204,8 @@ export function LlmPage(props: {
             >
               <Copy size={17} /> {t("selfParse")}
             </button>
-            <button className="primary-button" onClick={runParser} disabled={loading}>
-              <Sparkles size={17} /> {loading ? t("parsing") : t("parse")}
+            <button className="primary-button" onClick={loading ? cancelParser : runParser}>
+              <Sparkles size={17} /> {loading ? t("cancel") : t("parse")}
             </button>
           </div>
         </div>
