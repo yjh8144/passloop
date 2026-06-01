@@ -163,12 +163,23 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
 }
 
 function TopbarConnected() {
-  const { data, setData, activeList, createList, deleteList, query, setQuery, updateSettings } =
-    useAppData()
+  const {
+    data,
+    setData,
+    activeList,
+    createList,
+    deleteList,
+    query,
+    setQuery,
+    updateSettings,
+    clearActiveListAttempts,
+  } = useAppData()
   const { page } = useNavigation()
   const { answers } = usePracticeContext()
   const { showConfirm } = useDialog()
   const t = useT()
+
+  const hasAttempts = data.attempts.some((a) => a.listId === activeList.id)
 
   const changeActiveList = useCallback(
     (id: string) => {
@@ -198,6 +209,8 @@ function TopbarConnected() {
       setActiveListId={changeActiveList}
       createList={createList}
       deleteList={deleteList}
+      onClearListAttempts={clearActiveListAttempts}
+      hasAttempts={hasAttempts}
     />
   )
 }

@@ -16,6 +16,8 @@ export function Topbar(props: {
   setActiveListId: (id: string) => void
   createList: () => void
   deleteList: (id: string) => void
+  onClearListAttempts?: () => void
+  hasAttempts?: boolean
 }) {
   const t = useT()
   const [showSettings, setShowSettings] = useState(false)
@@ -248,6 +250,8 @@ export function Topbar(props: {
                 <ControlPanel
                   settings={props.data.settings}
                   updateSettings={props.updateSettings}
+                  onClearListAttempts={props.onClearListAttempts}
+                  hasAttempts={props.hasAttempts}
                 />
               </div>
             )}

@@ -1,4 +1,4 @@
-import { Shuffle } from "lucide-react"
+import { Shuffle, Trash2 } from "lucide-react"
 import type { AppData, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
 import { useT, usePushToast } from "../../contexts"
@@ -7,6 +7,8 @@ import { debugLog } from "../../lib/debug"
 export function ControlPanel(props: {
   settings: AppData["settings"]
   updateSettings: (patch: Partial<AppData["settings"]>) => void
+  onClearListAttempts?: () => void
+  hasAttempts?: boolean
 }) {
   const t = useT()
   const pushToast = usePushToast()
@@ -90,6 +92,15 @@ export function ControlPanel(props: {
           )}
         </span>
       </label>
+      {props.hasAttempts && props.onClearListAttempts && (
+        <button
+          className="danger-button"
+          onClick={props.onClearListAttempts}
+          style={{ width: "100%", marginTop: "10px" }}
+        >
+          <Trash2 size={16} /> {t("clearListAttempts")}
+        </button>
+      )}
     </section>
   )
 }
