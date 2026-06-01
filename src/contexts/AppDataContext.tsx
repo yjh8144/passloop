@@ -90,7 +90,7 @@ export function AppDataProvider({
       activeList.questions,
       data.settings.sortMode,
       data.settings.language,
-      labels,
+      data.settings.typeOrder,
       data.settings.randomSeed,
     )
     const trimmed = query.trim().toLowerCase()
@@ -101,6 +101,7 @@ export function AppDataProvider({
   }, [
     activeList.questions,
     data.settings.sortMode,
+    data.settings.typeOrder,
     data.settings.randomSeed,
     query,
     data.settings.language,

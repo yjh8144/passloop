@@ -58,6 +58,7 @@ export interface Settings {
   viewMode: ViewMode
   practiceMode: PracticeMode
   sortMode: SortMode
+  typeOrder: QuestionType[]
   submitMode: SubmitMode
   revealMode: RevealMode
   randomSeed: number

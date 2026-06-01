@@ -1,6 +1,7 @@
 import { Shuffle, Trash2 } from "lucide-react"
 import type { AppData, AutoNextScope, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
+import { TypeOrderEditor } from "./TypeOrderEditor"
 import { useT, usePushToast } from "../../contexts"
 import { debugLog } from "../../lib/debug"
 
@@ -121,6 +122,12 @@ export function ControlPanel(props: {
           )}
         </span>
       </label>
+      {props.settings.sortMode === "type" && (
+        <TypeOrderEditor
+          order={props.settings.typeOrder}
+          onChange={(next) => props.updateSettings({ typeOrder: next })}
+        />
+      )}
       {props.hasAttempts && props.onClearListAttempts && (
         <button
           className="danger-button"

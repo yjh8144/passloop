@@ -5,9 +5,11 @@ import type {
   LlmProvider,
   ProxySettings,
   QuestionList,
+  QuestionType,
   Settings,
 } from "./types"
 import { createId, normalizeQuestion } from "./question"
+import { questionTypes } from "../utils/constants"
 import { debugError } from "./debug"
 
 export const STORAGE_KEY = "passloop.app.v1"
@@ -46,9 +48,25 @@ export const defaultSettings: Settings = {
   viewMode: "single",
   practiceMode: "practice",
   sortMode: "manual",
+  typeOrder: [...questionTypes],
   submitMode: "each",
   revealMode: "immediate",
   randomSeed: Date.now(),
+}
+
+export function sanitizeTypeOrder(value: unknown): QuestionType[] {
+  const seen = new Set<QuestionType>()
+  const result: QuestionType[] = []
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (questionTypes.includes(item as QuestionType) && !seen.has(item as QuestionType)) {
+        seen.add(item as QuestionType)
+        result.push(item as QuestionType)
+      }
+    }
+  }
+  for (const type of questionTypes) if (!seen.has(type)) result.push(type)
+  return result
 }
 
 export function createEmptyQuestionList(name = "Default List"): QuestionList {
@@ -313,6 +331,7 @@ export function normalizeAppData(value: unknown): AppData {
   if (result.settings.submitMode === "each" && result.settings.revealMode === "end") {
     result.settings = { ...result.settings, revealMode: "immediate" }
   }
+  result.settings.typeOrder = sanitizeTypeOrder(result.settings.typeOrder)
   return result
 }
 

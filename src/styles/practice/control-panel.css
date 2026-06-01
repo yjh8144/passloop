@@ -52,3 +52,41 @@
   font-size: 14px;
   margin-top: 0;
 }
+
+.type-order-editor {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.type-order-label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.type-order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.type-order-name {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.type-order-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.type-order-editor .icon-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -7,20 +7,13 @@ import type {
   SortMode,
   TFunc,
 } from "./types"
+import { questionTypes } from "../utils/constants"
 
 export function createId() {
   return crypto.randomUUID?.() ?? `id-${Date.now()}-${Math.random()}`
 }
 
 const now = () => new Date().toISOString()
-
-export const typeLabels: Record<QuestionType, string> = {
-  single: "单选",
-  multiple: "多选",
-  boolean: "判断",
-  blank: "填空",
-  short: "简答",
-}
 
 export function getTypeLabels(t: TFunc): Record<QuestionType, string> {
   return {
@@ -183,7 +176,7 @@ export function sortQuestions(
   questions: Question[],
   mode: SortMode,
   locale?: string,
-  localizedLabels?: Record<QuestionType, string>,
+  typeOrder?: QuestionType[],
   seed?: number,
 ) {
   if (mode === "manual") return questions
@@ -197,8 +190,8 @@ export function sortQuestions(
   }
   const loc = locale ?? "zh"
   if (mode === "name") return copy.sort((a, b) => a.title.localeCompare(b.title, loc))
-  const labels = localizedLabels ?? typeLabels
-  return copy.sort((a, b) => labels[a.type].localeCompare(labels[b.type], loc))
+  const order = typeOrder ?? questionTypes
+  return copy.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
 }
 
 export function isAnswerCorrect(question: Question, answer: string | string[]) {
