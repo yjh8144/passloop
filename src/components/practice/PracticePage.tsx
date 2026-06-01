@@ -6,12 +6,13 @@ import { QuestionCard } from "./QuestionCard"
 import { InspectorContent } from "./InspectorContent"
 import { CompletionDialog } from "./CompletionDialog"
 import { useT, usePracticeContext, useAppData, useNavigation } from "../../contexts"
+import { loadPosition } from "../../utils/session"
 import { debugLog } from "../../lib/debug"
 
 export function PracticePage() {
   const t = useT()
   const { page } = useNavigation()
-  const { data, stats, clearActiveListAttempts } = useAppData()
+  const { data, stats, clearActiveListAttempts, activeList } = useAppData()
   const {
     practiceQuestions: questions,
     currentIndex,
@@ -72,6 +73,8 @@ export function PracticePage() {
   }
 
   const paperStackRef = useRef<HTMLDivElement>(null)
+  const initialScrollDoneRef = useRef<string | null>(null)
+  const restoringRef = useRef(false)
 
   useEffect(() => {
     if (settings.viewMode !== "paper" || !questions.length) return
@@ -98,7 +101,7 @@ export function PracticePage() {
             best = { idx, ratio }
           }
         }
-        if (best) setCurrentIndex(best.idx)
+        if (best && !restoringRef.current) setCurrentIndex(best.idx)
       },
       { root: scrollRoot, threshold: [0, 0.25, 0.5, 0.75, 1] },
     )
@@ -106,6 +109,30 @@ export function PracticePage() {
     cards.forEach((card) => observer.observe(card))
     return () => observer.disconnect()
   }, [settings.viewMode, questions.length, setCurrentIndex])
+
+  // Restore scroll position to the last-viewed question when reopening in paper mode.
+  // currentIndex is restored by the context, but paper mode renders all questions in a
+  // scroll stack and nothing scrolls to it; the observer would also clobber it back to 0.
+  useEffect(() => {
+    if (settings.viewMode !== "paper" || !questions.length) return
+    if (page === "wrong") return
+    if (initialScrollDoneRef.current === activeList.id) return
+    initialScrollDoneRef.current = activeList.id
+    const target = Math.min(loadPosition(activeList.id), questions.length - 1)
+    if (target <= 0) return
+    restoringRef.current = true
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document
+          .getElementById(`question-${target}`)
+          ?.scrollIntoView({ behavior: "instant", block: "start" })
+        setCurrentIndex(target)
+        requestAnimationFrame(() => {
+          restoringRef.current = false
+        })
+      })
+    })
+  }, [settings.viewMode, questions.length, activeList.id, page, setCurrentIndex])
 
   const content =
     questions.length === 0 ? (
