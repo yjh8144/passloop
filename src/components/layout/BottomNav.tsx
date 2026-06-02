@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import {
   BookOpen,
   Bot,
+  CloudBackup,
   Edit3,
   FileDown,
   FileUp,
@@ -19,6 +20,7 @@ import { useT, useNavigation, useLlmConfig, useProxy } from "../../contexts"
 export function BottomNav(props: {
   onQuestionImport: () => void
   onBackupImport: () => void
+  onRemoteBackup: () => void
   onExportList: () => void
   onExportBackup: () => void
   onResetAll: () => void
@@ -129,6 +131,15 @@ export function BottomNav(props: {
                 }}
               >
                 <FolderDown size={15} /> {t("exportBackup")}
+              </button>
+              <button
+                className="panel-action-btn"
+                onClick={() => {
+                  props.onRemoteBackup()
+                  close()
+                }}
+              >
+                <CloudBackup size={15} /> {t("remoteBackup")}
               </button>
               <button
                 className="panel-action-btn danger"

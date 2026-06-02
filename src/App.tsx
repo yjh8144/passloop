@@ -84,6 +84,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
         <Sidebar
           onQuestionImport={() => importActions?.openQuestionImport()}
           onBackupImport={() => importActions?.openBackupImport()}
+          onRemoteBackup={() => importActions?.openRemoteBackup()}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
           onExportBackup={() =>
             showConfirm(t("confirmExportBackup"), () => downloadJson("passloop-config.json", data))
@@ -127,6 +128,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
         <BottomNav
           onQuestionImport={() => importActions?.openQuestionImport()}
           onBackupImport={() => importActions?.openBackupImport()}
+          onRemoteBackup={() => importActions?.openRemoteBackup()}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
           onExportBackup={() =>
             showConfirm(t("confirmExportBackup"), () => downloadJson("passloop-config.json", data))

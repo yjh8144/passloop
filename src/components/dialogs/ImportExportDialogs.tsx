@@ -1,13 +1,15 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useAppData, useProxy, usePushToast, useT } from "../../contexts"
 import { useImportExport } from "../../hooks/useImportExport"
 import { ImportSourceDialog } from "./ImportSourceDialog"
 import { ImportChoiceDialog } from "./ImportChoiceDialog"
 import { BackupImportDialog } from "./BackupImportDialog"
+import { RemoteBackupDialog } from "./RemoteBackupDialog"
 
 export interface ImportExportActions {
   openQuestionImport: () => void
   openBackupImport: () => void
+  openRemoteBackup: () => void
 }
 
 export function ImportExportDialogs({
@@ -19,6 +21,7 @@ export function ImportExportDialogs({
   const { data, setData, activeList, updateActiveList, updateData } = useAppData()
   const { proxySettings } = useProxy()
   const pushToast = usePushToast()
+  const [showRemoteBackupDialog, setShowRemoteBackupDialog] = useState(false)
 
   const importExport = useImportExport({
     t,
@@ -36,6 +39,7 @@ export function ImportExportDialogs({
     onReady({
       openQuestionImport: () => setShowImportDialog(true),
       openBackupImport: () => setShowBackupImportDialog(true),
+      openRemoteBackup: () => setShowRemoteBackupDialog(true),
     })
   }, [onReady, setShowImportDialog, setShowBackupImportDialog])
 
@@ -65,6 +69,12 @@ export function ImportExportDialogs({
         data={importExport.pendingBackup}
         onClose={() => importExport.setPendingBackup(null)}
         onChoose={importExport.commitBackupImport}
+      />
+      <RemoteBackupDialog
+        open={showRemoteBackupDialog}
+        data={data}
+        onClose={() => setShowRemoteBackupDialog(false)}
+        onRestoreReady={importExport.setPendingBackup}
       />
     </>
   )

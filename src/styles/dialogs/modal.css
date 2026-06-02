@@ -116,6 +116,139 @@
   animation: spin 1s linear infinite;
 }
 
+.remote-backup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+.remote-backup-wide {
+  grid-column: 1 / -1;
+}
+
+.remote-backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 16px;
+}
+
+.remote-backup-actions button {
+  flex: 1 1 180px;
+}
+
+.remote-backup-list {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.remote-backup-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.remote-backup-list-head strong {
+  font-size: 14px;
+}
+
+.remote-backup-list-head span,
+.remote-backup-item-main span,
+.remote-backup-security-note,
+.remote-backup-empty {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.remote-backup-empty {
+  padding: 18px 12px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.remote-backup-items {
+  display: grid;
+}
+
+.remote-backup-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.remote-backup-item:first-child {
+  border-top: 0;
+}
+
+.remote-backup-item-main {
+  min-width: 0;
+}
+
+.remote-backup-item-main strong,
+.remote-backup-item-main span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remote-backup-item-main strong {
+  font-size: 14px;
+}
+
+.remote-backup-item-main span {
+  margin-top: 3px;
+}
+
+.remote-backup-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.remote-backup-pagination span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  text-align: center;
+}
+
+.remote-backup-security-note {
+  margin: 12px 0 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 560px) {
+  .remote-backup-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .remote-backup-actions,
+  .remote-backup-pagination {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .remote-backup-item {
+    grid-template-columns: 1fr;
+  }
+
+  .remote-backup-item button {
+    width: 100%;
+  }
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);

@@ -4,6 +4,7 @@ import {
   Bot,
   ChevronDown,
   ChevronUp,
+  CloudBackup,
   Edit3,
   FileDown,
   FileUp,
@@ -23,6 +24,7 @@ import { useT, useNavigation, useLlmConfig, useProxy } from "../../contexts"
 export function Sidebar(props: {
   onQuestionImport: () => void
   onBackupImport: () => void
+  onRemoteBackup: () => void
   onExportList: () => void
   onExportBackup: () => void
   onResetAll: () => void
@@ -148,6 +150,9 @@ export function Sidebar(props: {
           </button>
           <button onClick={props.onExportBackup}>
             <FolderDown size={16} /> {t("exportBackup")}
+          </button>
+          <button onClick={props.onRemoteBackup}>
+            <CloudBackup size={16} /> {t("remoteBackup")}
           </button>
           <button onClick={props.onOpenOfflineDialog}>
             <HardDriveDownload size={16} /> {t("offlineVersion")}
