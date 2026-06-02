@@ -22,13 +22,14 @@ export function ProxyConfigModal(props: {
 
   if (!props.open) return null
 
-  const testProxy = async (url: string) => {
+  const testProxy = async (url: string, key?: string) => {
     setProxyStatus((s) => ({ ...s, [url]: { status: "testing" } }))
     const start = Date.now()
     try {
       const res = await fetch(
         `${url.replace(/\/+$/, "")}/?url=${encodeURIComponent("https://httpbin.org/get")}`,
         {
+          headers: key ? { "X-Proxy-Key": key } : undefined,
           signal: AbortSignal.timeout(8000),
         },
       )
@@ -43,7 +44,7 @@ export function ProxyConfigModal(props: {
   }
 
   const testAllProxies = () => {
-    PRESET_PROXIES.forEach((p) => testProxy(p.url))
+    PRESET_PROXIES.forEach((p) => testProxy(p.url, p.key))
   }
 
   return (
@@ -318,7 +319,7 @@ export function ProxyConfigModal(props: {
                           disabled={status === "testing"}
                           onClick={(e) => {
                             e.stopPropagation()
-                            testProxy(proxy.url)
+                            testProxy(proxy.url, proxy.key)
                           }}
                         >
                           {status === "testing" ? t("proxyListTesting") : t("proxyListTest")}

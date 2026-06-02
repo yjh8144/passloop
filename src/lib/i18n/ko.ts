@@ -52,6 +52,7 @@ export const ko: Record<string, string> = {
   notSet: "미설정",
   correct: "정답",
   incorrect: "오답",
+  shouldSelect: "선택해야 함",
   hint: "힌트",
   inputAnswer: "답을 입력하세요",
   practiceSettings: "설정",

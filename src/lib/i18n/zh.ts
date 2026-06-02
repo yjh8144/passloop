@@ -52,6 +52,7 @@ export const zh: Record<string, string> = {
   notSet: "未设置",
   correct: "正确",
   incorrect: "错误",
+  shouldSelect: "应选",
   hint: "提示",
   inputAnswer: "输入你的答案",
   practiceSettings: "刷题设置",

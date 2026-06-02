@@ -34,6 +34,7 @@ export function QuestionCard(props: {
   const showAnswer =
     props.practiceMode === "memorize" ||
     (props.submitted && (props.revealMode !== "end" || !!props.allSubmitted))
+  const showFeedback = showAnswer
   const updateAnswer = (id: string, value: string | string[]) => {
     props.setAnswers((current) => ({ ...current, [id]: value }))
   }
@@ -64,6 +65,7 @@ export function QuestionCard(props: {
         onChange={updateAnswer}
         practiceMode={props.practiceMode}
         disabled={props.submitted}
+        showFeedback={showFeedback}
         autoSubmit={autoSubmitSelect}
         onAutoSubmit={props.onAutoSubmit}
       />

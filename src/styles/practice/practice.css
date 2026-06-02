@@ -116,6 +116,12 @@
   }
 }
 
+@media (max-width: 1180px) {
+  .sidebar-toggle-button {
+    display: none;
+  }
+}
+
 @media (max-width: 560px) {
   .stage-header h1 {
     font-size: 21px;

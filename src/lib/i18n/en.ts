@@ -52,6 +52,7 @@ export const en: Record<string, string> = {
   notSet: "Not set",
   correct: "Correct",
   incorrect: "Incorrect",
+  shouldSelect: "Should select",
   hint: "Hint",
   inputAnswer: "Enter your answer",
   practiceSettings: "Settings",

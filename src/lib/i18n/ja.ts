@@ -52,6 +52,7 @@ export const ja: Record<string, string> = {
   notSet: "未設定",
   correct: "正解",
   incorrect: "不正解",
+  shouldSelect: "選ぶべき",
   hint: "ヒント",
   inputAnswer: "答えを入力",
   practiceSettings: "設定",

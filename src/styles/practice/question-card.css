@@ -101,13 +101,18 @@
 
 .option-row {
   display: grid;
-  grid-template-columns: 22px 34px minmax(0, 1fr);
+  grid-template-columns: 22px 34px minmax(0, 1fr) auto;
   align-items: start;
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
 }
 
 .option-row input {
@@ -125,9 +130,65 @@
   line-height: 1.5;
 }
 
-.option-row.memorize-correct {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+.option-row.is-selected {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.option-row.is-correct {
+  border-color: color-mix(in srgb, var(--success) 45%, var(--border));
+  background: color-mix(in srgb, var(--success) 10%, var(--surface));
+}
+
+.option-row.is-wrong {
+  border-color: color-mix(in srgb, var(--danger) 50%, var(--border));
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+}
+
+.option-row.is-missed {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--success) 24%, var(--border));
+  background: color-mix(in srgb, var(--success) 4%, var(--surface));
+}
+
+.option-status-icon {
+  justify-self: end;
+  align-self: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.option-status-icon.correct {
+  color: var(--success);
+}
+
+.option-status-icon.wrong {
+  color: var(--danger);
+}
+
+.option-status-icon.missed {
+  color: var(--success);
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--success) 8%, var(--surface));
+  opacity: 0.9;
+}
+
+.option-row.is-correct .option-label,
+.option-row.is-correct p {
+  color: var(--text);
+}
+
+.option-row.is-wrong .option-label,
+.option-row.is-wrong p {
+  color: var(--text);
+}
+
+.option-row.is-missed .option-label,
+.option-row.is-missed p {
+  color: var(--text);
 }
 
 .memorize-display .option-display-row {
