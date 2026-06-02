@@ -1,8 +1,10 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Eye, EyeOff, HelpCircle, List, Undo2, X } from "lucide-react"
 import type { ProxySettings } from "../../lib/types"
 import { useT } from "../../contexts"
 import { PRESET_PROXIES } from "../../utils/constants"
+
+type ProxyTestInfo = { status: "idle" | "testing" | "alive" | "dead"; latency?: number }
 
 export function ProxyConfigModal(props: {
   open: boolean
@@ -16,14 +18,18 @@ export function ProxyConfigModal(props: {
   const [showHelp, setShowHelp] = useState(false)
   const [showList, setShowList] = useState(false)
   const [clearedFields, setClearedFields] = useState<{ proxyUrl?: string; proxyKey?: string }>({})
-  const [proxyStatus, setProxyStatus] = useState<
-    Record<string, { status: "idle" | "testing" | "alive" | "dead"; latency?: number }>
-  >({})
+  const [currentProxyStatus, setCurrentProxyStatus] = useState<ProxyTestInfo>({ status: "idle" })
+  const [proxyStatus, setProxyStatus] = useState<Record<string, ProxyTestInfo>>({})
+  const currentProxyTestId = useRef(0)
 
   if (!props.open) return null
 
-  const testProxy = async (url: string, key?: string) => {
-    setProxyStatus((s) => ({ ...s, [url]: { status: "testing" } }))
+  const resetCurrentProxyStatus = () => {
+    currentProxyTestId.current += 1
+    setCurrentProxyStatus({ status: "idle" })
+  }
+
+  const measureProxy = async (url: string, key?: string): Promise<ProxyTestInfo> => {
     const start = Date.now()
     try {
       const res = await fetch(
@@ -34,12 +40,29 @@ export function ProxyConfigModal(props: {
         },
       )
       if (res.ok) {
-        setProxyStatus((s) => ({ ...s, [url]: { status: "alive", latency: Date.now() - start } }))
-      } else {
-        setProxyStatus((s) => ({ ...s, [url]: { status: "dead" } }))
+        return { status: "alive", latency: Date.now() - start }
       }
+      return { status: "dead" }
     } catch {
-      setProxyStatus((s) => ({ ...s, [url]: { status: "dead" } }))
+      return { status: "dead" }
+    }
+  }
+
+  const testProxy = async (url: string, key?: string) => {
+    setProxyStatus((s) => ({ ...s, [url]: { status: "testing" } }))
+    const result = await measureProxy(url, key)
+    setProxyStatus((s) => ({ ...s, [url]: result }))
+  }
+
+  const testCurrentProxy = async () => {
+    const url = proxySettings.proxyUrl.trim()
+    if (!url || !proxySettings.proxyEnabled) return
+    const testId = currentProxyTestId.current + 1
+    currentProxyTestId.current = testId
+    setCurrentProxyStatus({ status: "testing" })
+    const result = await measureProxy(url, proxySettings.proxyKey.trim())
+    if (currentProxyTestId.current === testId) {
+      setCurrentProxyStatus(result)
     }
   }
 
@@ -65,7 +88,10 @@ export function ProxyConfigModal(props: {
             <input
               type="checkbox"
               checked={proxySettings.proxyEnabled}
-              onChange={(e) => updateProxySettings({ proxyEnabled: e.target.checked })}
+              onChange={(e) => {
+                resetCurrentProxyStatus()
+                updateProxySettings({ proxyEnabled: e.target.checked })
+              }}
               style={{ width: "auto", height: "auto" }}
             />
             <span>{t("proxyToggleLabel")}</span>
@@ -105,7 +131,10 @@ export function ProxyConfigModal(props: {
               <input
                 value={proxySettings.proxyUrl}
                 placeholder="https://your-worker.workers.dev"
-                onChange={(e) => updateProxySettings({ proxyUrl: e.target.value })}
+                onChange={(e) => {
+                  resetCurrentProxyStatus()
+                  updateProxySettings({ proxyUrl: e.target.value })
+                }}
                 disabled={!proxySettings.proxyEnabled}
               />
               {proxySettings.proxyUrl ? (
@@ -113,6 +142,7 @@ export function ProxyConfigModal(props: {
                   className="input-clear-btn"
                   onClick={() => {
                     setClearedFields((f) => ({ ...f, proxyUrl: proxySettings.proxyUrl }))
+                    resetCurrentProxyStatus()
                     updateProxySettings({ proxyUrl: "" })
                   }}
                   title={t("clear")}
@@ -124,6 +154,7 @@ export function ProxyConfigModal(props: {
                   <button
                     className="input-clear-btn"
                     onClick={() => {
+                      resetCurrentProxyStatus()
                       updateProxySettings({ proxyUrl: clearedFields.proxyUrl! })
                       setClearedFields((f) => ({ ...f, proxyUrl: undefined }))
                     }}
@@ -145,7 +176,10 @@ export function ProxyConfigModal(props: {
                 type={showProxyKey ? "text" : "password"}
                 value={proxySettings.proxyKey}
                 placeholder={t("proxyKeyPlaceholder")}
-                onChange={(e) => updateProxySettings({ proxyKey: e.target.value })}
+                onChange={(e) => {
+                  resetCurrentProxyStatus()
+                  updateProxySettings({ proxyKey: e.target.value })
+                }}
                 disabled={!proxySettings.proxyEnabled}
               />
               {proxySettings.proxyKey ? (
@@ -153,6 +187,7 @@ export function ProxyConfigModal(props: {
                   className="input-clear-btn"
                   onClick={() => {
                     setClearedFields((f) => ({ ...f, proxyKey: proxySettings.proxyKey }))
+                    resetCurrentProxyStatus()
                     updateProxySettings({ proxyKey: "" })
                   }}
                   title={t("clear")}
@@ -164,6 +199,7 @@ export function ProxyConfigModal(props: {
                   <button
                     className="input-clear-btn"
                     onClick={() => {
+                      resetCurrentProxyStatus()
                       updateProxySettings({ proxyKey: clearedFields.proxyKey! })
                       setClearedFields((f) => ({ ...f, proxyKey: undefined }))
                     }}
@@ -182,6 +218,39 @@ export function ProxyConfigModal(props: {
               </button>
             </div>
           </label>
+          <div
+            className="field-label wide"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+              opacity: proxySettings.proxyEnabled ? 1 : 0.5,
+            }}
+          >
+            <button
+              className="test-button"
+              style={{ marginTop: 0 }}
+              onClick={testCurrentProxy}
+              disabled={
+                !proxySettings.proxyEnabled ||
+                !proxySettings.proxyUrl.trim() ||
+                currentProxyStatus.status === "testing"
+              }
+            >
+              {currentProxyStatus.status === "testing" ? t("proxyListTesting") : t("proxyListTest")}
+            </button>
+            {currentProxyStatus.status === "alive" && (
+              <span style={{ fontSize: 12, color: "#22c55e" }}>
+                {t("proxyListAlive")}
+                {currentProxyStatus.latency != null ? ` ${currentProxyStatus.latency}ms` : ""}
+              </span>
+            )}
+            {currentProxyStatus.status === "dead" && (
+              <span style={{ fontSize: 12, color: "#ef4444" }}>{t("proxyListDead")}</span>
+            )}
+          </div>
         </div>
 
         <div className="modal-actions">
@@ -283,6 +352,7 @@ export function ProxyConfigModal(props: {
                         cursor: "pointer",
                       }}
                       onClick={() => {
+                        resetCurrentProxyStatus()
                         updateProxySettings({ proxyUrl: proxy.url, proxyKey: proxy.key })
                         setShowList(false)
                       }}

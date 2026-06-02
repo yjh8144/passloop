@@ -199,29 +199,35 @@
 
 /* Provider Management */
 .config-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
   margin-bottom: 16px;
+  background: var(--surface);
 }
 .config-tab {
-  padding: 8px 16px;
+  min-height: 36px;
+  padding: 0 12px;
   border: none;
+  border-radius: 0;
   background: transparent;
-  color: var(--text-muted);
+  color: var(--muted);
   font-size: 14px;
+  font-weight: 650;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
   transition:
-    color 0.15s,
-    border-color 0.15s;
+    background 0.15s,
+    color 0.15s;
 }
-.config-tab:hover {
+.config-tab:hover:not(.active) {
   color: var(--text);
+  background: var(--surface-2);
 }
 .config-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  background: var(--accent);
+  color: white;
 }
 
 .provider-list {
