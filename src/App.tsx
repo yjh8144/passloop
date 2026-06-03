@@ -20,6 +20,7 @@ import {
 } from "./contexts"
 import { createDefaultData, downloadJson, loadData } from "./lib/storage"
 import { createTestQuestionList } from "./lib/question"
+import { hasUnsubmittedProgress } from "./utils/evaluate"
 import { debugLog } from "./lib/debug"
 import { ONBOARDING_KEY } from "./utils/constants"
 import { useToast } from "./hooks/useToast"
@@ -179,7 +180,7 @@ function TopbarConnected() {
     clearActiveListAttempts,
   } = useAppData()
   const { page } = useNavigation()
-  const { answers } = usePracticeContext()
+  const { answers, results } = usePracticeContext()
   const { showConfirm } = useDialog()
   const t = useT()
 
@@ -189,8 +190,9 @@ function TopbarConnected() {
     (id: string) => {
       if (id === data.activeListId) return
       debugLog("Switch active list", { from: data.activeListId, to: id })
-      const hasProgress = Object.keys(answers).length > 0
-      if (hasProgress) {
+      // Only warn about losing progress for genuinely unsubmitted, non-empty answers.
+      // (answers also holds values restored from past attempts, which are already saved.)
+      if (hasUnsubmittedProgress(answers, results)) {
         showConfirm(t("confirmSwitchList"), () => {
           setData((current) => ({ ...current, activeListId: id }))
         })
@@ -198,7 +200,7 @@ function TopbarConnected() {
         setData((current) => ({ ...current, activeListId: id }))
       }
     },
-    [data.activeListId, answers, showConfirm, t, setData],
+    [data.activeListId, answers, results, showConfirm, t, setData],
   )
 
   return (

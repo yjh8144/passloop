@@ -25,7 +25,7 @@ export function debugWarn(...args: unknown[]) {
 }
 
 export function debugError(...args: unknown[]) {
-  if (isDebugEnabled()) {
-    console.error("[PassLoop Error]", ...args)
-  }
+  // Errors are always surfaced so production failures aren't silently swallowed;
+  // verbose log/warn output stays behind the debug flag.
+  console.error("[PassLoop Error]", ...args)
 }

@@ -34,10 +34,43 @@ export function QuestionEditor(props: {
   const patch = (value: Partial<Question>) =>
     setDraft((current) => ({ ...current, ...value, updatedAt: new Date().toISOString() }))
   const updateOption = (id: string, patchValue: Partial<ChoiceOption>) => {
-    patch({
-      options: draft.options.map((option) =>
+    setDraft((current) => {
+      const target = current.options.find((option) => option.id === id)
+      const options = current.options.map((option) =>
         option.id === id ? { ...option, ...patchValue } : option,
-      ),
+      )
+      // Keep the stored answer in sync when a label is renamed, so it doesn't
+      // dangle to a label that no longer exists. Boolean labels are normalized
+      // back to T/F on save, so syncing there would corrupt the answer instead.
+      let answer = current.answer
+      if (
+        current.type !== "boolean" &&
+        target &&
+        patchValue.label !== undefined &&
+        patchValue.label !== target.label
+      ) {
+        const oldLabel = target.label
+        const newLabel = patchValue.label
+        if (Array.isArray(answer)) {
+          answer = answer.map((item) => (item === oldLabel ? newLabel : item))
+        } else if (answer === oldLabel) {
+          answer = newLabel
+        }
+      }
+      return { ...current, options, answer, updatedAt: new Date().toISOString() }
+    })
+  }
+  const removeOption = (id: string) => {
+    setDraft((current) => {
+      const target = current.options.find((option) => option.id === id)
+      const options = current.options.filter((option) => option.id !== id)
+      // Drop the deleted option's label from the answer so it stays valid.
+      let answer = current.answer
+      if (target) {
+        if (Array.isArray(answer)) answer = answer.filter((item) => item !== target.label)
+        else if (answer === target.label) answer = ""
+      }
+      return { ...current, options, answer, updatedAt: new Date().toISOString() }
     })
   }
   return (
@@ -146,12 +179,7 @@ export function QuestionEditor(props: {
                 onChange={(event) => updateOption(option.id, { text: event.target.value })}
               />
               {draft.type !== "boolean" && (
-                <button
-                  className="icon-button"
-                  onClick={() =>
-                    patch({ options: draft.options.filter((item) => item.id !== option.id) })
-                  }
-                >
+                <button className="icon-button" onClick={() => removeOption(option.id)}>
                   <Trash2 size={15} />
                 </button>
               )}

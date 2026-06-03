@@ -35,8 +35,20 @@ export function ParsedQuestionsEditor(props: {
   const updateOption = (qIndex: number, optIndex: number, patch: Partial<ChoiceOption>) => {
     if (props.readOnly) return
     const question = props.list.questions[qIndex]
+    const target = question.options[optIndex]
     const options = question.options.map((o, i) => (i === optIndex ? { ...o, ...patch } : o))
-    updateQuestion(qIndex, { options })
+    const qPatch: Partial<Question> = { options }
+    // Keep the stored answer in sync when a label is renamed.
+    if (target && patch.label !== undefined && patch.label !== target.label) {
+      const { label: oldLabel } = target
+      const newLabel = patch.label
+      if (Array.isArray(question.answer)) {
+        qPatch.answer = question.answer.map((item) => (item === oldLabel ? newLabel : item))
+      } else if (question.answer === oldLabel) {
+        qPatch.answer = newLabel
+      }
+    }
+    updateQuestion(qIndex, qPatch)
   }
 
   const addOption = (qIndex: number) => {
@@ -50,8 +62,18 @@ export function ParsedQuestionsEditor(props: {
   const deleteOption = (qIndex: number, optIndex: number) => {
     if (props.readOnly) return
     const question = props.list.questions[qIndex]
+    const target = question.options[optIndex]
     const options = question.options.filter((_, i) => i !== optIndex)
-    updateQuestion(qIndex, { options })
+    const qPatch: Partial<Question> = { options }
+    // Drop the deleted option's label from the answer so it stays valid.
+    if (target) {
+      if (Array.isArray(question.answer)) {
+        qPatch.answer = question.answer.filter((item) => item !== target.label)
+      } else if (question.answer === target.label) {
+        qPatch.answer = ""
+      }
+    }
+    updateQuestion(qIndex, qPatch)
   }
 
   return (

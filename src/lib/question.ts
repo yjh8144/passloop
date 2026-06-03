@@ -376,12 +376,20 @@ export function getListStats(list: QuestionList, attempts: AttemptRecord[]) {
   const related = attempts.filter((attempt) => attempt.listId === list.id)
   const submitted = related.length
   const correct = related.filter((attempt) => attempt.correct).length
-  const lastAttemptByQuestion = new Map<string, boolean>()
+  // Track the latest attempt per question by submission time, not array order, so
+  // merged/imported attempts (appended out of chronological order) are handled correctly.
+  const lastAttemptByQuestion = new Map<string, { correct: boolean; at: string }>()
   for (const attempt of related) {
-    lastAttemptByQuestion.set(attempt.questionId, attempt.correct)
+    const prev = lastAttemptByQuestion.get(attempt.questionId)
+    if (!prev || attempt.submittedAt >= prev.at) {
+      lastAttemptByQuestion.set(attempt.questionId, {
+        correct: attempt.correct,
+        at: attempt.submittedAt,
+      })
+    }
   }
   const wrongQuestionIds = new Set(
-    [...lastAttemptByQuestion.entries()].filter(([, wasCorrect]) => !wasCorrect).map(([id]) => id),
+    [...lastAttemptByQuestion.entries()].filter(([, last]) => !last.correct).map(([id]) => id),
   )
   const attemptedQuestionIds = new Set(related.map((attempt) => attempt.questionId))
   const avgTime = submitted

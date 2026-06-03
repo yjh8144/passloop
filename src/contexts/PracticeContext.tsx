@@ -17,7 +17,7 @@ import { practiceReducer } from "../hooks/practiceReducer"
 import type { PracticeState, WrongSession } from "../hooks/practiceReducer"
 import { useSessionPersistence } from "../hooks/useSessionPersistence"
 import { useWrongPractice } from "../hooks/useWrongPractice"
-import { evaluateQuestion } from "../utils/evaluate"
+import { evaluateQuestion, hasUnsubmittedProgress } from "../utils/evaluate"
 import { createId } from "../lib/question"
 import { debugLog } from "../lib/debug"
 import {
@@ -130,13 +130,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     }
     const derived: Record<string, boolean> = {}
     const derivedAnswers: AnswerMap = {}
+    const latestAt: Record<string, string> = {}
     const wrongIds = state.wrongSession ? new Set<string>() : null
     if (wrongIds && page === "wrong") {
       for (const q of wrongQuestions) wrongIds.add(q.id)
     }
+    // Restore the latest attempt per question by submission time, not array order,
+    // so merged/imported attempts (appended out of order) restore correctly.
     for (const attempt of data.attempts) {
-      if (attempt.listId === activeList.id) {
-        if (wrongIds && wrongIds.has(attempt.questionId)) continue
+      if (attempt.listId !== activeList.id) continue
+      if (wrongIds && wrongIds.has(attempt.questionId)) continue
+      const prevAt = latestAt[attempt.questionId]
+      if (prevAt === undefined || attempt.submittedAt >= prevAt) {
+        latestAt[attempt.questionId] = attempt.submittedAt
         derived[attempt.questionId] = attempt.correct
         derivedAnswers[attempt.questionId] = attempt.answer
       }
@@ -148,13 +154,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   // --- beforeunload warning for paper mode with unsubmitted answers ---
   useEffect(() => {
     if (data.settings.submitMode !== "paper") return
-    const hasUnsubmitted = Object.keys(state.answers).some((id) => {
-      if (id in state.results) return false
-      const val = state.answers[id]
-      if (Array.isArray(val)) return val.some((s) => s.trim())
-      return typeof val === "string" && val.trim().length > 0
-    })
-    if (!hasUnsubmitted) return
+    if (!hasUnsubmittedProgress(state.answers, state.results)) return
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault()
     }

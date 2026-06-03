@@ -99,7 +99,9 @@ ${questionsData}`
     }
     const questionIds = new Set(props.questions.map((q) => q.id))
     const matched = results.filter((r) => r.id && questionIds.has(r.id))
-    if (!matched.length) {
+    // Accept either id-matched results, or an array that lines up positionally with
+    // the questions (some models omit the id field but keep order).
+    if (!matched.length && results.length !== props.questions.length) {
       debugLog("SelfFill JSON no match", {
         resultCount: results.length,
         questionCount: props.questions.length,
