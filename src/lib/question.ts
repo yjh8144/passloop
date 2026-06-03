@@ -159,10 +159,14 @@ export function createTestQuestionList(t: TFunc): QuestionList {
   }
 }
 
-export function normalizeQuestion(value: unknown, index = 0): Question {
+export function normalizeQuestion(value: unknown, index = 0, t?: TFunc): Question {
   const timestamp = now()
   if (!value || typeof value !== "object") {
-    return { ...createEmptyQuestion(), title: `Question ${index + 1}`, updatedAt: timestamp }
+    return {
+      ...createEmptyQuestion(),
+      title: t ? t("questionN", index + 1) : `Question ${index + 1}`,
+      updatedAt: timestamp,
+    }
   }
   const source = value as Record<string, unknown>
   const type = normalizeType(source.type ?? source.questionType ?? source.kind, source)
@@ -171,9 +175,12 @@ export function normalizeQuestion(value: unknown, index = 0): Question {
     source.prompt ?? source.question ?? source.stem ?? source.content ?? source.text,
     "",
   )
-  const isDefaultTitle = !rawTitle || rawTitle === "New Question"
+  const isDefaultTitle =
+    !rawTitle || rawTitle === "New Question" || (t && rawTitle === t("newQuestion"))
   const title =
-    isDefaultTitle && rawPrompt ? rawPrompt : rawTitle || rawPrompt || `Question ${index + 1}`
+    isDefaultTitle && rawPrompt
+      ? rawPrompt
+      : rawTitle || rawPrompt || (t ? t("questionN", index + 1) : `Question ${index + 1}`)
   const rawOptions = source.options ?? source.choices ?? source.items
   return {
     id: asString(source.id, createId()),
@@ -250,33 +257,43 @@ function normalizeAnswer(value: unknown, type: QuestionType): string | string[] 
   return asString(value, "")
 }
 
-export function parseQuestionJson(text: string): QuestionList[] {
+export function parseQuestionJson(text: string, t?: TFunc): QuestionList[] {
   const parsed = JSON.parse(text)
   if (parsed && typeof parsed === "object" && Array.isArray(parsed.lists)) {
-    return parsed.lists.map((item: unknown) => normalizeImportedList(item))
+    return parsed.lists.map((item: unknown) => normalizeImportedList(item, t))
   }
   if (Array.isArray(parsed)) {
-    return [normalizeImportedList({ name: "Imported List", questions: parsed })]
+    return [
+      normalizeImportedList(
+        { name: t ? t("importedList") : "Imported List", questions: parsed },
+        t,
+      ),
+    ]
   }
   if (Array.isArray(parsed.questions)) {
-    return [normalizeImportedList(parsed)]
+    return [normalizeImportedList(parsed, t)]
   }
   if (parsed.question || parsed.prompt || parsed.stem) {
-    return [normalizeImportedList({ name: "Imported List", questions: [parsed] })]
+    return [
+      normalizeImportedList(
+        { name: t ? t("importedList") : "Imported List", questions: [parsed] },
+        t,
+      ),
+    ]
   }
-  throw new Error("No question array found in JSON.")
+  throw new Error(t ? t("jsonNoQuestions") : "No question array found in JSON.")
 }
 
-export function normalizeImportedList(value: unknown): QuestionList {
+export function normalizeImportedList(value: unknown, t?: TFunc): QuestionList {
   const source = (value && typeof value === "object" ? value : {}) as Record<string, unknown>
   const timestamp = now()
   return {
     id: asString(source.id, createId()),
-    name: asString(source.name ?? source.title, "Imported List"),
+    name: asString(source.name ?? source.title, t ? t("importedList") : "Imported List"),
     description: asString(source.description ?? source.desc, ""),
     questions: Array.isArray(source.questions)
       ? deduplicateQuestionIds(
-          source.questions.map((item, index) => normalizeQuestion(item, index)),
+          source.questions.map((item, index) => normalizeQuestion(item, index, t)),
         )
       : [],
     createdAt: asString(source.createdAt, timestamp),

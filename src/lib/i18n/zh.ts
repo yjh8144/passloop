@@ -579,6 +579,10 @@ export const zh: Record<string, string> = {
   importFailed: "导入失败。",
   requestFailed: "请求失败：{0}",
   urlImportFailed: "URL 导入失败。",
+  invalidUrlFormat: "无效的 URL 格式。",
+  httpUrlOnly: "仅支持 http:// 或 https:// 地址。",
+  localNetworkUrlBlocked: "不允许访问本地/内网地址。",
+  privateNetworkUrlBlocked: "不允许访问私有网络地址。",
   addedToCurrentList: "已添加 {0} 道题到当前题单。",
   addedToListName: "已添加 {0} 道题到题单「{1}」。",
   importedListName: "导入题单",
@@ -607,8 +611,7 @@ export const zh: Record<string, string> = {
   remoteBackupUntitled: "未命名备份",
   remoteRestoreBackup: "恢复此备份",
   remoteBackupPage: "第 {0} / {1} 页",
-  remoteBackupSecurityNote:
-    "仅会记住服务端地址和用户名，不会保存密码。公网服务请使用 HTTPS。",
+  remoteBackupSecurityNote: "仅会记住服务端地址和用户名，不会保存密码。公网服务请使用 HTTPS。",
   remoteCredentialsRequired: "请先填写服务端地址、用户名和密码。",
   remoteBackupUploaded: "当前配置已上传到远程备份。",
   remoteBackupRegistered: "用户已自动注册，并完成远程备份。",
@@ -637,6 +640,14 @@ export const zh: Record<string, string> = {
   defaultListDesc: "从 JSON 导入题目，或手动新增题目。",
   unnamedList: "未命名题单",
   selfFillPlaceholder: '[\\n  {"id": "题目id", "answer": "A", "explanation": "..."}\\n]',
+
+  // LLM errors
+  apiKeyRequired: "请填写 API Key。",
+  modelRequired: "请填写模型名称。",
+  apiUrlRequired: "请填写 API 地址。",
+  networkCorsBlocked:
+    "网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。",
+  responseStreamUnreadable: "无法读取响应流。",
 
   // Question types
   typeSingle: "单选",

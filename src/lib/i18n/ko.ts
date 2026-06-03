@@ -589,6 +589,10 @@ export const ko: Record<string, string> = {
   importFailed: "가져오기 실패.",
   requestFailed: "요청 실패: {0}",
   urlImportFailed: "URL 가져오기 실패.",
+  invalidUrlFormat: "URL 형식이 올바르지 않습니다.",
+  httpUrlOnly: "http:// 또는 https:// 주소만 지원합니다.",
+  localNetworkUrlBlocked: "로컬/내부 네트워크 주소에는 접근할 수 없습니다.",
+  privateNetworkUrlBlocked: "사설 네트워크 주소에는 접근할 수 없습니다.",
   addedToCurrentList: "현재 목록에 {0}문제 추가됨.",
   addedToListName: "목록「{1}」에 {0}문제 추가됨.",
   importedListName: "가져온 목록",
@@ -650,6 +654,14 @@ export const ko: Record<string, string> = {
   defaultListDesc: "JSON에서 문제를 가져오거나 수동으로 추가하세요.",
   unnamedList: "이름 없는 목록",
   selfFillPlaceholder: '[\\n  {"id": "문제id", "answer": "A", "explanation": "..."}\\n]',
+
+  // LLM errors
+  apiKeyRequired: "API Key를 입력하세요.",
+  modelRequired: "모델 이름을 입력하세요.",
+  apiUrlRequired: "API 주소를 입력하세요.",
+  networkCorsBlocked:
+    "네트워크 요청에 실패했습니다. 브라우저 CORS 정책에 의해 차단되었을 수 있습니다. API 주소가 교차 출처 접근을 지원하는지 확인하거나 CORS 프록시를 사용하세요.",
+  responseStreamUnreadable: "응답 스트림을 읽을 수 없습니다.",
 
   // Question types
   typeSingle: "단일 선택",

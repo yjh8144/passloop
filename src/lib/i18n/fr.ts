@@ -628,6 +628,10 @@ export const fr: Record<string, string> = {
   importFailed: "Échec de l'importation.",
   requestFailed: "Échec de la requête : {0}",
   urlImportFailed: "Échec de l'importation URL.",
+  invalidUrlFormat: "Format d'URL invalide.",
+  httpUrlOnly: "Seules les adresses http:// ou https:// sont prises en charge.",
+  localNetworkUrlBlocked: "Les adresses locales ou intranet ne sont pas autorisées.",
+  privateNetworkUrlBlocked: "Les adresses de réseau privé ne sont pas autorisées.",
   addedToCurrentList: "{0} questions ajoutées à la liste actuelle.",
   addedToListName: "{0} questions ajoutées à la liste « {1} ».",
   importedListName: "Liste importée",
@@ -659,7 +663,8 @@ export const fr: Record<string, string> = {
   remoteBackupPage: "Page {0} / {1}",
   remoteBackupSecurityNote:
     "Seuls l'URL du serveur et le nom d'utilisateur sont mémorisés. Le mot de passe n'est pas stocké. Utilisez HTTPS en public.",
-  remoteCredentialsRequired: "Renseignez d'abord l'URL du serveur, le nom d'utilisateur et le mot de passe.",
+  remoteCredentialsRequired:
+    "Renseignez d'abord l'URL du serveur, le nom d'utilisateur et le mot de passe.",
   remoteBackupUploaded: "Configuration téléversée vers la sauvegarde distante.",
   remoteBackupRegistered: "Utilisateur créé automatiquement et sauvegarde téléversée.",
   invalidRemoteServerUrl: "URL du serveur invalide. Utilisez une adresse http:// ou https://.",
@@ -689,6 +694,14 @@ export const fr: Record<string, string> = {
   defaultListDesc: "Importez des questions depuis un JSON ou ajoutez-les manuellement.",
   unnamedList: "Liste sans nom",
   selfFillPlaceholder: '[\\n  {"id": "question-id", "answer": "A", "explanation": "..."}\\n]',
+
+  // LLM errors
+  apiKeyRequired: "Veuillez saisir une API Key.",
+  modelRequired: "Veuillez saisir un nom de modèle.",
+  apiUrlRequired: "Veuillez saisir une adresse API.",
+  networkCorsBlocked:
+    "La requête réseau a échoué. Elle a peut-être été bloquée par la politique CORS du navigateur. Vérifiez que l'adresse API autorise l'accès cross-origin, ou utilisez un proxy CORS.",
+  responseStreamUnreadable: "Impossible de lire le flux de réponse.",
 
   // Question types
   typeSingle: "Choix unique",

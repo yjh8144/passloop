@@ -379,7 +379,9 @@ export function normalizeList(value: unknown): QuestionList | null {
     name: typeof source.name === "string" ? source.name : "Unnamed List",
     description: typeof source.description === "string" ? source.description : "",
     questions: Array.isArray(source.questions)
-      ? deduplicateQuestionIds(source.questions.map(normalizeQuestion))
+      ? deduplicateQuestionIds(
+          source.questions.map((question, index) => normalizeQuestion(question, index)),
+        )
       : [],
     createdAt: typeof source.createdAt === "string" ? source.createdAt : timestamp,
     updatedAt: timestamp,

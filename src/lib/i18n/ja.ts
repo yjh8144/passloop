@@ -592,6 +592,10 @@ export const ja: Record<string, string> = {
   importFailed: "インポートに失敗しました。",
   requestFailed: "リクエスト失敗：{0}",
   urlImportFailed: "URLインポートに失敗しました。",
+  invalidUrlFormat: "URL形式が無効です。",
+  httpUrlOnly: "http:// または https:// のアドレスのみ対応しています。",
+  localNetworkUrlBlocked: "ローカル/イントラネットアドレスにはアクセスできません。",
+  privateNetworkUrlBlocked: "プライベートネットワークアドレスにはアクセスできません。",
   addedToCurrentList: "現在のリストに{0}問追加しました。",
   addedToListName: "リスト「{1}」に{0}問追加しました。",
   importedListName: "インポートリスト",
@@ -653,6 +657,14 @@ export const ja: Record<string, string> = {
   defaultListDesc: "JSONから問題をインポートするか、手動で追加してください。",
   unnamedList: "名前なしリスト",
   selfFillPlaceholder: '[\\n  {"id": "問題id", "answer": "A", "explanation": "..."}\\n]',
+
+  // LLM errors
+  apiKeyRequired: "API Keyを入力してください。",
+  modelRequired: "モデル名を入力してください。",
+  apiUrlRequired: "APIアドレスを入力してください。",
+  networkCorsBlocked:
+    "ネットワークリクエストに失敗しました。ブラウザのCORSポリシーでブロックされた可能性があります。APIアドレスがクロスオリジンアクセスに対応しているか確認するか、CORSプロキシを使用してください。",
+  responseStreamUnreadable: "レスポンスストリームを読み取れません。",
 
   // Question types
   typeSingle: "単一選択",

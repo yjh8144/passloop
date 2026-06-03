@@ -612,6 +612,10 @@ export const en: Record<string, string> = {
   importFailed: "Import failed.",
   requestFailed: "Request failed: {0}",
   urlImportFailed: "URL import failed.",
+  invalidUrlFormat: "Invalid URL format.",
+  httpUrlOnly: "Only http:// or https:// URLs are supported.",
+  localNetworkUrlBlocked: "Local or intranet addresses are not allowed.",
+  privateNetworkUrlBlocked: "Private network addresses are not allowed.",
   addedToCurrentList: "Added {0} questions to current list.",
   addedToListName: 'Added {0} questions to list "{1}".',
   importedListName: "Imported List",
@@ -672,6 +676,14 @@ export const en: Record<string, string> = {
   defaultListDesc: "Import questions from JSON or add manually.",
   unnamedList: "Unnamed List",
   selfFillPlaceholder: '[\\n  {"id": "question-id", "answer": "A", "explanation": "..."}\\n]',
+
+  // LLM errors
+  apiKeyRequired: "Please enter an API Key.",
+  modelRequired: "Please enter a model name.",
+  apiUrlRequired: "Please enter an API URL.",
+  networkCorsBlocked:
+    "Network request failed. It may have been blocked by the browser CORS policy. Check whether the API URL supports cross-origin access, or use a CORS proxy.",
+  responseStreamUnreadable: "Unable to read response stream.",
 
   // Question types
   typeSingle: "Single Choice",

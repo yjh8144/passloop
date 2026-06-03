@@ -268,7 +268,10 @@ export function QuestionEditor(props: {
       </label>
       <div className="editor-actions">
         <button onClick={props.onCancel}>{t("cancel")}</button>
-        <button className="primary-button" onClick={() => props.onSave(normalizeQuestion(draft))}>
+        <button
+          className="primary-button"
+          onClick={() => props.onSave(normalizeQuestion(draft, 0, t))}
+        >
           <Check size={17} /> {t("save")}
         </button>
       </div>

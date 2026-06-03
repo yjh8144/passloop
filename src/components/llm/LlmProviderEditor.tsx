@@ -61,7 +61,7 @@ export function LlmProviderEditor({
     debugLog("[LlmProviderEditor] testConnection start", provider.provider, provider.model)
     setTesting(true)
     try {
-      const model = await testLlmConnection(resolveConfig())
+      const model = await testLlmConnection(resolveConfig(), t)
       debugLog("[LlmProviderEditor] testConnection success", model)
       pushToast("success", t("connectionSuccess", model))
     } catch (error) {
@@ -76,7 +76,7 @@ export function LlmProviderEditor({
     debugLog("[LlmProviderEditor] fetchModels start", provider.provider, provider.endpoint)
     setFetchingModels(true)
     try {
-      const models = await fetchModelList(resolveConfig())
+      const models = await fetchModelList(resolveConfig(), t)
       debugLog("[LlmProviderEditor] fetchModels result", models.length, "models")
       setModelList(models)
       if (!models.length) {

@@ -8,20 +8,20 @@ import { fetchViaProxy } from "../lib/llm"
 import { defaultProxySettings } from "../utils/constants"
 import type { PushToast, UpdateActiveList, UpdateData, SetState, ImportCommitMode } from "./types"
 
-function validateImportUrl(url: string): string {
+function validateImportUrl(url: string, t: TFunc): string {
   const trimmed = url.trim()
   let parsed: URL
   try {
     parsed = new URL(trimmed)
   } catch {
-    throw new Error("无效的 URL 格式")
+    throw new Error(t("invalidUrlFormat"))
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new Error("仅支持 http:// 或 https:// 地址")
+    throw new Error(t("httpUrlOnly"))
   }
   const hostname = parsed.hostname.toLowerCase()
   if (hostname === "localhost" || hostname.endsWith(".local") || hostname.endsWith(".internal")) {
-    throw new Error("不允许访问本地/内网地址")
+    throw new Error(t("localNetworkUrlBlocked"))
   }
   const m = hostname.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/)
   if (m) {
@@ -34,7 +34,7 @@ function validateImportUrl(url: string): string {
       (a === 192 && b === 168) ||
       (a === 169 && b === 254)
     ) {
-      throw new Error("不允许访问私有网络地址")
+      throw new Error(t("privateNetworkUrlBlocked"))
     }
   }
   return trimmed
@@ -75,7 +75,7 @@ export function useImportExport({
     event.target.value = ""
     if (!file) return
     try {
-      const lists = parseQuestionJson(await readFileAsText(file)).map((l) => ({
+      const lists = parseQuestionJson(await readFileAsText(file), t).map((l) => ({
         ...l,
         id: createId(),
       }))
@@ -95,7 +95,7 @@ export function useImportExport({
   const handleUrlImport = async (url: string) => {
     let validatedUrl: string
     try {
-      validatedUrl = validateImportUrl(url)
+      validatedUrl = validateImportUrl(url, t)
     } catch (error) {
       pushToast("error", error instanceof Error ? error.message : t("urlImportFailed"))
       return
@@ -110,9 +110,9 @@ export function useImportExport({
         : "",
     }
     try {
-      const response = await fetchViaProxy(validatedUrl, fetchProxyConfig)
+      const response = await fetchViaProxy(validatedUrl, fetchProxyConfig, undefined, t)
       const text = await response.text()
-      const lists = parseQuestionJson(text).map((l) => ({ ...l, id: createId() }))
+      const lists = parseQuestionJson(text, t).map((l) => ({ ...l, id: createId() }))
       debugLog("URL import", {
         url: validatedUrl,
         listCount: lists.length,
@@ -200,7 +200,7 @@ export function useImportExport({
   const handleBackupUrlImport = async (url: string) => {
     let validatedUrl: string
     try {
-      validatedUrl = validateImportUrl(url)
+      validatedUrl = validateImportUrl(url, t)
     } catch (error) {
       pushToast("error", error instanceof Error ? error.message : t("urlBackupImportFailed"))
       return
@@ -215,7 +215,7 @@ export function useImportExport({
         : "",
     }
     try {
-      const response = await fetchViaProxy(validatedUrl, fetchProxyConfig)
+      const response = await fetchViaProxy(validatedUrl, fetchProxyConfig, undefined, t)
       const text = await response.text()
       const imported = normalizeAppData(JSON.parse(text))
       debugLog("Backup URL import parsed", {

@@ -123,6 +123,7 @@ export function ManagerPage(props: {
           setFillStreamText(accumulated)
         },
         controller.signal,
+        t,
       )
       debugLog("LLM fill completed", { mode, updatedCount: updated.length })
       props.updateList((list) => ({

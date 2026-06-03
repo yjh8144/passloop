@@ -105,11 +105,14 @@ export function useWrongPractice({
       return
     }
     debugLog("Export wrong questions", { count: wrongQuestions.length, listName: activeList.name })
-    const list = normalizeImportedList({
-      name: t("wrongListSuffix", baseListName()),
-      description: t("wrongListExportDesc"),
-      questions: wrongQuestions,
-    })
+    const list = normalizeImportedList(
+      {
+        name: t("wrongListSuffix", baseListName()),
+        description: t("wrongListExportDesc"),
+        questions: wrongQuestions,
+      },
+      t,
+    )
     downloadJson(`${list.name}.json`, list)
   }, [wrongQuestions, activeList.name, baseListName, pushToast, t])
 

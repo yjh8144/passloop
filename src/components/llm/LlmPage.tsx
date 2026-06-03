@@ -111,8 +111,9 @@ export function LlmPage(props: {
           setStreamingText(accumulated)
         },
         controller.signal,
+        t,
       )
-      const lists = parseQuestionJson(extractJsonText(fullText))
+      const lists = parseQuestionJson(extractJsonText(fullText), t)
       if (!lists.length) {
         throw new Error(t("llmParseFailed"))
       }
@@ -141,7 +142,7 @@ export function LlmPage(props: {
 
   const getEditedList = () => {
     try {
-      return normalizeImportedList(JSON.parse(parsedJsonText))
+      return normalizeImportedList(JSON.parse(parsedJsonText), t)
     } catch {
       pushToast("error", t("jsonFormatError"))
       return null
@@ -335,7 +336,7 @@ export function LlmPage(props: {
                 const nextText = event.target.value
                 setParsedJsonText(nextText)
                 try {
-                  setParsedList(normalizeImportedList(JSON.parse(nextText)))
+                  setParsedList(normalizeImportedList(JSON.parse(nextText), t))
                 } catch {
                   setParsedList(parsedList)
                 }
@@ -396,7 +397,7 @@ export function LlmPage(props: {
                   return
                 }
                 try {
-                  const lists = parseQuestionJson(extractJsonText(manualJsonText))
+                  const lists = parseQuestionJson(extractJsonText(manualJsonText), t)
                   debugLog("Manual JSON validated", {
                     questionCount: lists[0]?.questions.length ?? 0,
                     textLength: manualJsonText.length,

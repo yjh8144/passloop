@@ -30,7 +30,7 @@ export function LlmProviderList({ providers, onEdit, onDelete, onAdd }: LlmProvi
     if (!config) return
     setStatuses((s) => ({ ...s, [id]: "checking" }))
     try {
-      await testLlmConnection(config)
+      await testLlmConnection(config, t)
       setStatuses((s) => ({ ...s, [id]: "ok" }))
     } catch {
       setStatuses((s) => ({ ...s, [id]: "fail" }))

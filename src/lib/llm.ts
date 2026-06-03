@@ -1,11 +1,11 @@
-import type { LlmConfig, Question } from "./types"
+import type { LlmConfig, Question, TFunc } from "./types"
 import { parseQuestionJson } from "./question"
 import { debugError } from "./debug"
 
-function assertConfigValid(apiKey: string, model: string, endpoint: string): void {
-  if (!apiKey) throw new Error("请填写 API Key。")
-  if (!model) throw new Error("请填写模型名称。")
-  if (!endpoint) throw new Error("请填写 API 地址。")
+function assertConfigValid(apiKey: string, model: string, endpoint: string, t?: TFunc): void {
+  if (!apiKey) throw new Error(t ? t("apiKeyRequired") : "请填写 API Key。")
+  if (!model) throw new Error(t ? t("modelRequired") : "请填写模型名称。")
+  if (!endpoint) throw new Error(t ? t("apiUrlRequired") : "请填写 API 地址。")
 }
 
 type ProxyConfig = Pick<LlmConfig, "proxyEnabled" | "proxyUrl" | "proxyKey">
@@ -38,7 +38,7 @@ function proxyHeaders(config: ProxyConfig): Record<string, string> {
   return { "X-Proxy-Key": config.proxyKey }
 }
 
-async function safeFetch(url: string, options?: RequestInit): Promise<Response> {
+async function safeFetch(url: string, options?: RequestInit, t?: TFunc): Promise<Response> {
   let response: Response
   try {
     response = await fetch(url, options)
@@ -46,14 +46,18 @@ async function safeFetch(url: string, options?: RequestInit): Promise<Response> 
     if ((error as { name?: string })?.name === "AbortError") throw error
     if (error instanceof TypeError) {
       throw new NetworkError(
-        "网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。",
+        t
+          ? t("networkCorsBlocked")
+          : "网络请求失败，可能被浏览器 CORS 策略拦截。请确认 API 地址支持跨域访问，或使用支持 CORS 的代理。",
       )
     }
     throw error
   }
   if (!response.ok) {
     const text = (await response.text()).slice(0, 4096)
-    throw new Error(text || `请求失败：${response.status}`)
+    throw new Error(
+      text || (t ? t("requestFailed", response.status) : `请求失败：${response.status}`),
+    )
   }
   return response
 }
@@ -62,6 +66,7 @@ async function fetchWithProxyFallback(
   targetUrl: string,
   options: RequestInit | undefined,
   config: ProxyConfig,
+  t?: TFunc,
 ): Promise<Response> {
   const proxyActive = config.proxyEnabled && !!config.proxyUrl
   const proxiedUrl = buildProxyUrl(targetUrl, config)
@@ -71,11 +76,11 @@ async function fetchWithProxyFallback(
   }
 
   try {
-    return await safeFetch(proxiedUrl, mergedOptions)
+    return await safeFetch(proxiedUrl, mergedOptions, t)
   } catch (error) {
     if (!(error instanceof NetworkError) || !proxyActive) throw error
     try {
-      return await safeFetch(targetUrl, options)
+      return await safeFetch(targetUrl, options, t)
     } catch (retryError) {
       if (retryError instanceof NetworkError) throw error
       throw retryError
@@ -87,8 +92,9 @@ export async function fetchViaProxy(
   targetUrl: string,
   config: ProxyConfig,
   options?: RequestInit,
+  t?: TFunc,
 ): Promise<Response> {
-  return fetchWithProxyFallback(targetUrl, options, config)
+  return fetchWithProxyFallback(targetUrl, options, config, t)
 }
 
 const SYSTEM_PROMPT = `你是题库整理助手。请把用户提供的未整理题目转换为 PassLoop 标准 JSON。
@@ -113,6 +119,7 @@ export async function streamParseLlm(
   mode: "both" | "answer" | "explanation" | "none",
   onChunk: (accumulated: string) => void,
   signal?: AbortSignal,
+  t?: TFunc,
 ): Promise<string> {
   const fillAnswer = mode === "both" || mode === "answer"
   const fillExplanation = mode === "both" || mode === "explanation"
@@ -124,12 +131,12 @@ export async function streamParseLlm(
 ${input}`
 
   if (config.provider === "gemini") {
-    return streamGemini(prompt, config, onChunk, signal)
+    return streamGemini(prompt, config, onChunk, signal, t)
   }
   if (config.provider === "anthropic") {
-    return streamAnthropic(prompt, config, onChunk, signal)
+    return streamAnthropic(prompt, config, onChunk, signal, t)
   }
-  return streamOpenAiCompatible(prompt, config, onChunk, signal)
+  return streamOpenAiCompatible(prompt, config, onChunk, signal, t)
 }
 
 async function streamOpenAiCompatible(
@@ -137,12 +144,13 @@ async function streamOpenAiCompatible(
   config: LlmConfig,
   onChunk: (accumulated: string) => void,
   signal?: AbortSignal,
+  t?: TFunc,
 ) {
   const endpoint = normalizeOpenAiChatEndpoint(
     config.endpoint.trim() || "https://api.openai.com/v1/chat/completions",
   )
   const model = config.model.trim() || "gpt-4.1-mini"
-  assertConfigValid(config.apiKey, model, endpoint)
+  assertConfigValid(config.apiKey, model, endpoint, t)
   const body: Record<string, unknown> = {
     model,
     messages: [
@@ -164,6 +172,7 @@ async function streamOpenAiCompatible(
       signal,
     },
     config,
+    t,
   )
   return readSSEStream(
     response,
@@ -179,6 +188,7 @@ async function streamOpenAiCompatible(
     },
     onChunk,
     signal,
+    t,
   )
 }
 
@@ -196,12 +206,13 @@ async function streamGemini(
   config: LlmConfig,
   onChunk: (accumulated: string) => void,
   signal?: AbortSignal,
+  t?: TFunc,
 ) {
   const model = config.model.trim() || "gemini-1.5-pro"
   const baseEndpoint =
     config.endpoint.trim() ||
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`
-  assertConfigValid(config.apiKey, model, baseEndpoint)
+  assertConfigValid(config.apiKey, model, baseEndpoint, t)
   const endpoint = stripApiKey(toGeminiSseEndpoint(baseEndpoint))
   const response = await fetchWithProxyFallback(
     endpoint,
@@ -218,6 +229,7 @@ async function streamGemini(
       signal,
     },
     config,
+    t,
   )
   return readSSEStream(
     response,
@@ -236,6 +248,7 @@ async function streamGemini(
     },
     onChunk,
     signal,
+    t,
   )
 }
 
@@ -244,10 +257,11 @@ async function streamAnthropic(
   config: LlmConfig,
   onChunk: (accumulated: string) => void,
   signal?: AbortSignal,
+  t?: TFunc,
 ) {
   const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages"
   const model = config.model.trim() || "claude-sonnet-4-20250514"
-  assertConfigValid(config.apiKey, model, endpoint)
+  assertConfigValid(config.apiKey, model, endpoint, t)
   const response = await fetchWithProxyFallback(
     endpoint,
     {
@@ -267,6 +281,7 @@ async function streamAnthropic(
       signal,
     },
     config,
+    t,
   )
   return readSSEStream(
     response,
@@ -285,6 +300,7 @@ async function streamAnthropic(
     },
     onChunk,
     signal,
+    t,
   )
 }
 
@@ -293,9 +309,12 @@ async function readSSEStream(
   extractDelta: (data: string) => string | null,
   onChunk: (accumulated: string) => void,
   signal?: AbortSignal,
+  t?: TFunc,
 ): Promise<string> {
   const reader = response.body?.getReader()
-  if (!reader) throw new Error("无法读取响应流。")
+  if (!reader) {
+    throw new Error(t ? t("responseStreamUnreadable") : "无法读取响应流。")
+  }
   const onAbort = () => {
     reader.cancel().catch(() => {})
   }
@@ -344,6 +363,7 @@ export async function fillAnswersWithLlm(
   mode: "answer" | "explanation" | "both",
   onChunk: (accumulated: string) => void,
   signal?: AbortSignal,
+  t?: TFunc,
 ): Promise<Question[]> {
   const modeInstruction =
     mode === "answer"
@@ -373,10 +393,10 @@ ${JSON.stringify(
 )}`
 
   const fullText = await (config.provider === "gemini"
-    ? streamGemini(fillPrompt, config, onChunk, signal)
+    ? streamGemini(fillPrompt, config, onChunk, signal, t)
     : config.provider === "anthropic"
-      ? streamAnthropic(fillPrompt, config, onChunk, signal)
-      : streamOpenAiCompatible(fillPrompt, config, onChunk, signal))
+      ? streamAnthropic(fillPrompt, config, onChunk, signal, t)
+      : streamOpenAiCompatible(fillPrompt, config, onChunk, signal, t))
 
   const parsed = JSON.parse(extractJsonText(fullText))
   const results: Array<{ id?: string; answer?: unknown; explanation?: string }> = Array.isArray(
@@ -411,8 +431,8 @@ ${JSON.stringify(
   })
 }
 
-export async function fetchModelList(config: LlmConfig): Promise<string[]> {
-  if (!config.apiKey.trim()) throw new Error("请先填写 API Key。")
+export async function fetchModelList(config: LlmConfig, t?: TFunc): Promise<string[]> {
+  if (!config.apiKey.trim()) throw new Error(t ? t("apiKeyRequired") : "请先填写 API Key。")
   if (config.provider === "anthropic") {
     return [
       "claude-opus-4-20250514",
@@ -432,6 +452,7 @@ export async function fetchModelList(config: LlmConfig): Promise<string[]> {
         headers: { "x-goog-api-key": config.apiKey },
       },
       config,
+      t,
     )
     const payload = await response.json()
     return (payload.models ?? [])
@@ -448,6 +469,7 @@ export async function fetchModelList(config: LlmConfig): Promise<string[]> {
       },
     },
     config,
+    t,
   )
   const payload = await response.json()
   return (payload.data ?? [])
@@ -481,14 +503,14 @@ function normalizeModelsEndpoint(endpoint: string) {
   }
 }
 
-export async function testLlmConnection(config: LlmConfig): Promise<string> {
+export async function testLlmConnection(config: LlmConfig, t?: TFunc): Promise<string> {
   if (config.provider === "gemini") {
     const model = config.model.trim() || "gemini-1.5-pro"
     const endpoint = stripApiKey(
       config.endpoint.trim() ||
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     )
-    assertConfigValid(config.apiKey, model, endpoint)
+    assertConfigValid(config.apiKey, model, endpoint, t)
     await fetchWithProxyFallback(
       endpoint,
       {
@@ -503,13 +525,14 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
         }),
       },
       config,
+      t,
     )
     return model
   }
   if (config.provider === "anthropic") {
     const endpoint = config.endpoint.trim() || "https://api.anthropic.com/v1/messages"
     const model = config.model.trim() || "claude-sonnet-4-20250514"
-    assertConfigValid(config.apiKey, model, endpoint)
+    assertConfigValid(config.apiKey, model, endpoint, t)
     await fetchWithProxyFallback(
       endpoint,
       {
@@ -526,6 +549,7 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
         }),
       },
       config,
+      t,
     )
     return model
   }
@@ -533,7 +557,7 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
     config.endpoint.trim() || "https://api.openai.com/v1/chat/completions",
   )
   const model = config.model.trim() || "gpt-4.1-mini"
-  assertConfigValid(config.apiKey, model, endpoint)
+  assertConfigValid(config.apiKey, model, endpoint, t)
   await fetchWithProxyFallback(
     endpoint,
     {
@@ -549,6 +573,7 @@ export async function testLlmConnection(config: LlmConfig): Promise<string> {
       }),
     },
     config,
+    t,
   )
   return model
 }
