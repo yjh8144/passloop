@@ -24,14 +24,11 @@ export function ProxyConfigModal(props: {
   const currentProxyTestId = useRef(0)
 
   // Esc closes a nested sub-dialog first (help/list), then the modal itself.
-  useEscapeKey(
-    () => {
-      if (showHelp) setShowHelp(false)
-      else if (showList) setShowList(false)
-      else props.onClose()
-    },
-    props.open,
-  )
+  useEscapeKey(() => {
+    if (showHelp) setShowHelp(false)
+    else if (showList) setShowList(false)
+    else props.onClose()
+  }, props.open)
 
   if (!props.open) return null
 
