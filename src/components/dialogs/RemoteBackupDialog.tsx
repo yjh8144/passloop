@@ -222,7 +222,11 @@ function RemoteBackupDialogContent({
         </div>
 
         <div className="remote-backup-actions">
-          <button className="primary-button" onClick={uploadCurrent} disabled={!canSubmit || disabled}>
+          <button
+            className="primary-button"
+            onClick={uploadCurrent}
+            disabled={!canSubmit || disabled}
+          >
             {busy === "upload" ? (
               <>
                 <Loader2 size={16} className="spin" /> {t("remoteUploading")}
@@ -249,11 +253,7 @@ function RemoteBackupDialogContent({
         <div className="remote-backup-list" aria-live="polite">
           <div className="remote-backup-list-head">
             <strong>{t("remoteBackupList")}</strong>
-            {list && (
-              <span>
-                {t("remoteBackupTotal", list.total)}
-              </span>
-            )}
+            {list && <span>{t("remoteBackupTotal", list.total)}</span>}
           </div>
 
           {!list ? (
