@@ -1,5 +1,5 @@
 import http from "node:http"
-import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises"
+import { mkdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { randomBytes, randomUUID, scrypt as scryptCallback, timingSafeEqual } from "node:crypto"
 import { promisify } from "node:util"
@@ -14,6 +14,11 @@ const DATA_DIR = process.env.PASSLOOP_DATA_DIR || path.join(SERVER_ROOT, "data")
 const USERS_FILE = path.join(DATA_DIR, "users.json")
 const BACKUPS_DIR = path.join(DATA_DIR, "backups")
 const MAX_BODY_BYTES = Number(process.env.MAX_BODY_BYTES || 5 * 1024 * 1024)
+const MAX_BACKUPS_PER_USER = Number(process.env.MAX_BACKUPS_PER_USER || 50)
+const RATE_WINDOW_MS = Number(process.env.RATE_WINDOW_MS || 60_000)
+const RATE_MAX = Number(process.env.RATE_MAX || 60)
+const AUTH_FAIL_WINDOW_MS = Number(process.env.AUTH_FAIL_WINDOW_MS || 15 * 60_000)
+const AUTH_FAIL_MAX = Number(process.env.AUTH_FAIL_MAX || 10)
 const USERNAME_PATTERN = /^[a-zA-Z0-9_.-]{3,64}$/
 
 const MIME_JSON = "application/json; charset=utf-8"
@@ -69,6 +74,60 @@ class HttpError extends Error {
     this.code = code
   }
 }
+
+const requestHits = new Map()
+const authFailures = new Map()
+
+function getClientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"]
+  if (typeof forwarded === "string" && forwarded.trim()) {
+    return forwarded.split(",")[0].trim()
+  }
+  return req.socket.remoteAddress || "unknown"
+}
+
+function slidingWindow(map, key, windowMs) {
+  const now = Date.now()
+  let list = map.get(key)
+  if (!list) {
+    list = []
+    map.set(key, list)
+  }
+  while (list.length && now - list[0] > windowMs) list.shift()
+  return list
+}
+
+function enforceRateLimit(ip) {
+  const list = slidingWindow(requestHits, ip, RATE_WINDOW_MS)
+  if (list.length >= RATE_MAX) {
+    throw new HttpError(429, "请求过于频繁，请稍后再试", "rate_limited")
+  }
+  list.push(Date.now())
+}
+
+function enforceAuthLockout(ip) {
+  const list = slidingWindow(authFailures, ip, AUTH_FAIL_WINDOW_MS)
+  if (list.length >= AUTH_FAIL_MAX) {
+    throw new HttpError(429, "登录失败次数过多，请稍后再试", "too_many_auth_failures")
+  }
+}
+
+function recordAuthFailure(ip) {
+  slidingWindow(authFailures, ip, AUTH_FAIL_WINDOW_MS).push(Date.now())
+}
+
+const rateLimitSweeper = setInterval(() => {
+  const now = Date.now()
+  for (const [ip, list] of requestHits) {
+    while (list.length && now - list[0] > RATE_WINDOW_MS) list.shift()
+    if (!list.length) requestHits.delete(ip)
+  }
+  for (const [ip, list] of authFailures) {
+    while (list.length && now - list[0] > AUTH_FAIL_WINDOW_MS) list.shift()
+    if (!list.length) authFailures.delete(ip)
+  }
+}, 5 * 60_000)
+rateLimitSweeper.unref?.()
 
 async function ensureStorage() {
   await mkdir(BACKUPS_DIR, { recursive: true })
@@ -253,8 +312,16 @@ async function handleCreateBackup(req, res) {
 
     user.backups = Array.isArray(user.backups) ? user.backups : []
     user.backups.unshift(backup)
+    // Cap stored backups per user to keep disk usage bounded; evict the oldest.
+    const evicted =
+      user.backups.length > MAX_BACKUPS_PER_USER
+        ? user.backups.splice(MAX_BACKUPS_PER_USER)
+        : []
     user.updatedAt = timestamp
     await writeUsers(usersFile)
+    for (const old of evicted) {
+      await unlink(backupFilePath(username, old.id)).catch(() => {})
+    }
     return { backup, created: userCreated }
   })
 
@@ -325,17 +392,23 @@ async function route(req, res) {
     return
   }
 
+  const clientIp = getClientIp(req)
+  enforceRateLimit(clientIp)
+
   if (req.method === "POST" && pathname === "/api/backups") {
+    enforceAuthLockout(clientIp)
     await handleCreateBackup(req, res)
     return
   }
 
   if (req.method === "POST" && pathname === "/api/backups/list") {
+    enforceAuthLockout(clientIp)
     await handleListBackups(req, res)
     return
   }
 
   if (req.method === "POST" && pathname === "/api/backups/download") {
+    enforceAuthLockout(clientIp)
     await handleDownloadBackup(req, res)
     return
   }
@@ -348,6 +421,9 @@ const server = http.createServer(async (req, res) => {
     await route(req, res)
   } catch (error) {
     if (error instanceof HttpError) {
+      if (error.code === "invalid_credentials") {
+        recordAuthFailure(getClientIp(req))
+      }
       errorResponse(res, error.status, error.message, error.code)
       return
     }
