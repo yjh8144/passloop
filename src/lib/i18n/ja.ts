@@ -63,6 +63,7 @@ export const ja: Record<string, string> = {
   stats: "統計",
   revealImmediate: "すぐに答えを表示",
   revealEnd: "最後に答えを表示",
+  revealTiming: "答えの表示タイミング",
   blankPlaceholder: "空欄 {0}",
   shortPlaceholder: "解答 {0}",
   wrongPractice: "間違い練習",

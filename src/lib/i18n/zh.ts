@@ -63,6 +63,7 @@ export const zh: Record<string, string> = {
   stats: "统计",
   revealImmediate: "立即显示答案",
   revealEnd: "最后显示答案",
+  revealTiming: "答案显示时机",
   blankPlaceholder: "空 {0}",
   shortPlaceholder: "答案 {0}",
   wrongPractice: "错题重练",

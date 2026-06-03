@@ -1,10 +1,13 @@
 import { useState } from "react"
 import { Github, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function OnboardingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT()
   const [step, setStep] = useState(0)
+
+  useEscapeKey(onClose, open)
 
   if (!open) return null
 

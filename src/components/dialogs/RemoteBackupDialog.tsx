@@ -19,6 +19,7 @@ import {
 import type { RemoteBackupItem, RemoteBackupListResponse } from "../../lib/remoteBackup"
 import { normalizeAppData } from "../../lib/storage"
 import { usePushToast, useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 const PAGE_SIZE = 8
 
@@ -62,6 +63,10 @@ function RemoteBackupDialogContent({
 
   const disabled = busy !== "idle"
   const canSubmit = Boolean(serverUrl.trim() && username.trim() && password)
+
+  useEscapeKey(() => {
+    if (!disabled) onClose()
+  })
 
   const rememberSettings = () => {
     saveRemoteBackupSettings({
@@ -168,7 +173,7 @@ function RemoteBackupDialogContent({
   const hasNext = totalPages > 0 && page < totalPages
 
   return (
-    <div className="modal-overlay" onClick={disabled ? undefined : onClose}>
+    <div className="modal-overlay">
       <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("remoteBackupTitle")}</h2>

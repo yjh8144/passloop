@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { X } from "lucide-react"
 import type { AppData } from "../../lib/types"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function BackupImportDialog({
   data,
@@ -27,6 +28,8 @@ export function BackupImportDialog({
   useEffect(() => {
     if (step === "confirm") setTimeout(() => inputRef.current?.focus(), 0)
   }, [step])
+
+  useEscapeKey(onClose, !!data)
 
   if (!data) return null
 

@@ -146,36 +146,44 @@ export function AppDataProvider({
 
   const deleteList = useCallback(
     (id: string) => {
-      showConfirm(t("confirmDeleteList"), () => {
-        debugLog("Delete list", { id })
-        updateData((current) => {
-          const remaining = current.lists.filter((list) => list.id !== id)
-          const lists = remaining.length ? remaining : [createEmptyQuestionList(t("defaultList"))]
-          return {
-            ...current,
-            lists,
-            activeListId: current.activeListId === id ? lists[0].id : current.activeListId,
-            attempts: current.attempts.filter((attempt) => attempt.listId !== id),
-          }
-        })
-        resetHandlerRef.current?.("full", [])
-        pushToast("success", t("listDeleted"))
-      })
+      showConfirm(
+        t("confirmDeleteList"),
+        () => {
+          debugLog("Delete list", { id })
+          updateData((current) => {
+            const remaining = current.lists.filter((list) => list.id !== id)
+            const lists = remaining.length ? remaining : [createEmptyQuestionList(t("defaultList"))]
+            return {
+              ...current,
+              lists,
+              activeListId: current.activeListId === id ? lists[0].id : current.activeListId,
+              attempts: current.attempts.filter((attempt) => attempt.listId !== id),
+            }
+          })
+          resetHandlerRef.current?.("full", [])
+          pushToast("success", t("listDeleted"))
+        },
+        { tone: "danger" },
+      )
     },
     [showConfirm, t, updateData, pushToast],
   )
 
   const clearActiveListAttempts = useCallback(() => {
-    showConfirm(t("confirmClearAttempts", activeList.name), () => {
-      debugLog("Clear list attempts", { listId: activeList.id, listName: activeList.name })
-      updateData((current) => ({
-        ...current,
-        attempts: current.attempts.filter((attempt) => attempt.listId !== activeList.id),
-      }))
-      const questionIds = activeList.questions.map((q) => q.id)
-      resetHandlerRef.current?.("selective", questionIds)
-      pushToast("success", t("attemptsCleared"))
-    })
+    showConfirm(
+      t("confirmClearAttempts", activeList.name),
+      () => {
+        debugLog("Clear list attempts", { listId: activeList.id, listName: activeList.name })
+        updateData((current) => ({
+          ...current,
+          attempts: current.attempts.filter((attempt) => attempt.listId !== activeList.id),
+        }))
+        const questionIds = activeList.questions.map((q) => q.id)
+        resetHandlerRef.current?.("selective", questionIds)
+        pushToast("success", t("attemptsCleared"))
+      },
+      { tone: "danger" },
+    )
   }, [showConfirm, t, activeList, updateData, pushToast])
 
   const addImportedList = useCallback(

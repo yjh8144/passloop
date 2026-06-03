@@ -2,6 +2,7 @@ import { Download, Plus, Shuffle, Undo2, X } from "lucide-react"
 import type { Question } from "../../lib/types"
 import type { ResultMap } from "../../hooks/types"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { debugLog } from "../../lib/debug"
 
 interface CompletionDialogProps {
@@ -17,6 +18,7 @@ interface CompletionDialogProps {
 
 export function CompletionDialog(props: CompletionDialogProps) {
   const t = useT()
+  useEscapeKey(props.onClose, props.open)
   if (!props.open) return null
 
   const correctCount = props.questions.filter((q) => props.results[q.id] === true).length

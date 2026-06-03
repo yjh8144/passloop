@@ -1,5 +1,12 @@
 import { Shuffle, Trash2 } from "lucide-react"
-import type { AppData, AutoNextScope, PracticeMode, SubmitMode, ViewMode } from "../../lib/types"
+import type {
+  AppData,
+  AutoNextScope,
+  PracticeMode,
+  RevealMode,
+  SubmitMode,
+  ViewMode,
+} from "../../lib/types"
 import { Segmented } from "../ui/Segmented"
 import { TypeOrderEditor } from "./TypeOrderEditor"
 import { useT, usePushToast } from "../../contexts"
@@ -53,6 +60,22 @@ export function ControlPanel(props: {
             props.updateSettings(patch)
           }}
         />
+      )}
+      {props.settings.practiceMode !== "memorize" && props.settings.submitMode === "paper" && (
+        <label className="field-label">
+          {t("revealTiming")}
+          <Segmented
+            value={props.settings.revealMode}
+            options={[
+              ["immediate", t("revealImmediate")],
+              ["end", t("revealEnd")],
+            ]}
+            onChange={(value) => {
+              debugLog("[ControlPanel] revealMode changed", value)
+              props.updateSettings({ revealMode: value as RevealMode })
+            }}
+          />
+        </label>
       )}
       {props.settings.practiceMode !== "memorize" && props.settings.submitMode !== "paper" && (
         <label className="toggle-row">

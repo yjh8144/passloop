@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react"
 import { X } from "lucide-react"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export type ConfirmDialogState = {
   message: string
   onConfirm: (dontAskAgain: boolean) => void
   dismissLabel?: string
+  tone?: "danger" | "normal"
 } | null
 
 export function ConfirmDialog({
@@ -22,6 +24,7 @@ export function ConfirmDialog({
     setDontAskAgain(false)
     setPrevState(state)
   }
+  useEscapeKey(onClose, !!state)
   if (!state) return null
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -46,7 +49,7 @@ export function ConfirmDialog({
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
           <button
-            className="danger-button"
+            className={state.tone === "danger" ? "danger-button" : "primary-button"}
             onClick={() => {
               state.onConfirm(dontAskAgain)
               onClose()
@@ -83,6 +86,7 @@ export function PromptDialog({
   }
   if (state !== prevState) setPrevState(state)
 
+  useEscapeKey(onClose, !!state)
   useEffect(() => {
     if (state) {
       setTimeout(() => inputRef.current?.focus(), 0)
@@ -118,7 +122,7 @@ export function PromptDialog({
         />
         <div className="modal-actions">
           <button onClick={onClose}>{t("cancel")}</button>
-          <button className="accent-button" onClick={handleSubmit}>
+          <button className="accent-button" onClick={handleSubmit} disabled={!value.trim()}>
             {t("confirmAction")}
           </button>
         </div>

@@ -1,8 +1,10 @@
 import { Download, X } from "lucide-react"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function OfflineDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT()
+  useEscapeKey(onClose, open)
   if (!open) return null
 
   return (

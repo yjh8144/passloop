@@ -3,6 +3,7 @@ import { ArrowLeft, X } from "lucide-react"
 import type { QuestionList } from "../../lib/types"
 import type { ImportCommitMode } from "../../hooks/types"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function ImportChoiceDialog({
   lists,
@@ -30,6 +31,8 @@ export function ImportChoiceDialog({
     setView("default")
     onChoose(mode)
   }
+
+  useEscapeKey(handleClose, !!lists)
 
   if (!lists) return null
   const totalQuestions = lists.reduce((sum, l) => sum + l.questions.length, 0)

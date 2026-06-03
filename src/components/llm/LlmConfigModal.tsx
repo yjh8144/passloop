@@ -2,6 +2,7 @@ import { useState } from "react"
 import { X } from "lucide-react"
 import type { LlmProvider, LlmProviderType, LlmScenario } from "../../lib/types"
 import { useLlmConfig, useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { LlmProviderList } from "./LlmProviderList"
 import { LlmProviderEditor } from "./LlmProviderEditor"
 
@@ -11,6 +12,7 @@ export function LlmConfigModal(props: { open: boolean; onClose: () => void }) {
   const t = useT()
   const { providers, addProvider, updateProvider, deleteProvider, assignments, assignProvider } =
     useLlmConfig()
+  useEscapeKey(props.onClose, props.open)
 
   const [tab, setTab] = useState<Tab>("providers")
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -71,7 +73,7 @@ export function LlmConfigModal(props: { open: boolean; onClose: () => void }) {
   const showEditor = draft !== null
 
   return (
-    <div className="modal-overlay" onClick={props.onClose}>
+    <div className="modal-overlay">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("llmConfigTitle")}</h2>

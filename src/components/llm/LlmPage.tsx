@@ -21,6 +21,7 @@ import { downloadJson } from "../../lib/storage"
 import { debugLog } from "../../lib/debug"
 import { Segmented } from "../ui/Segmented"
 import { EmptyState } from "../ui/EmptyState"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { SelfGenerateDialog } from "./SelfGenerateDialog"
 import { ParsedQuestionsEditor } from "./ParsedQuestionsEditor"
 import { useT, usePushToast, useLlmConfig, useProxy } from "../../contexts"
@@ -53,6 +54,9 @@ export function LlmPage(props: {
   const [manualJsonText, setManualJsonText] = useState("")
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false)
   const [showParseChoice, setShowParseChoice] = useState(false)
+
+  useEscapeKey(() => setShowOverwriteConfirm(false), showOverwriteConfirm)
+  useEscapeKey(() => setShowParseChoice(false), showParseChoice)
   const parseAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {

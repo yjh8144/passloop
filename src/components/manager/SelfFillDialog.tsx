@@ -4,6 +4,7 @@ import type { Question } from "../../lib/types"
 import { debugLog } from "../../lib/debug"
 import { Segmented } from "../ui/Segmented"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function SelfFillDialog(props: {
   open: boolean
@@ -17,6 +18,8 @@ export function SelfFillDialog(props: {
   const [copied, setCopied] = useState(false)
   const [jsonInput, setJsonInput] = useState("")
   const [validationError, setValidationError] = useState("")
+
+  useEscapeKey(props.onClose, props.open)
 
   if (!props.open) return null
 
@@ -142,7 +145,7 @@ ${questionsData}`
   }
 
   return (
-    <div className="modal-overlay" onClick={props.onClose}>
+    <div className="modal-overlay">
       <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("selfFillHeader")}</h2>

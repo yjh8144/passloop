@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import { X } from "lucide-react"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { debugLog, isDebugEnabled, setDebugEnabled } from "../../lib/debug"
 
 function CrashTrigger({ label }: { label: string }) {
@@ -34,6 +35,8 @@ export function DebugDialog({
     debugLog(next ? "Debug mode enabled" : "Debug mode disabled")
     onClose()
   }, [debugEnabled, onClose])
+
+  useEscapeKey(onClose, open)
 
   if (!open) return null
 

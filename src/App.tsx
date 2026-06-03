@@ -67,7 +67,6 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
   const { clearLlmConfig: clearLlmConfigCtx } = useLlmConfig()
   const { resetProxySettings } = useProxy()
   const { page, desktopSidebarCollapsed, llmUnsavedRef } = useNavigation()
-  const { showConfirm } = useDialog()
   const t = useT()
 
   const [editing, setEditing] = useState<Question | null>(null)
@@ -87,9 +86,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           onBackupImport={() => importActions?.openBackupImport()}
           onRemoteBackup={() => importActions?.openRemoteBackup()}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-          onExportBackup={() =>
-            showConfirm(t("confirmExportBackup"), () => downloadJson("passloop-config.json", data))
-          }
+          onExportBackup={() => downloadJson("passloop-config.json", data)}
           onResetAll={() => setResetConfirmDialog(true)}
           onOpenDebugDialog={() => setShowDebugDialog(true)}
           onOpenOfflineDialog={() => setShowOfflineDialog(true)}
@@ -131,9 +128,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           onBackupImport={() => importActions?.openBackupImport()}
           onRemoteBackup={() => importActions?.openRemoteBackup()}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-          onExportBackup={() =>
-            showConfirm(t("confirmExportBackup"), () => downloadJson("passloop-config.json", data))
-          }
+          onExportBackup={() => downloadJson("passloop-config.json", data)}
           onResetAll={() => setResetConfirmDialog(true)}
         />
 

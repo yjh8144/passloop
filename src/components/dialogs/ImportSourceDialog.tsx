@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import type { ChangeEvent } from "react"
 import { Globe, Loader2, Upload, X } from "lucide-react"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function ImportSourceDialog({
   open,
@@ -24,6 +25,10 @@ export function ImportSourceDialog({
     if (urlMode) setTimeout(() => inputRef.current?.focus(), 0)
   }, [urlMode])
 
+  useEscapeKey(() => {
+    if (!loading) onClose()
+  }, open)
+
   if (!open) return null
 
   const handleUrlSubmit = async () => {
@@ -40,7 +45,7 @@ export function ImportSourceDialog({
   }
 
   return (
-    <div className="modal-overlay" onClick={loading ? undefined : onClose}>
+    <div className="modal-overlay">
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
         <div className="modal-header">
           <h2>{t("importTitle")}</h2>

@@ -63,6 +63,7 @@ export const ko: Record<string, string> = {
   stats: "통계",
   revealImmediate: "즉시 답 표시",
   revealEnd: "마지막에 답 표시",
+  revealTiming: "답 공개 시점",
   blankPlaceholder: "빈칸 {0}",
   shortPlaceholder: "답변 {0}",
   wrongPractice: "오답 연습",

@@ -1,9 +1,14 @@
+import { useEffect, useRef } from "react"
 import { Check, ChevronRight } from "lucide-react"
 import type { PracticeMode, Question } from "../../lib/types"
 import { formatAnswer, getTypeLabels } from "../../lib/question"
 import { AnswerInput } from "./AnswerInput"
 import type { AnswerMap } from "../../hooks/types"
 import { useT } from "../../contexts"
+
+// Window during which a single/boolean selection can still be changed before the
+// auto-next auto-submit locks it in (only used when the "pause" preference is on).
+const AUTO_SUBMIT_DELAY = 350
 
 export function QuestionCard(props: {
   id?: string
@@ -21,10 +26,35 @@ export function QuestionCard(props: {
   revealMode?: "immediate" | "end"
   allSubmitted?: boolean
   autoNext?: boolean
+  autoNextPause?: boolean
   onAutoSubmit?: (value: string) => void
 }) {
   const t = useT()
   const labels = getTypeLabels(t)
+  const autoSubmitTimerRef = useRef<number | null>(null)
+  // Cancel a pending auto-submit when the question changes or the card unmounts,
+  // so a late timer can't submit the wrong question.
+  useEffect(
+    () => () => {
+      if (autoSubmitTimerRef.current !== null) {
+        window.clearTimeout(autoSubmitTimerRef.current)
+        autoSubmitTimerRef.current = null
+      }
+    },
+    [props.question.id],
+  )
+  const handleAutoSubmit = (value: string) => {
+    if (!props.onAutoSubmit) return
+    if (!props.autoNextPause) {
+      props.onAutoSubmit(value)
+      return
+    }
+    if (autoSubmitTimerRef.current !== null) window.clearTimeout(autoSubmitTimerRef.current)
+    autoSubmitTimerRef.current = window.setTimeout(() => {
+      autoSubmitTimerRef.current = null
+      props.onAutoSubmit?.(value)
+    }, AUTO_SUBMIT_DELAY)
+  }
   const autoSubmitSelect =
     !!props.autoNext &&
     !props.hideSubmit &&
@@ -67,7 +97,7 @@ export function QuestionCard(props: {
         disabled={props.submitted}
         showFeedback={showFeedback}
         autoSubmit={autoSubmitSelect}
-        onAutoSubmit={props.onAutoSubmit}
+        onAutoSubmit={handleAutoSubmit}
       />
 
       {!props.compact && !props.hideSubmit && props.practiceMode !== "memorize" && (

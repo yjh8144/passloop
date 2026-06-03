@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { X } from "lucide-react"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function ResetConfirmDialog({
   open,
@@ -26,6 +27,8 @@ export function ResetConfirmDialog({
       setTimeout(() => inputRef.current?.focus(), 0)
     }
   }, [open])
+
+  useEscapeKey(onClose, open)
 
   if (!open) return null
 

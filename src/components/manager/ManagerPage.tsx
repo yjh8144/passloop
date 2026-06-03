@@ -5,6 +5,7 @@ import { createEmptyQuestion, getTypeLabels } from "../../lib/question"
 import { fillAnswersWithLlm } from "../../lib/llm"
 import { debugLog } from "../../lib/debug"
 import { EmptyState } from "../ui/EmptyState"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { QuestionEditor } from "./QuestionEditor"
 import { SelfFillDialog } from "./SelfFillDialog"
 import {
@@ -50,6 +51,8 @@ export function ManagerPage(props: {
   useEffect(() => {
     managerUnsavedRef.current = editorDirty
   }, [editorDirty, managerUnsavedRef])
+
+  useEscapeKey(() => setShowFillChoice(false), showFillChoice)
 
   const [prevListId, setPrevListId] = useState(props.list.id)
   if (props.list.id !== prevListId) {
@@ -178,14 +181,18 @@ export function ManagerPage(props: {
   }
 
   const deleteQuestion = (id: string) => {
-    showConfirm(t("confirmDeleteQuestion"), () => {
-      debugLog("Question deleted", { id })
-      props.updateList((list) => ({
-        ...list,
-        questions: list.questions.filter((question) => question.id !== id),
-        updatedAt: new Date().toISOString(),
-      }))
-    })
+    showConfirm(
+      t("confirmDeleteQuestion"),
+      () => {
+        debugLog("Question deleted", { id })
+        props.updateList((list) => ({
+          ...list,
+          questions: list.questions.filter((question) => question.id !== id),
+          updatedAt: new Date().toISOString(),
+        }))
+      },
+      { tone: "danger" },
+    )
   }
 
   return (

@@ -63,6 +63,7 @@ export const fr: Record<string, string> = {
   stats: "Statistiques",
   revealImmediate: "Afficher la réponse immédiatement",
   revealEnd: "Afficher la réponse à la fin",
+  revealTiming: "Affichage des réponses",
   blankPlaceholder: "Champ {0}",
   shortPlaceholder: "Réponse {0}",
   wrongPractice: "Pratique erreurs",

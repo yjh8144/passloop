@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Check, Copy, Download, X } from "lucide-react"
 import { Segmented } from "../ui/Segmented"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function SelfGenerateDialog(props: {
   open: boolean
@@ -12,6 +13,8 @@ export function SelfGenerateDialog(props: {
 }) {
   const t = useT()
   const [copied, setCopied] = useState(false)
+
+  useEscapeKey(props.onClose, props.open)
 
   if (!props.open) return null
 
@@ -72,7 +75,7 @@ ${jsonFormat}${rawTextSection}`
   const hasRawText = !!props.rawText?.trim()
 
   return (
-    <div className="modal-overlay" onClick={props.onClose}>
+    <div className="modal-overlay">
       <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("selfGenerateHeader")}</h2>

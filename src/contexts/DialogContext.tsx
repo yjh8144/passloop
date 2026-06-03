@@ -22,7 +22,12 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   const [promptDialog, setPromptDialog] = useState<PromptDialogState>(null)
 
   const showConfirm = useCallback<ShowConfirm>((message, onConfirm, options) => {
-    setConfirmDialog({ message, onConfirm, dismissLabel: options?.dismissLabel })
+    setConfirmDialog({
+      message,
+      onConfirm,
+      dismissLabel: options?.dismissLabel,
+      tone: options?.tone,
+    })
   }, [])
 
   const showPrompt = useCallback(

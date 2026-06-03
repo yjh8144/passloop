@@ -2,6 +2,7 @@ import { useRef, useState } from "react"
 import { Eye, EyeOff, HelpCircle, List, Undo2, X } from "lucide-react"
 import type { ProxySettings } from "../../lib/types"
 import { useT } from "../../contexts"
+import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { PRESET_PROXIES } from "../../utils/constants"
 
 type ProxyTestInfo = { status: "idle" | "testing" | "alive" | "dead"; latency?: number }
@@ -21,6 +22,16 @@ export function ProxyConfigModal(props: {
   const [currentProxyStatus, setCurrentProxyStatus] = useState<ProxyTestInfo>({ status: "idle" })
   const [proxyStatus, setProxyStatus] = useState<Record<string, ProxyTestInfo>>({})
   const currentProxyTestId = useRef(0)
+
+  // Esc closes a nested sub-dialog first (help/list), then the modal itself.
+  useEscapeKey(
+    () => {
+      if (showHelp) setShowHelp(false)
+      else if (showList) setShowList(false)
+      else props.onClose()
+    },
+    props.open,
+  )
 
   if (!props.open) return null
 
@@ -71,7 +82,7 @@ export function ProxyConfigModal(props: {
   }
 
   return (
-    <div className="modal-overlay" onClick={props.onClose}>
+    <div className="modal-overlay">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("proxySettingsTitle")}</h2>
