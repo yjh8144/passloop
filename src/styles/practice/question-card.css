@@ -292,6 +292,17 @@
   padding: 12px;
 }
 
+.answer-panel.stacked {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.answer-panel.stacked > div:not(:first-child) {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
 .answer-panel strong {
   display: block;
   margin-bottom: 6px;

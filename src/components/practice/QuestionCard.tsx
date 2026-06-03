@@ -9,6 +9,12 @@ import { useT } from "../../contexts"
 // Window during which a single/boolean selection can still be changed before the
 // auto-next auto-submit locks it in (only used when the "pause" preference is on).
 const AUTO_SUBMIT_DELAY = 350
+const STACKED_ANSWER_LENGTH = 20
+
+function shouldStackAnswerPanel(question: Question, formattedAnswer: string) {
+  if (question.type === "blank" || question.type === "short") return true
+  return formattedAnswer.trim().length > STACKED_ANSWER_LENGTH
+}
 
 export function QuestionCard(props: {
   id?: string
@@ -65,6 +71,8 @@ export function QuestionCard(props: {
     props.practiceMode === "memorize" ||
     (props.submitted && (props.revealMode !== "end" || !!props.allSubmitted))
   const showFeedback = showAnswer
+  const formattedAnswer = formatAnswer(props.question.answer)
+  const stackAnswerPanel = shouldStackAnswerPanel(props.question, formattedAnswer)
   const updateAnswer = (id: string, value: string | string[]) => {
     props.setAnswers((current) => ({ ...current, [id]: value }))
   }
@@ -124,10 +132,10 @@ export function QuestionCard(props: {
       )}
 
       {showAnswer && (
-        <div className="answer-panel">
+        <div className={`answer-panel${stackAnswerPanel ? " stacked" : ""}`}>
           <div>
             <strong>{t("answer")}</strong>
-            <p>{formatAnswer(props.question.answer) || t("notSet")}</p>
+            <p>{formattedAnswer || t("notSet")}</p>
           </div>
           <div>
             <strong>{t("explanation")}</strong>
