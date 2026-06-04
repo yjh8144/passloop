@@ -327,6 +327,7 @@ export const zh: Record<string, string> = {
   totalQuestions: "共 {0} 道题，要添加到哪里？",
   addToListName: "添加到当前题单「{0}」",
   selectImportSource: "选择题目来源：",
+  selectBackupImportSource: "选择配置来源：",
   uploadLocalJsonFile: "上传本地 JSON 文件",
   importFromUrl: "从 URL 导入 JSON",
   jsonFileUrl: "JSON 文件 URL",
@@ -357,6 +358,7 @@ export const zh: Record<string, string> = {
   modelLabel: "模型",
   apiUrlLabel: "API 地址",
   apiKeyLabel: "API Key",
+  apiKeyStorageHint: "为降低泄露风险，API Key 仅保留在当前页面会话中，刷新后需要重新输入。",
   proxyToggleLabel: "启用 CORS 代理",
   proxyDisabledHint: "已关闭代理，将直接请求 API 地址",
   proxyUrlLabel: "CORS 代理地址",
@@ -682,7 +684,7 @@ export const zh: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup:
-    "导出配置文件将包含你的所有题目、设置和 LLM 配置信息。请注意保护隐私，不要将导出文件分享给不信任的人。确定导出？",
+    "导出配置文件将包含你的所有题目、设置和 LLM 非敏感配置，不包含 API Key 或代理密钥。请注意保护隐私，不要将导出文件分享给不信任的人。确定导出？",
 
   // Debug
   simulateCrash: "模拟崩溃",

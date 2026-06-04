@@ -4,6 +4,13 @@
   gap: 7px;
 }
 
+.question-nav-summary {
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 .question-nav-grid button {
   min-width: 0;
   height: 38px;

@@ -37,6 +37,14 @@
   margin: 0 0 16px;
 }
 
+.secret-storage-hint {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;

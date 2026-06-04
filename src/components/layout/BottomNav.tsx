@@ -173,6 +173,7 @@ export function BottomNav(props: {
 
         <button
           className={`bottom-nav-expand ${panelOpen ? "is-open" : ""}`}
+          aria-label={panelOpen ? t("collapseListPanel") : t("expandListPanel")}
           aria-expanded={panelOpen}
           aria-controls="bottom-panel"
           onClick={() => setPanelOpen(!panelOpen)}

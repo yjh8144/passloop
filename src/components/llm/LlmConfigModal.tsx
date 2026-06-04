@@ -5,6 +5,7 @@ import { useLlmConfig, useT } from "../../contexts"
 import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { LlmProviderList } from "./LlmProviderList"
 import { LlmProviderEditor } from "./LlmProviderEditor"
+import "../../styles/llm/llm.css"
 
 type Tab = "providers" | "scenarios"
 

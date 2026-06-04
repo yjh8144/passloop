@@ -354,6 +354,7 @@ export const en: Record<string, string> = {
   totalQuestions: "{0} questions total — where to add?",
   addToListName: 'Add to current list "{0}"',
   selectImportSource: "Select source:",
+  selectBackupImportSource: "Select config source:",
   uploadLocalJsonFile: "Upload local JSON file",
   importFromUrl: "Import JSON from URL",
   jsonFileUrl: "JSON file URL",
@@ -384,6 +385,8 @@ export const en: Record<string, string> = {
   modelLabel: "Model",
   apiUrlLabel: "API URL",
   apiKeyLabel: "API Key",
+  apiKeyStorageHint:
+    "To reduce exposure, API keys are kept only for this page session and must be re-entered after refresh.",
   proxyToggleLabel: "Enable CORS Proxy",
   proxyDisabledHint: "Proxy disabled, requests go directly to API",
   proxyUrlLabel: "CORS Proxy URL",
@@ -718,7 +721,7 @@ export const en: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup:
-    "The exported config file contains all your questions, settings, and LLM configuration (including API keys). Please protect your privacy and do not share the file with untrusted parties. Proceed?",
+    "The exported config file contains all questions, settings, and non-sensitive LLM configuration, but not API keys or proxy keys. Please protect your privacy and do not share the file with untrusted parties. Proceed?",
 
   // Debug
   simulateCrash: "Simulate Crash",

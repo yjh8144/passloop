@@ -6,22 +6,20 @@ import { ImportChoiceDialog } from "./ImportChoiceDialog"
 import { BackupImportDialog } from "./BackupImportDialog"
 import { RemoteBackupDialog } from "./RemoteBackupDialog"
 
-export interface ImportExportActions {
-  openQuestionImport: () => void
-  openBackupImport: () => void
-  openRemoteBackup: () => void
-}
+type ImportExportDialogKind = "question" | "backup" | "remote"
 
 export function ImportExportDialogs({
-  onReady,
+  initialDialog,
+  onDone,
 }: {
-  onReady: (actions: ImportExportActions) => void
+  initialDialog: ImportExportDialogKind
+  onDone: () => void
 }) {
   const t = useT()
   const { data, setData, activeList, updateActiveList, updateData } = useAppData()
   const { proxySettings } = useProxy()
   const pushToast = usePushToast()
-  const [showRemoteBackupDialog, setShowRemoteBackupDialog] = useState(false)
+  const [showRemoteBackupDialog, setShowRemoteBackupDialog] = useState(initialDialog === "remote")
 
   const importExport = useImportExport({
     t,
@@ -31,28 +29,40 @@ export function ImportExportDialogs({
     updateData,
     data,
     setData,
+    initialDialog: initialDialog === "remote" ? undefined : initialDialog,
   })
 
-  const { setShowImportDialog, setShowBackupImportDialog } = importExport
-
   useEffect(() => {
-    onReady({
-      openQuestionImport: () => setShowImportDialog(true),
-      openBackupImport: () => setShowBackupImportDialog(true),
-      openRemoteBackup: () => setShowRemoteBackupDialog(true),
-    })
-  }, [onReady, setShowImportDialog, setShowBackupImportDialog])
+    const hasOpenDialog =
+      importExport.showImportDialog ||
+      importExport.showBackupImportDialog ||
+      importExport.pendingImportLists ||
+      importExport.pendingBackup ||
+      showRemoteBackupDialog
+    if (!hasOpenDialog) onDone()
+  }, [
+    importExport.showImportDialog,
+    importExport.showBackupImportDialog,
+    importExport.pendingImportLists,
+    importExport.pendingBackup,
+    showRemoteBackupDialog,
+    onDone,
+  ])
 
   return (
     <>
       <ImportSourceDialog
         open={importExport.showImportDialog}
+        title={t("importTitle")}
+        description={t("selectImportSource")}
         onClose={() => importExport.setShowImportDialog(false)}
         onFileSelect={importExport.handleQuestionImport}
         onUrlImport={importExport.handleUrlImport}
       />
       <ImportSourceDialog
         open={importExport.showBackupImportDialog}
+        title={t("importBackup")}
+        description={t("selectBackupImportSource")}
         onClose={() => importExport.setShowBackupImportDialog(false)}
         onFileSelect={importExport.handleBackupImport}
         onUrlImport={importExport.handleBackupUrlImport}

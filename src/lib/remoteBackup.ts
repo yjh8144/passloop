@@ -1,4 +1,5 @@
 import type { AppData } from "./types"
+import { safeGetStorageItem, safeSetStorageItem } from "../utils/safeStorage"
 
 const REMOTE_BACKUP_SETTINGS_KEY = "passloop.remote-backup.v1"
 
@@ -31,7 +32,7 @@ export interface RemoteBackupUploadResponse {
 
 export function loadRemoteBackupSettings(): RemoteBackupSettings {
   try {
-    const raw = localStorage.getItem(REMOTE_BACKUP_SETTINGS_KEY)
+    const raw = safeGetStorageItem("local", REMOTE_BACKUP_SETTINGS_KEY)
     if (!raw) return { serverUrl: "", username: "" }
     const parsed = JSON.parse(raw) as Partial<RemoteBackupSettings>
     return {
@@ -45,7 +46,8 @@ export function loadRemoteBackupSettings(): RemoteBackupSettings {
 
 export function saveRemoteBackupSettings(settings: RemoteBackupSettings) {
   try {
-    localStorage.setItem(
+    safeSetStorageItem(
+      "local",
       REMOTE_BACKUP_SETTINGS_KEY,
       JSON.stringify({
         serverUrl: settings.serverUrl,

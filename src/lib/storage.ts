@@ -11,6 +11,7 @@ import type {
 import { createId, deduplicateQuestionIds, normalizeQuestion } from "./question"
 import { questionTypes } from "../utils/constants"
 import { debugError } from "./debug"
+import { safeGetStorageItem, safeRemoveStorageItem, safeSetStorageItem } from "../utils/safeStorage"
 
 export const STORAGE_KEY = "passloop.app.v1"
 export const LLM_CONFIG_STORAGE_KEY = "passloop.llm-config.v1"
@@ -19,24 +20,9 @@ export const PROXY_STORAGE_KEY = "passloop.proxy.v1"
 
 const now = () => new Date().toISOString()
 
-const OBF_KEY = "passloop-obf-v1"
-
-function obfuscate(plain: string): string {
-  if (!plain) return plain
-  const data = new TextEncoder().encode(plain)
-  const key = new TextEncoder().encode(OBF_KEY)
-  const out = new Uint8Array(data.length)
-  for (let i = 0; i < data.length; i++) out[i] = data[i] ^ key[i % key.length]
-  return "obf:" + btoa(String.fromCharCode(...out))
-}
-
-function deobfuscate(stored: string): string {
-  if (!stored || !stored.startsWith("obf:")) return stored
-  const raw = Uint8Array.from(atob(stored.slice(4)), (c) => c.charCodeAt(0))
-  const key = new TextEncoder().encode(OBF_KEY)
-  const out = new Uint8Array(raw.length)
-  for (let i = 0; i < raw.length; i++) out[i] = raw[i] ^ key[i % key.length]
-  return new TextDecoder().decode(out)
+function omitSecret(_value: string): string {
+  // Static frontends cannot safely persist API keys. Keep secrets in React state only.
+  return ""
 }
 
 export const defaultSettings: Settings = {
@@ -94,7 +80,7 @@ export function createDefaultData(): AppData {
 
 export function loadData(): AppData {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = safeGetStorageItem("local", STORAGE_KEY)
     if (!raw) return createDefaultData()
     return normalizeAppData(JSON.parse(raw))
   } catch (e) {
@@ -105,7 +91,10 @@ export function loadData(): AppData {
 
 export function saveData(data: AppData): boolean {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    const serialized = JSON.stringify(data)
+    if (safeGetStorageItem("local", STORAGE_KEY) !== serialized) {
+      return safeSetStorageItem("local", STORAGE_KEY, serialized)
+    }
     return true
   } catch (e) {
     debugError("saveData failed", e)
@@ -115,7 +104,7 @@ export function saveData(data: AppData): boolean {
 
 export function loadLlmConfig(fallback: LlmConfig): LlmConfig {
   try {
-    const raw = localStorage.getItem(LLM_CONFIG_STORAGE_KEY)
+    const raw = safeGetStorageItem("local", LLM_CONFIG_STORAGE_KEY)
     if (!raw) return fallback
     const source = JSON.parse(raw) as Partial<LlmConfig>
     return {
@@ -123,11 +112,11 @@ export function loadLlmConfig(fallback: LlmConfig): LlmConfig {
       provider: isLlmProvider(source.provider) ? source.provider : fallback.provider,
       model: typeof source.model === "string" ? source.model : fallback.model,
       endpoint: typeof source.endpoint === "string" ? source.endpoint : fallback.endpoint,
-      apiKey: typeof source.apiKey === "string" ? source.apiKey : fallback.apiKey,
+      apiKey: fallback.apiKey,
       proxyEnabled:
         typeof source.proxyEnabled === "boolean" ? source.proxyEnabled : fallback.proxyEnabled,
       proxyUrl: typeof source.proxyUrl === "string" ? source.proxyUrl : fallback.proxyUrl,
-      proxyKey: typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey,
+      proxyKey: fallback.proxyKey,
       fillAnswer: typeof source.fillAnswer === "boolean" ? source.fillAnswer : fallback.fillAnswer,
       fillExplanation:
         typeof source.fillExplanation === "boolean"
@@ -142,21 +131,21 @@ export function loadLlmConfig(fallback: LlmConfig): LlmConfig {
 
 export function saveLlmConfig(config: LlmConfig): boolean {
   try {
-    localStorage.setItem(
+    return safeSetStorageItem(
+      "local",
       LLM_CONFIG_STORAGE_KEY,
       JSON.stringify({
         provider: config.provider,
         model: config.model,
         endpoint: config.endpoint,
-        apiKey: config.apiKey,
+        apiKey: omitSecret(config.apiKey),
         proxyEnabled: config.proxyEnabled,
         proxyUrl: config.proxyUrl,
-        proxyKey: config.proxyKey,
+        proxyKey: omitSecret(config.proxyKey),
         fillAnswer: config.fillAnswer,
         fillExplanation: config.fillExplanation,
       }),
     )
-    return true
   } catch (e) {
     debugError("saveLlmConfig failed", e)
     return false
@@ -164,21 +153,21 @@ export function saveLlmConfig(config: LlmConfig): boolean {
 }
 
 export function clearLlmConfig() {
-  localStorage.removeItem(LLM_CONFIG_STORAGE_KEY)
+  safeRemoveStorageItem("local", LLM_CONFIG_STORAGE_KEY)
 }
 
 export function loadLlmMultiConfig(fallback: LlmMultiConfig): LlmMultiConfig {
   try {
-    const rawV2 = localStorage.getItem(LLM_MULTI_CONFIG_STORAGE_KEY)
+    const rawV2 = safeGetStorageItem("local", LLM_MULTI_CONFIG_STORAGE_KEY)
     if (rawV2) {
       return normalizeMultiConfig(JSON.parse(rawV2), fallback)
     }
-    const rawV1 = localStorage.getItem(LLM_CONFIG_STORAGE_KEY)
+    const rawV1 = safeGetStorageItem("local", LLM_CONFIG_STORAGE_KEY)
     if (rawV1) {
       const v1 = JSON.parse(rawV1) as Partial<LlmConfig>
       const migrated = migrateV1ToV2(v1, fallback)
       saveLlmMultiConfig(migrated)
-      localStorage.removeItem(LLM_CONFIG_STORAGE_KEY)
+      safeRemoveStorageItem("local", LLM_CONFIG_STORAGE_KEY)
       return migrated
     }
     return fallback
@@ -192,10 +181,9 @@ export function saveLlmMultiConfig(config: LlmMultiConfig): boolean {
   try {
     const toStore = {
       ...config,
-      providers: config.providers.map((p) => ({ ...p, apiKey: obfuscate(p.apiKey) })),
+      providers: config.providers.map((p) => ({ ...p, apiKey: omitSecret(p.apiKey) })),
     }
-    localStorage.setItem(LLM_MULTI_CONFIG_STORAGE_KEY, JSON.stringify(toStore))
-    return true
+    return safeSetStorageItem("local", LLM_MULTI_CONFIG_STORAGE_KEY, JSON.stringify(toStore))
   } catch (e) {
     debugError("saveLlmMultiConfig failed", e)
     return false
@@ -203,24 +191,22 @@ export function saveLlmMultiConfig(config: LlmMultiConfig): boolean {
 }
 
 export function clearLlmMultiConfig() {
-  localStorage.removeItem(LLM_MULTI_CONFIG_STORAGE_KEY)
+  safeRemoveStorageItem("local", LLM_MULTI_CONFIG_STORAGE_KEY)
 }
 
 export function loadProxySettings(fallback: ProxySettings): ProxySettings {
   try {
-    const raw = localStorage.getItem(PROXY_STORAGE_KEY)
+    const raw = safeGetStorageItem("local", PROXY_STORAGE_KEY)
     if (raw) {
       const source = JSON.parse(raw) as Partial<ProxySettings>
       return {
         proxyEnabled:
           typeof source.proxyEnabled === "boolean" ? source.proxyEnabled : fallback.proxyEnabled,
         proxyUrl: typeof source.proxyUrl === "string" ? source.proxyUrl : fallback.proxyUrl,
-        proxyKey: deobfuscate(
-          typeof source.proxyKey === "string" ? source.proxyKey : fallback.proxyKey,
-        ),
+        proxyKey: fallback.proxyKey,
       }
     }
-    const rawMulti = localStorage.getItem(LLM_MULTI_CONFIG_STORAGE_KEY)
+    const rawMulti = safeGetStorageItem("local", LLM_MULTI_CONFIG_STORAGE_KEY)
     if (rawMulti) {
       const multi = JSON.parse(rawMulti) as {
         providers?: Array<
@@ -233,9 +219,7 @@ export function loadProxySettings(fallback: ProxySettings): ProxySettings {
           proxyEnabled:
             typeof first.proxyEnabled === "boolean" ? first.proxyEnabled : fallback.proxyEnabled,
           proxyUrl: first.proxyUrl,
-          proxyKey: deobfuscate(
-            typeof first.proxyKey === "string" ? first.proxyKey : fallback.proxyKey,
-          ),
+          proxyKey: fallback.proxyKey,
         }
         saveProxySettings(migrated)
         return migrated
@@ -250,9 +234,8 @@ export function loadProxySettings(fallback: ProxySettings): ProxySettings {
 
 export function saveProxySettings(settings: ProxySettings): boolean {
   try {
-    const toStore = { ...settings, proxyKey: obfuscate(settings.proxyKey) }
-    localStorage.setItem(PROXY_STORAGE_KEY, JSON.stringify(toStore))
-    return true
+    const toStore = { ...settings, proxyKey: omitSecret(settings.proxyKey) }
+    return safeSetStorageItem("local", PROXY_STORAGE_KEY, JSON.stringify(toStore))
   } catch (e) {
     debugError("saveProxySettings failed", e)
     return false
@@ -263,15 +246,18 @@ function migrateV1ToV2(v1: Partial<LlmConfig>, _fallback: LlmMultiConfig): LlmMu
   const provider = isLlmProvider(v1.provider) ? v1.provider : "openai"
   const timestamp = now()
   const id = createId()
-  const hasKey = typeof v1.apiKey === "string" && v1.apiKey.trim() !== ""
+  const hasProviderConfig =
+    typeof v1.model === "string" ||
+    typeof v1.endpoint === "string" ||
+    isLlmProvider(v1.provider)
 
   if (typeof v1.proxyUrl === "string" && v1.proxyUrl) {
     const proxyMigrated: ProxySettings = {
       proxyEnabled: typeof v1.proxyEnabled === "boolean" ? v1.proxyEnabled : true,
       proxyUrl: v1.proxyUrl,
-      proxyKey: typeof v1.proxyKey === "string" ? v1.proxyKey : "",
+      proxyKey: "",
     }
-    if (!localStorage.getItem(PROXY_STORAGE_KEY)) {
+    if (!safeGetStorageItem("local", PROXY_STORAGE_KEY)) {
       saveProxySettings(proxyMigrated)
     }
   }
@@ -281,7 +267,7 @@ function migrateV1ToV2(v1: Partial<LlmConfig>, _fallback: LlmMultiConfig): LlmMu
     name: getDefaultProviderName(provider, typeof v1.model === "string" ? v1.model : ""),
     provider,
     endpoint: typeof v1.endpoint === "string" ? v1.endpoint : "",
-    apiKey: typeof v1.apiKey === "string" ? v1.apiKey : "",
+    apiKey: "",
     model: typeof v1.model === "string" ? v1.model : "",
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -289,8 +275,8 @@ function migrateV1ToV2(v1: Partial<LlmConfig>, _fallback: LlmMultiConfig): LlmMu
 
   return {
     version: 2,
-    providers: hasKey ? [entry] : [],
-    assignments: hasKey ? { parse: id, fill: id } : { parse: null, fill: null },
+    providers: hasProviderConfig ? [entry] : [],
+    assignments: hasProviderConfig ? { parse: id, fill: id } : { parse: null, fill: null },
   }
 }
 
@@ -303,7 +289,7 @@ function normalizeMultiConfig(source: unknown, fallback: LlmMultiConfig): LlmMul
   if (!source || typeof source !== "object") return fallback
   const s = source as Partial<LlmMultiConfig>
   const providers = Array.isArray(s.providers)
-    ? s.providers.filter(isValidProvider).map((p) => ({ ...p, apiKey: deobfuscate(p.apiKey) }))
+    ? s.providers.filter(isValidProvider).map((p) => ({ ...p, apiKey: "" }))
     : []
   const providerIds = new Set(providers.map((p) => p.id))
   return {
@@ -384,7 +370,7 @@ export function normalizeList(value: unknown): QuestionList | null {
         )
       : [],
     createdAt: typeof source.createdAt === "string" ? source.createdAt : timestamp,
-    updatedAt: timestamp,
+    updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : timestamp,
   }
 }
 

@@ -121,6 +121,7 @@ export function Topbar(props: {
             />
           </div>
           <button className="search-trigger icon-button" onClick={() => setShowSearchOverlay(true)}>
+            <span className="sr-only">{t("questionSearch")}</span>
             <Search size={17} />
           </button>
           {showSearchOverlay && (
@@ -202,9 +203,10 @@ export function Topbar(props: {
         )}
       </div>
       <div className="topbar-actions">
-        <label className="select-label">
+        <label className="select-label" title={t("theme")}>
           <Palette size={16} />
           <select
+            aria-label={t("theme")}
             value={props.data.settings.theme}
             onChange={(event) =>
               props.updateSettings({ theme: event.target.value as AppData["settings"]["theme"] })
@@ -219,9 +221,10 @@ export function Topbar(props: {
             <option value="nord">Nord</option>
           </select>
         </label>
-        <label className="select-label">
+        <label className="select-label" title={t("language")}>
           <Languages size={16} />
           <select
+            aria-label={t("language")}
             value={props.data.settings.language}
             onChange={(event) =>
               props.updateSettings({

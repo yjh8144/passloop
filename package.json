@@ -8,6 +8,8 @@
     "build": "tsc && vite build",
     "build:single": "tsc && vite build --config vite.config.singlefile.ts",
     "preview": "vite preview --host 0.0.0.0",
+    "test:edge": "node scripts/edge-tests.mjs",
+    "test:chaos": "node --experimental-loader ./scripts/ts-extension-loader.mjs --test scripts/chaos-tests.mjs",
     "lint": "eslint src/",
     "format": "prettier --write src/"
   },

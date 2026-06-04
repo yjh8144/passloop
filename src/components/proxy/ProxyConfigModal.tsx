@@ -75,7 +75,7 @@ export function ProxyConfigModal(props: {
   }
 
   const testAllProxies = () => {
-    PRESET_PROXIES.forEach((p) => testProxy(p.url, p.key))
+    PRESET_PROXIES.forEach((p) => testProxy(p.url))
   }
 
   return (
@@ -361,7 +361,7 @@ export function ProxyConfigModal(props: {
                       }}
                       onClick={() => {
                         resetCurrentProxyStatus()
-                        updateProxySettings({ proxyUrl: proxy.url, proxyKey: proxy.key })
+                        updateProxySettings({ proxyUrl: proxy.url, proxyKey: "" })
                         setShowList(false)
                       }}
                     >
@@ -397,7 +397,7 @@ export function ProxyConfigModal(props: {
                           disabled={status === "testing"}
                           onClick={(e) => {
                             e.stopPropagation()
-                            testProxy(proxy.url, proxy.key)
+                            testProxy(proxy.url)
                           }}
                         >
                           {status === "testing" ? t("proxyListTesting") : t("proxyListTest")}

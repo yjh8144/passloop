@@ -3,7 +3,8 @@ import { Check, Plus, Trash2, X } from "lucide-react"
 import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
 import { createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
-import { useT, useDialog } from "../../contexts"
+import { useT } from "../../contexts"
+import { useDialog } from "../../contexts/DialogContext"
 
 export function QuestionEditor(props: {
   question: Question

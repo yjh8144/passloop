@@ -1,16 +1,17 @@
-import type { LanguageName } from "../types"
+import type { LanguageName, TFunc } from "../types"
 import { zh } from "./zh"
-import { en } from "./en"
-import { ja } from "./ja"
-import { ko } from "./ko"
-import { fr } from "./fr"
 
 type Dict = Record<string, string>
 
-const dicts: Record<LanguageName, Dict> = { zh, en, ja, ko, fr }
+const dictLoaders: Record<LanguageName, () => Promise<Dict>> = {
+  zh: () => Promise.resolve(zh),
+  en: () => import("./en").then((module) => module.en),
+  ja: () => import("./ja").then((module) => module.ja),
+  ko: () => import("./ko").then((module) => module.ko),
+  fr: () => import("./fr").then((module) => module.fr),
+}
 
-export function getTranslator(language: LanguageName) {
-  const dict = dicts[language] ?? zh
+function createTranslator(dict: Dict): TFunc {
   return (key: string, ...args: (string | number)[]) => {
     let text = dict[key] ?? key
     for (let i = 0; i < args.length; i++) {
@@ -18,4 +19,13 @@ export function getTranslator(language: LanguageName) {
     }
     return text
   }
+}
+
+export function getTranslator(language: LanguageName): TFunc {
+  return createTranslator(language === "zh" ? zh : zh)
+}
+
+export async function loadTranslator(language: LanguageName): Promise<TFunc> {
+  const dict = await (dictLoaders[language] ?? dictLoaders.zh)()
+  return createTranslator(dict)
 }

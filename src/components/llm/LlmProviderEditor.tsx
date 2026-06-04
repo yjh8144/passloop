@@ -35,6 +35,13 @@ export function LlmProviderEditor({
   const [testing, setTesting] = useState(false)
   const [modelList, setModelList] = useState<string[]>([])
   const [fetchingModels, setFetchingModels] = useState(false)
+  const hasName = Boolean(provider.name.trim())
+  const hasModel = Boolean(provider.model.trim())
+  const hasEndpoint = Boolean(provider.endpoint.trim())
+  const hasApiKey = Boolean(provider.apiKey.trim())
+  const canFetchModels = hasEndpoint && hasApiKey
+  const canTestConnection = hasModel && hasEndpoint && hasApiKey
+  const canSave = hasName && canTestConnection
 
   useEffect(() => {
     if (!modelDropdownOpen) return
@@ -167,7 +174,7 @@ export function LlmProviderEditor({
             <button
               className="test-button"
               onClick={runFetchModels}
-              disabled={fetchingModels || !provider.apiKey.trim()}
+              disabled={fetchingModels || !canFetchModels}
               title={t("fetchModelListTitle")}
             >
               {fetchingModels ? t("fetchingModels") : t("fetchModelList")}
@@ -267,12 +274,13 @@ export function LlmProviderEditor({
               {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
+          <small className="secret-storage-hint">{t("apiKeyStorageHint")}</small>
         </label>
         <div className="field-label">
           <button
             className="test-button"
             onClick={runTest}
-            disabled={testing || !provider.apiKey.trim()}
+            disabled={testing || !canTestConnection}
           >
             {testing ? t("testing") : t("testConnection")}
           </button>
@@ -285,7 +293,7 @@ export function LlmProviderEditor({
         <button
           className="primary-button"
           onClick={onSave}
-          disabled={!provider.name.trim() || !provider.apiKey.trim()}
+          disabled={!canSave}
         >
           {isNew ? t("addProvider") : t("saveProvider")}
         </button>

@@ -1,4 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import {
+  createContext,
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import type { ReactNode } from "react"
 import type {
   LlmConfig,
@@ -10,8 +19,13 @@ import type {
 import { loadLlmMultiConfig, saveLlmMultiConfig, clearLlmMultiConfig } from "../lib/storage"
 import { defaultLlmMultiConfig } from "../utils/constants"
 import { createId } from "../lib/question"
-import { LlmConfigModal } from "../components/llm/LlmConfigModal"
 import { debugLog } from "../lib/debug"
+
+const LlmConfigModal = lazy(() =>
+  import("../components/llm/LlmConfigModal").then((module) => ({
+    default: module.LlmConfigModal,
+  })),
+)
 
 interface LlmConfigContextValue {
   providers: LlmProvider[]
@@ -160,7 +174,11 @@ export function LlmConfigProvider({ children }: { children: ReactNode }) {
   return (
     <LlmConfigContext.Provider value={value}>
       {children}
-      <LlmConfigModal open={showModal} onClose={closeLlmConfig} />
+      {showModal && (
+        <Suspense fallback={null}>
+          <LlmConfigModal open={showModal} onClose={closeLlmConfig} />
+        </Suspense>
+      )}
     </LlmConfigContext.Provider>
   )
 }

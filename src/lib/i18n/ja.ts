@@ -263,6 +263,7 @@ export const ja: Record<string, string> = {
   totalQuestions: "全 {0} 問、どこに追加しますか？",
   addToListName: "現在のリスト「{0}」に追加",
   selectImportSource: "ソースを選択：",
+  selectBackupImportSource: "設定ソースを選択：",
   uploadLocalJsonFile: "ローカル JSON ファイルをアップロード",
   importFromUrl: "URL から JSON をインポート",
   jsonFileUrl: "JSON ファイル URL",
@@ -368,6 +369,8 @@ export const ja: Record<string, string> = {
   modelLabel: "モデル",
   apiUrlLabel: "API アドレス",
   apiKeyLabel: "API Key",
+  apiKeyStorageHint:
+    "漏えいリスクを抑えるため、API Key は現在のページセッション内だけ保持され、更新後は再入力が必要です。",
   proxyToggleLabel: "CORS プロキシを有効化",
   proxyDisabledHint: "プロキシ無効、API に直接リクエストします",
   proxyUrlLabel: "CORS プロキシ URL",
@@ -699,7 +702,7 @@ export const ja: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup:
-    "エクスポートされる設定ファイルには、すべての問題、設定、LLM設定（APIキーを含む）が含まれます。プライバシーを保護し、信頼できない相手にファイルを共有しないでください。エクスポートしますか？",
+    "エクスポートされる設定ファイルには、すべての問題、設定、機密情報を除いたLLM設定が含まれますが、APIキーやプロキシキーは含まれません。プライバシーを保護し、信頼できない相手にファイルを共有しないでください。エクスポートしますか？",
 
   // Debug
   simulateCrash: "クラッシュをシミュレート",

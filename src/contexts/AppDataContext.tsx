@@ -1,8 +1,23 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import type { MutableRefObject, ReactNode } from "react"
 import type { AppData, Question, QuestionList } from "../lib/types"
 import { getListStats, getTypeLabels, sortQuestions } from "../lib/question"
-import { createEmptyQuestionList, saveData } from "../lib/storage"
+import {
+  createEmptyQuestionList,
+  loadData,
+  normalizeAppData,
+  saveData,
+  STORAGE_KEY,
+} from "../lib/storage"
 import { debugLog } from "../lib/debug"
 import { useDialog } from "./DialogContext"
 import { usePushToast } from "./ToastContext"
@@ -33,10 +48,155 @@ interface AppDataContextValue {
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
+const APP_DATA_CHANNEL = "passloop.app-data.v1"
+
+function sameJson(a: unknown, b: unknown) {
+  return JSON.stringify(a) === JSON.stringify(b)
+}
+
+function newerTimestamp(a?: string, b?: string): string {
+  const aTime = Date.parse(a || "")
+  const bTime = Date.parse(b || "")
+  if (Number.isNaN(aTime)) return b || a || new Date().toISOString()
+  if (Number.isNaN(bTime)) return a || b || new Date().toISOString()
+  return aTime >= bTime ? (a ?? new Date().toISOString()) : (b ?? new Date().toISOString())
+}
+
+function pickField<T>(base: T, local: T, remote: T, localUpdatedAt?: string, remoteUpdatedAt?: string) {
+  const localChanged = !sameJson(local, base)
+  const remoteChanged = !sameJson(remote, base)
+  if (localChanged && remoteChanged) {
+    return newerTimestamp(localUpdatedAt, remoteUpdatedAt) === localUpdatedAt ? local : remote
+  }
+  if (localChanged) return local
+  return remote
+}
+
+function mergeQuestion(
+  base: Question | undefined,
+  local: Question,
+  remote: Question | undefined,
+): Question {
+  if (!remote || !base) return local
+  return {
+    ...remote,
+    type: pickField(base.type, local.type, remote.type, local.updatedAt, remote.updatedAt),
+    title: pickField(base.title, local.title, remote.title, local.updatedAt, remote.updatedAt),
+    options: pickField(base.options, local.options, remote.options, local.updatedAt, remote.updatedAt),
+    answer: pickField(base.answer, local.answer, remote.answer, local.updatedAt, remote.updatedAt),
+    explanation: pickField(
+      base.explanation,
+      local.explanation,
+      remote.explanation,
+      local.updatedAt,
+      remote.updatedAt,
+    ),
+    hint: pickField(base.hint, local.hint, remote.hint, local.updatedAt, remote.updatedAt),
+    createdAt: base.createdAt || remote.createdAt || local.createdAt,
+    updatedAt: newerTimestamp(local.updatedAt, remote.updatedAt),
+  }
+}
+
+function mergeQuestions(base: Question[], local: Question[], remote: Question[]) {
+  const baseById = new Map(base.map((question) => [question.id, question]))
+  const localById = new Map(local.map((question) => [question.id, question]))
+  const remoteById = new Map(remote.map((question) => [question.id, question]))
+  const ids = new Set([...remoteById.keys(), ...localById.keys()])
+  const merged: Question[] = []
+
+  for (const id of ids) {
+    const baseQuestion = baseById.get(id)
+    const localQuestion = localById.get(id)
+    const remoteQuestion = remoteById.get(id)
+    if (baseQuestion && !localQuestion) continue
+    if (baseQuestion && !remoteQuestion) {
+      if (localQuestion && !sameJson(localQuestion, baseQuestion)) merged.push(localQuestion)
+      continue
+    }
+    if (localQuestion) merged.push(mergeQuestion(baseQuestion, localQuestion, remoteQuestion))
+    else if (remoteQuestion) merged.push(remoteQuestion)
+  }
+
+  return merged
+}
+
+function mergeList(
+  base: QuestionList | undefined,
+  local: QuestionList,
+  remote: QuestionList | undefined,
+): QuestionList {
+  if (!remote || !base) return local
+  return {
+    ...remote,
+    name: pickField(base.name, local.name, remote.name, local.updatedAt, remote.updatedAt),
+    description: pickField(
+      base.description,
+      local.description,
+      remote.description,
+      local.updatedAt,
+      remote.updatedAt,
+    ),
+    questions: mergeQuestions(base.questions, local.questions, remote.questions),
+    createdAt: base.createdAt || remote.createdAt || local.createdAt,
+    updatedAt: newerTimestamp(local.updatedAt, remote.updatedAt),
+  }
+}
+
+function mergeLists(base: QuestionList[], local: QuestionList[], remote: QuestionList[]) {
+  const baseById = new Map(base.map((list) => [list.id, list]))
+  const localById = new Map(local.map((list) => [list.id, list]))
+  const remoteById = new Map(remote.map((list) => [list.id, list]))
+  const ids = new Set([...remoteById.keys(), ...localById.keys()])
+  const merged: QuestionList[] = []
+
+  for (const id of ids) {
+    const baseList = baseById.get(id)
+    const localList = localById.get(id)
+    const remoteList = remoteById.get(id)
+    if (baseList && !localList) continue
+    if (baseList && !remoteList) {
+      if (localList && !sameJson(localList, baseList)) merged.push(localList)
+      continue
+    }
+    if (localList) merged.push(mergeList(baseList, localList, remoteList))
+    else if (remoteList) merged.push(remoteList)
+  }
+
+  return merged.length ? merged : local
+}
+
+function mergeAppData(base: AppData, local: AppData, remote: AppData): AppData {
+  if (sameJson(base, remote)) return local
+  const lists = mergeLists(base.lists, local.lists, remote.lists)
+  const settings = { ...remote.settings }
+  for (const key of Object.keys(local.settings) as Array<keyof AppData["settings"]>) {
+    settings[key] = pickField(base.settings[key], local.settings[key], remote.settings[key]) as never
+  }
+  const baseAttemptIds = new Set(base.attempts.map((attempt) => attempt.id))
+  const remoteAttemptIds = new Set(remote.attempts.map((attempt) => attempt.id))
+  const attempts = [
+    ...remote.attempts,
+    ...local.attempts.filter(
+      (attempt) => !remoteAttemptIds.has(attempt.id) && !baseAttemptIds.has(attempt.id),
+    ),
+  ]
+  const activeListId = lists.some((list) => list.id === local.activeListId)
+    ? local.activeListId
+    : lists.some((list) => list.id === remote.activeListId)
+      ? remote.activeListId
+      : lists[0].id
+  return {
+    version: 1,
+    lists,
+    activeListId,
+    attempts,
+    settings,
+  }
+}
 
 export function AppDataProvider({
   data,
-  setData,
+  setData: setRawData,
   children,
 }: {
   data: AppData
@@ -48,10 +208,56 @@ export function AppDataProvider({
   const pushToast = usePushToast()
   const [query, setQuery] = useState("")
   const resetHandlerRef = useRef<ListResetHandler | null>(null)
+  const clientId = useId()
+  const channelRef = useRef<BroadcastChannel | null>(null)
+  const dataRef = useRef(data)
+
+  useEffect(() => {
+    dataRef.current = data
+  }, [data])
+
+  const saveFailedRef = useRef(false)
+  const commitData = useCallback(
+    (next: AppData, base?: AppData) => {
+      const latest = base && !saveFailedRef.current ? loadData() : null
+      const nextData = base && latest ? mergeAppData(base, next, latest) : next
+      dataRef.current = nextData
+      setRawData(nextData)
+      const ok = saveData(nextData)
+      if (ok) {
+        channelRef.current?.postMessage({ clientId, data: nextData })
+      }
+      if (!ok) {
+        if (!saveFailedRef.current) {
+          saveFailedRef.current = true
+          pushToast("error", t("saveFailed"))
+        }
+      } else if (saveFailedRef.current) {
+        saveFailedRef.current = false
+      }
+    },
+    [clientId, pushToast, setRawData, t],
+  )
+  const getCommitBase = useCallback(() => {
+    if (saveFailedRef.current) return dataRef.current
+    return mergeAppData(dataRef.current, dataRef.current, loadData())
+  }, [])
+
+  const setData = useCallback<React.Dispatch<React.SetStateAction<AppData>>>(
+    (action) => {
+      const base = getCommitBase()
+      const next = typeof action === "function" ? action(base) : action
+      commitData(next, typeof action === "function" ? base : undefined)
+    },
+    [commitData, getCommitBase],
+  )
 
   const updateData: UpdateData = useCallback(
-    (recipe) => setData((current) => recipe(current)),
-    [setData],
+    (recipe) => {
+      const base = getCommitBase()
+      commitData(recipe(base), base)
+    },
+    [commitData, getCommitBase],
   )
 
   const updateSettings = useCallback(
@@ -65,21 +271,20 @@ export function AppDataProvider({
     [updateData],
   )
 
-  const updateActiveList: UpdateActiveList = useCallback(
-    (recipe) => {
-      updateData((current) => ({
-        ...current,
-        lists: current.lists.map((list) =>
-          list.id === current.activeListId ? recipe(list) : list,
-        ),
-      }))
-    },
-    [updateData],
-  )
-
   const activeList = useMemo(
     () => data.lists.find((list) => list.id === data.activeListId) ?? data.lists[0],
     [data.activeListId, data.lists],
+  )
+
+  const updateActiveList: UpdateActiveList = useCallback(
+    (recipe) => {
+      const targetListId = dataRef.current.activeListId
+      updateData((current) => ({
+        ...current,
+        lists: current.lists.map((list) => (list.id === targetListId ? recipe(list) : list)),
+      }))
+    },
+    [updateData],
   )
 
   const stats = useMemo(() => getListStats(activeList, data.attempts), [activeList, data.attempts])
@@ -113,18 +318,44 @@ export function AppDataProvider({
     [activeList.questions, stats.wrongQuestionIds],
   )
 
-  const saveFailedRef = useRef(false)
   useEffect(() => {
-    const ok = saveData(data)
-    if (!ok) {
-      if (!saveFailedRef.current) {
-        saveFailedRef.current = true
-        pushToast("error", t("saveFailed"))
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY) return
+      try {
+        const next = event.newValue ? normalizeAppData(JSON.parse(event.newValue)) : loadData()
+        debugLog("App data synchronized from another tab", {
+          listCount: next.lists.length,
+          attemptCount: next.attempts.length,
+        })
+        dataRef.current = next
+        setRawData(next)
+      } catch (error) {
+        debugLog("App data synchronization skipped invalid payload", error)
       }
-    } else if (saveFailedRef.current) {
-      saveFailedRef.current = false
     }
-  }, [data, pushToast, t])
+    window.addEventListener("storage", handleStorage)
+    return () => window.removeEventListener("storage", handleStorage)
+  }, [setRawData])
+
+  useEffect(() => {
+    if (typeof BroadcastChannel === "undefined") return
+    const channel = new BroadcastChannel(APP_DATA_CHANNEL)
+    channelRef.current = channel
+    channel.onmessage = (event: MessageEvent<{ clientId?: string; data?: unknown }>) => {
+      if (event.data?.clientId === clientId) return
+      const next = normalizeAppData(event.data?.data)
+      debugLog("App data synchronized from broadcast", {
+        listCount: next.lists.length,
+        attemptCount: next.attempts.length,
+      })
+      dataRef.current = next
+      setRawData(next)
+    }
+    return () => {
+      channelRef.current = null
+      channel.close()
+    }
+  }, [clientId, setRawData])
   useEffect(() => {
     const body = document.body
     body.dataset.theme = data.settings.theme

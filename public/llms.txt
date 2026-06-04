@@ -1,0 +1,5 @@
+# PassLoop
+
+PassLoop is a pure frontend quiz bank and practice app. It supports local question management, practice sessions, wrong-answer review, import/export, and optional LLM-assisted parsing.
+
+- [PassLoop](https://github.com/yjh8144/passloop): Source repository

@@ -4,6 +4,7 @@ import type { Question, QuestionList } from "../../lib/types"
 import { createEmptyQuestion, getTypeLabels } from "../../lib/question"
 import { fillAnswersWithLlm } from "../../lib/llm"
 import { debugLog } from "../../lib/debug"
+import { DEFAULT_PAGE_SIZE, getPageSlice } from "../../utils/windowing"
 import { EmptyState } from "../ui/EmptyState"
 import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { QuestionEditor } from "./QuestionEditor"
@@ -11,11 +12,12 @@ import { SelfFillDialog } from "./SelfFillDialog"
 import {
   useT,
   usePushToast,
-  useDialog,
   useLlmConfig,
   useProxy,
   useNavigation,
 } from "../../contexts"
+import { useDialog } from "../../contexts/DialogContext"
+import "../../styles/manager/manager.css"
 
 export function ManagerPage(props: {
   list: QuestionList
@@ -39,6 +41,7 @@ export function ManagerPage(props: {
   const [fillStreamText, setFillStreamText] = useState("")
   const [editorFloatOpen, setEditorFloatOpen] = useState(false)
   const [editorDirty, setEditorDirty] = useState(false)
+  const [questionPage, setQuestionPage] = useState(1)
   const editorRef = useRef<HTMLElement>(null)
   const fillAbortRef = useRef<AbortController | null>(null)
 
@@ -57,6 +60,7 @@ export function ManagerPage(props: {
   const [prevListId, setPrevListId] = useState(props.list.id)
   if (props.list.id !== prevListId) {
     setLocalListName(props.list.name)
+    setQuestionPage(1)
     setPrevListId(props.list.id)
   }
 
@@ -68,6 +72,8 @@ export function ManagerPage(props: {
   if (props.editing !== prevEditing) setPrevEditing(props.editing)
   if (filling !== prevFilling) setPrevFilling(filling)
   if (!props.editing && prevEditing) setEditorDirty(false)
+
+  const questionPageData = getPageSlice(props.list.questions, questionPage, DEFAULT_PAGE_SIZE)
 
   useEffect(() => {
     if (props.editing && editorRef.current) {
@@ -256,9 +262,9 @@ export function ManagerPage(props: {
           />
         </div>
         <div className="question-table">
-          {props.list.questions.map((question, index) => (
+          {questionPageData.items.map((question, index) => (
             <div className="question-row" key={question.id}>
-              <span>{index + 1}</span>
+              <span>{questionPageData.start + index + 1}</span>
               <strong>{question.title}</strong>
               <small>{typeLabelsMap[question.type]}</small>
               <button className="icon-button" onClick={() => handleEditSwitch(question)}>
@@ -270,6 +276,29 @@ export function ManagerPage(props: {
             </div>
           ))}
         </div>
+        {props.list.questions.length > DEFAULT_PAGE_SIZE && (
+          <div className="question-table-pagination">
+            <span>
+              {questionPageData.start + 1}-{questionPageData.end} / {props.list.questions.length}
+            </span>
+            <div>
+              <button
+                onClick={() => setQuestionPage((page) => Math.max(page - 1, 1))}
+                disabled={questionPageData.page <= 1}
+              >
+                {t("previous")}
+              </button>
+              <button
+                onClick={() =>
+                  setQuestionPage((page) => Math.min(page + 1, questionPageData.totalPages))
+                }
+                disabled={questionPageData.page >= questionPageData.totalPages}
+              >
+                {t("next")}
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       <aside className="editor-panel" ref={editorRef}>

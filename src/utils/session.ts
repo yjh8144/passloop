@@ -9,10 +9,11 @@ import {
 import type { AnswerMap } from "../hooks/types"
 import type { WrongSession } from "../hooks/practiceReducer"
 import { debugError } from "../lib/debug"
+import { safeGetStorageItem, safeRemoveStorageItem, safeSetStorageItem } from "./safeStorage"
 
 export function loadSessionAnswers(): AnswerMap {
   try {
-    const raw = sessionStorage.getItem(ANSWERS_SESSION_KEY)
+    const raw = safeGetStorageItem("session", ANSWERS_SESSION_KEY)
     return raw ? JSON.parse(raw) : {}
   } catch (e) {
     debugError("loadSessionAnswers failed", e)
@@ -20,13 +21,13 @@ export function loadSessionAnswers(): AnswerMap {
   }
 }
 
-export function saveSessionAnswers(answers: AnswerMap) {
-  sessionStorage.setItem(ANSWERS_SESSION_KEY, JSON.stringify(answers))
+export function saveSessionAnswers(answers: AnswerMap): boolean {
+  return safeSetStorageItem("session", ANSWERS_SESSION_KEY, JSON.stringify(answers))
 }
 
 export function loadSessionIndex(): number {
   try {
-    const raw = sessionStorage.getItem(INDEX_SESSION_KEY)
+    const raw = safeGetStorageItem("session", INDEX_SESSION_KEY)
     return raw ? Number(raw) || 0 : 0
   } catch (e) {
     debugError("loadSessionIndex failed", e)
@@ -34,13 +35,13 @@ export function loadSessionIndex(): number {
   }
 }
 
-export function saveSessionIndex(index: number) {
-  sessionStorage.setItem(INDEX_SESSION_KEY, String(index))
+export function saveSessionIndex(index: number): boolean {
+  return safeSetStorageItem("session", INDEX_SESSION_KEY, String(index))
 }
 
 export function loadPosition(listId: string): number {
   try {
-    const raw = localStorage.getItem(POSITIONS_STORAGE_KEY)
+    const raw = safeGetStorageItem("local", POSITIONS_STORAGE_KEY)
     const positions = raw ? JSON.parse(raw) : {}
     return typeof positions[listId] === "number" ? positions[listId] : 0
   } catch (e) {
@@ -49,31 +50,33 @@ export function loadPosition(listId: string): number {
   }
 }
 
-export function savePosition(listId: string, index: number) {
+export function savePosition(listId: string, index: number): boolean {
   try {
-    const raw = localStorage.getItem(POSITIONS_STORAGE_KEY)
+    const raw = safeGetStorageItem("local", POSITIONS_STORAGE_KEY)
     const positions = raw ? JSON.parse(raw) : {}
     positions[listId] = index
-    localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(positions))
+    return safeSetStorageItem("local", POSITIONS_STORAGE_KEY, JSON.stringify(positions))
   } catch (e) {
     debugError("savePosition failed", e)
+    return false
   }
 }
 
-export function clearPosition(listId: string) {
+export function clearPosition(listId: string): boolean {
   try {
-    const raw = localStorage.getItem(POSITIONS_STORAGE_KEY)
+    const raw = safeGetStorageItem("local", POSITIONS_STORAGE_KEY)
     const positions = raw ? JSON.parse(raw) : {}
     delete positions[listId]
-    localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(positions))
+    return safeSetStorageItem("local", POSITIONS_STORAGE_KEY, JSON.stringify(positions))
   } catch (e) {
     debugError("clearPosition failed", e)
+    return false
   }
 }
 
 export function loadWrongSession(): WrongSession | null {
   try {
-    const raw = sessionStorage.getItem(WRONG_SESSION_KEY)
+    const raw = safeGetStorageItem("session", WRONG_SESSION_KEY)
     return raw ? JSON.parse(raw) : null
   } catch (e) {
     debugError("loadWrongSession failed", e)
@@ -81,32 +84,32 @@ export function loadWrongSession(): WrongSession | null {
   }
 }
 
-export function saveWrongSession(session: WrongSession | null) {
+export function saveWrongSession(session: WrongSession | null): boolean {
   if (session) {
-    sessionStorage.setItem(WRONG_SESSION_KEY, JSON.stringify(session))
+    return safeSetStorageItem("session", WRONG_SESSION_KEY, JSON.stringify(session))
   } else {
-    sessionStorage.removeItem(WRONG_SESSION_KEY)
+    return safeRemoveStorageItem("session", WRONG_SESSION_KEY)
   }
 }
 
 export function loadSessionPage(): string | null {
-  return sessionStorage.getItem(PAGE_SESSION_KEY)
+  return safeGetStorageItem("session", PAGE_SESSION_KEY)
 }
 
-export function saveSessionPage(page: string) {
-  sessionStorage.setItem(PAGE_SESSION_KEY, page)
+export function saveSessionPage(page: string): boolean {
+  return safeSetStorageItem("session", PAGE_SESSION_KEY, page)
 }
 
 export function loadSuppressEmptyConfirm(): boolean {
   try {
-    return sessionStorage.getItem(SUPPRESS_EMPTY_CONFIRM_KEY) === "1"
+    return safeGetStorageItem("session", SUPPRESS_EMPTY_CONFIRM_KEY) === "1"
   } catch (e) {
     debugError("loadSuppressEmptyConfirm failed", e)
     return false
   }
 }
 
-export function saveSuppressEmptyConfirm(value: boolean) {
-  if (value) sessionStorage.setItem(SUPPRESS_EMPTY_CONFIRM_KEY, "1")
-  else sessionStorage.removeItem(SUPPRESS_EMPTY_CONFIRM_KEY)
+export function saveSuppressEmptyConfirm(value: boolean): boolean {
+  if (value) return safeSetStorageItem("session", SUPPRESS_EMPTY_CONFIRM_KEY, "1")
+  return safeRemoveStorageItem("session", SUPPRESS_EMPTY_CONFIRM_KEY)
 }

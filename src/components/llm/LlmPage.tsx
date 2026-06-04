@@ -25,6 +25,10 @@ import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { SelfGenerateDialog } from "./SelfGenerateDialog"
 import { ParsedQuestionsEditor } from "./ParsedQuestionsEditor"
 import { useT, usePushToast, useLlmConfig, useProxy } from "../../contexts"
+import "../../styles/llm/llm.css"
+import "../../styles/llm/upload.css"
+import "../../styles/llm/parsed-editor.css"
+import "../../styles/llm/self-generate.css"
 
 export function LlmPage(props: {
   activeList: QuestionList

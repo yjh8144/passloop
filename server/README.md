@@ -64,10 +64,32 @@ POST /api/backups
   "note": "before changing browser",
   "config": {
     "version": 1,
-    "lists": [],
-    "activeListId": "",
+    "lists": [
+      {
+        "id": "list-1",
+        "name": "Demo",
+        "description": "",
+        "questions": [],
+        "createdAt": "2026-06-04T00:00:00.000Z",
+        "updatedAt": "2026-06-04T00:00:00.000Z"
+      }
+    ],
+    "activeListId": "list-1",
     "attempts": [],
-    "settings": {}
+    "settings": {
+      "theme": "mint",
+      "language": "zh",
+      "autoNext": false,
+      "autoNextPause": true,
+      "autoNextScope": "all",
+      "viewMode": "single",
+      "practiceMode": "practice",
+      "sortMode": "manual",
+      "typeOrder": ["single", "multiple", "boolean", "blank", "short"],
+      "submitMode": "each",
+      "revealMode": "immediate",
+      "randomSeed": 0
+    }
   }
 }
 ```

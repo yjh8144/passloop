@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useState } from "react"
 import type { AppData, Question } from "./lib/types"
-import { getTranslator } from "./lib/i18n/index"
+import { getTranslator, loadTranslator } from "./lib/i18n/index"
 import {
   I18nProvider,
   ToastProvider,
@@ -23,25 +23,50 @@ import { createTestQuestionList } from "./lib/question"
 import { hasUnsubmittedProgress } from "./utils/evaluate"
 import { debugLog } from "./lib/debug"
 import { ONBOARDING_KEY } from "./utils/constants"
+import { safeGetStorageItem, safeSetStorageItem } from "./utils/safeStorage"
 import { useToast } from "./hooks/useToast"
 import { ToastStack } from "./components/ui/ToastStack"
 import { ResetConfirmDialog } from "./components/dialogs/ResetConfirmDialog"
 import { OnboardingDialog } from "./components/dialogs/OnboardingDialog"
 import { DebugDialog } from "./components/dialogs/DebugDialog"
-import { OfflineDialog } from "./components/dialogs/OfflineDialog"
-import { ImportExportDialogs } from "./components/dialogs/ImportExportDialogs"
-import type { ImportExportActions } from "./components/dialogs/ImportExportDialogs"
 import { Sidebar } from "./components/layout/Sidebar"
 import { BottomNav } from "./components/layout/BottomNav"
 import { Topbar } from "./components/layout/Topbar"
-import { ManagerPage } from "./components/manager/ManagerPage"
-import { LlmPage } from "./components/llm/LlmPage"
 import { PracticePage } from "./components/practice/PracticePage"
+
+const ManagerPage = lazy(() =>
+  import("./components/manager/ManagerPage").then((module) => ({ default: module.ManagerPage })),
+)
+const LlmPage = lazy(() =>
+  import("./components/llm/LlmPage").then((module) => ({ default: module.LlmPage })),
+)
+const ImportExportDialogs = lazy(() =>
+  import("./components/dialogs/ImportExportDialogs").then((module) => ({
+    default: module.ImportExportDialogs,
+  })),
+)
+const OfflineDialog = lazy(() =>
+  import("./components/dialogs/OfflineDialog").then((module) => ({
+    default: module.OfflineDialog,
+  })),
+)
+
+type ImportExportDialogKind = "question" | "backup" | "remote"
 
 export function App() {
   const [data, setData] = useState<AppData>(() => loadData())
-  const t = useMemo(() => getTranslator(data.settings.language), [data.settings.language])
+  const [t, setT] = useState(() => getTranslator(data.settings.language))
   const { toasts, pushToast } = useToast()
+
+  useEffect(() => {
+    let cancelled = false
+    loadTranslator(data.settings.language).then((translator) => {
+      if (!cancelled) setT(() => translator)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [data.settings.language])
 
   return (
     <I18nProvider t={t}>
@@ -67,26 +92,30 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
   const { clearLlmConfig: clearLlmConfigCtx } = useLlmConfig()
   const { resetProxySettings } = useProxy()
   const { page, desktopSidebarCollapsed, llmUnsavedRef } = useNavigation()
+  const { showConfirm } = useDialog()
   const t = useT()
 
   const [editing, setEditing] = useState<Question | null>(null)
   const [resetConfirmDialog, setResetConfirmDialog] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem(ONBOARDING_KEY)
+    return !safeGetStorageItem("local", ONBOARDING_KEY)
   })
   const [showDebugDialog, setShowDebugDialog] = useState(false)
   const [showOfflineDialog, setShowOfflineDialog] = useState(false)
-  const [importActions, setImportActions] = useState<ImportExportActions | null>(null)
+  const [importDialog, setImportDialog] = useState<ImportExportDialogKind | null>(null)
+  const handleExportBackup = useCallback(() => {
+    showConfirm(t("confirmExportBackup"), () => downloadJson("passloop-config.json", data))
+  }, [data, showConfirm, t])
 
   return (
     <PracticeProvider>
       <div className={`app-shell ${desktopSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Sidebar
-          onQuestionImport={() => importActions?.openQuestionImport()}
-          onBackupImport={() => importActions?.openBackupImport()}
-          onRemoteBackup={() => importActions?.openRemoteBackup()}
+          onQuestionImport={() => setImportDialog("question")}
+          onBackupImport={() => setImportDialog("backup")}
+          onRemoteBackup={() => setImportDialog("remote")}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-          onExportBackup={() => downloadJson("passloop-config.json", data)}
+          onExportBackup={handleExportBackup}
           onResetAll={() => setResetConfirmDialog(true)}
           onOpenDebugDialog={() => setShowDebugDialog(true)}
           onOpenOfflineDialog={() => setShowOfflineDialog(true)}
@@ -95,24 +124,26 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
         <main className="workspace">
           <TopbarConnected />
 
-          {page === "manager" ? (
-            <ManagerPage
-              list={activeList}
-              updateList={updateActiveList}
-              editing={editing}
-              setEditing={setEditing}
-              onDeleteList={() => deleteList(activeList.id)}
-            />
-          ) : page === "llm" ? (
-            <LlmPage
-              activeList={activeList}
-              updateActiveList={updateActiveList}
-              addImportedList={addImportedList}
-              unsavedRef={llmUnsavedRef}
-            />
-          ) : (
-            <PracticePage />
-          )}
+          <Suspense fallback={<PageLoading />}>
+            {page === "manager" ? (
+              <ManagerPage
+                list={activeList}
+                updateList={updateActiveList}
+                editing={editing}
+                setEditing={setEditing}
+                onDeleteList={() => deleteList(activeList.id)}
+              />
+            ) : page === "llm" ? (
+              <LlmPage
+                activeList={activeList}
+                updateActiveList={updateActiveList}
+                addImportedList={addImportedList}
+                unsavedRef={llmUnsavedRef}
+              />
+            ) : (
+              <PracticePage />
+            )}
+          </Suspense>
 
           <footer className="app-footer">
             © 2026{" "}
@@ -124,16 +155,20 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
         </main>
 
         <BottomNav
-          onQuestionImport={() => importActions?.openQuestionImport()}
-          onBackupImport={() => importActions?.openBackupImport()}
-          onRemoteBackup={() => importActions?.openRemoteBackup()}
+          onQuestionImport={() => setImportDialog("question")}
+          onBackupImport={() => setImportDialog("backup")}
+          onRemoteBackup={() => setImportDialog("remote")}
           onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-          onExportBackup={() => downloadJson("passloop-config.json", data)}
+          onExportBackup={handleExportBackup}
           onResetAll={() => setResetConfirmDialog(true)}
         />
 
         <ToastStack toasts={toasts} />
-        <ImportExportDialogs onReady={setImportActions} />
+        {importDialog && (
+          <Suspense fallback={null}>
+            <ImportExportDialogs initialDialog={importDialog} onDone={() => setImportDialog(null)} />
+          </Suspense>
+        )}
         <ResetConfirmConnected
           open={resetConfirmDialog}
           onClose={() => setResetConfirmDialog(false)}
@@ -146,7 +181,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
         <OnboardingDialog
           open={showOnboarding}
           onClose={() => {
-            localStorage.setItem(ONBOARDING_KEY, "1")
+            safeSetStorageItem("local", ONBOARDING_KEY, "1")
             setShowOnboarding(false)
           }}
         />
@@ -156,10 +191,18 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           onShowOnboarding={() => setShowOnboarding(true)}
           onCreateTestList={() => addImportedList(createTestQuestionList(t))}
         />
-        <OfflineDialog open={showOfflineDialog} onClose={() => setShowOfflineDialog(false)} />
+        {showOfflineDialog && (
+          <Suspense fallback={null}>
+            <OfflineDialog open={showOfflineDialog} onClose={() => setShowOfflineDialog(false)} />
+          </Suspense>
+        )}
       </div>
     </PracticeProvider>
   )
+}
+
+function PageLoading() {
+  return <div className="route-loading" aria-live="polite" />
 }
 
 function TopbarConnected() {

@@ -20,6 +20,7 @@ import { useWrongPractice } from "../hooks/useWrongPractice"
 import { evaluateQuestion, hasUnsubmittedProgress } from "../utils/evaluate"
 import { createId } from "../lib/question"
 import { debugLog } from "../lib/debug"
+import { elapsedSince } from "../utils/time"
 import {
   loadSessionAnswers,
   loadPosition,
@@ -345,7 +346,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           questionId: question.id,
           title: question.title,
           correct,
-          elapsedMs: Date.now() - startedAt,
+          elapsedMs: elapsedSince(startedAt),
           answer: answers[question.id],
         })
         dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct, inWrongMode })
@@ -359,7 +360,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
               questionId: question.id,
               answer: answers[question.id] ?? "",
               correct,
-              elapsedMs: Math.max(1000, Date.now() - startedAt),
+              elapsedMs: elapsedSince(startedAt),
               submittedAt: new Date().toISOString(),
             },
           ],
@@ -449,7 +450,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           questionId: question.id,
           answer: answers[question.id] ?? "",
           correct,
-          elapsedMs: Math.max(1000, Date.now() - startedAt),
+          elapsedMs: elapsedSince(startedAt),
           submittedAt: new Date().toISOString(),
         })
       }

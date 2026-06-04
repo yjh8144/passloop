@@ -7,6 +7,7 @@ import {
   PROXY_STORAGE_KEY,
   downloadJson,
 } from "../lib/storage"
+import { safeGetStorageItem, safeRemoveStorageItem } from "../utils/safeStorage"
 
 interface Props {
   children: ReactNode
@@ -109,7 +110,7 @@ export class ErrorBoundary extends Component<Props, State> {
       LLM_CONFIG_STORAGE_KEY,
     ]
     for (const key of keys) {
-      const raw = localStorage.getItem(key)
+      const raw = safeGetStorageItem("local", key)
       if (raw) {
         try {
           data[key] = JSON.parse(raw)
@@ -127,10 +128,10 @@ export class ErrorBoundary extends Component<Props, State> {
         "Are you sure? This will reset the app to its initial state.",
     )
     if (!confirmed) return
-    localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem(LLM_MULTI_CONFIG_STORAGE_KEY)
-    localStorage.removeItem(PROXY_STORAGE_KEY)
-    localStorage.removeItem(LLM_CONFIG_STORAGE_KEY)
+    safeRemoveStorageItem("local", STORAGE_KEY)
+    safeRemoveStorageItem("local", LLM_MULTI_CONFIG_STORAGE_KEY)
+    safeRemoveStorageItem("local", PROXY_STORAGE_KEY)
+    safeRemoveStorageItem("local", LLM_CONFIG_STORAGE_KEY)
     location.reload()
   }
 

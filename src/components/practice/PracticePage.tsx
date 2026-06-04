@@ -243,6 +243,7 @@ export function PracticePage() {
               <div className="pager">
                 <button
                   className="icon-button"
+                  aria-label={t("previous")}
                   onClick={() => setCurrentIndex((index) => Math.max(index - 1, 0))}
                   disabled={currentIndex === 0}
                 >
@@ -253,6 +254,7 @@ export function PracticePage() {
                 </strong>
                 <button
                   className="icon-button"
+                  aria-label={t("next")}
                   onClick={() =>
                     setCurrentIndex((index) => Math.min(index + 1, questions.length - 1))
                   }

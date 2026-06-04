@@ -20,6 +20,42 @@ const RATE_MAX = Number(process.env.RATE_MAX || 60)
 const AUTH_FAIL_WINDOW_MS = Number(process.env.AUTH_FAIL_WINDOW_MS || 15 * 60_000)
 const AUTH_FAIL_MAX = Number(process.env.AUTH_FAIL_MAX || 10)
 const USERNAME_PATTERN = /^[a-zA-Z0-9_.-]{3,64}$/
+const TRUST_PROXY = process.env.TRUST_PROXY === "1" || process.env.TRUST_PROXY === "true"
+const ID_PATTERN = /^[\s\S]{1,128}$/
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}T/
+const QUESTION_TYPES = new Set(["single", "multiple", "boolean", "blank", "short"])
+const THEMES = new Set(["mint", "paper", "lavender", "ocean", "rose", "night", "nord"])
+const LANGUAGES = new Set(["zh", "en", "ja", "ko", "fr"])
+const VIEW_MODES = new Set(["single", "paper"])
+const PRACTICE_MODES = new Set(["practice", "memorize"])
+const SORT_MODES = new Set(["manual", "random", "name", "type", "type-random"])
+const SUBMIT_MODES = new Set(["each", "paper"])
+const REVEAL_MODES = new Set(["immediate", "end"])
+const AUTO_NEXT_SCOPES = new Set(["all", "correct"])
+const MAX_LISTS = Number(process.env.MAX_LISTS_PER_BACKUP || 200)
+const MAX_QUESTIONS_PER_LIST = Number(process.env.MAX_QUESTIONS_PER_LIST || 5000)
+const MAX_ATTEMPTS = Number(process.env.MAX_ATTEMPTS_PER_BACKUP || 50_000)
+const MAX_TEXT_LENGTH = Number(process.env.MAX_TEXT_LENGTH || 20_000)
+const CORS_ORIGINS = new Set(
+  (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || "*")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+)
+const DEFAULT_SETTINGS = {
+  theme: "mint",
+  language: "zh",
+  autoNext: false,
+  autoNextPause: true,
+  autoNextScope: "all",
+  viewMode: "single",
+  practiceMode: "practice",
+  sortMode: "manual",
+  typeOrder: [...QUESTION_TYPES],
+  submitMode: "each",
+  revealMode: "immediate",
+  randomSeed: Date.now(),
+}
 
 const MIME_JSON = "application/json; charset=utf-8"
 let usersFileQueue = Promise.resolve()
@@ -28,9 +64,18 @@ function now() {
   return new Date().toISOString()
 }
 
+function securityHeaders() {
+  return {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Cache-Control": "no-store",
+  }
+}
+
 function jsonResponse(res, status, payload, headers = {}) {
   const body = JSON.stringify(payload)
   res.writeHead(status, {
+    ...securityHeaders(),
     "Content-Type": MIME_JSON,
     "Content-Length": Buffer.byteLength(body),
     ...headers,
@@ -42,13 +87,26 @@ function errorResponse(res, status, message, code = "error") {
   jsonResponse(res, status, { error: { code, message } })
 }
 
-function addCorsHeaders(res) {
-  res.setHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
+function addCorsHeaders(req, res) {
+  const origin = req.headers.origin
+  if (typeof origin === "string" && (CORS_ORIGINS.has("*") || CORS_ORIGINS.has(origin))) {
+    res.setHeader("Access-Control-Allow-Origin", origin)
+    res.setHeader("Vary", "Origin")
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
   res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+  res.setHeader("Access-Control-Max-Age", "600")
+}
+
+function requireJsonContentType(req) {
+  const contentType = req.headers["content-type"]
+  if (typeof contentType !== "string" || !contentType.toLowerCase().includes("application/json")) {
+    throw new HttpError(415, "请求 Content-Type 必须是 application/json", "unsupported_media_type")
+  }
 }
 
 async function readJsonBody(req) {
+  requireJsonContentType(req)
   const chunks = []
   let size = 0
   for await (const chunk of req) {
@@ -79,7 +137,7 @@ const requestHits = new Map()
 const authFailures = new Map()
 
 function getClientIp(req) {
-  const forwarded = req.headers["x-forwarded-for"]
+  const forwarded = TRUST_PROXY ? req.headers["x-forwarded-for"] : ""
   if (typeof forwarded === "string" && forwarded.trim()) {
     return forwarded.split(",")[0].trim()
   }
@@ -261,11 +319,434 @@ function backupFilePath(username, backupId) {
   return path.join(userBackupDir(username), `${backupId}.json`)
 }
 
-function validateConfigJson(value) {
+function requireObject(value, field) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new HttpError(400, "config 必须是 JSON 对象", "invalid_config")
+    throw new HttpError(400, `${field} 必须是 JSON 对象`, "invalid_config")
   }
   return value
+}
+
+function requireArray(value, field, max) {
+  if (!Array.isArray(value)) {
+    throw new HttpError(400, `${field} 必须是数组`, "invalid_config")
+  }
+  if (value.length > max) {
+    throw new HttpError(400, `${field} 数量超过限制：${max}`, "invalid_config")
+  }
+  return value
+}
+
+function requireString(value, field, max = MAX_TEXT_LENGTH) {
+  if (typeof value !== "string") {
+    throw new HttpError(400, `${field} 必须是字符串`, "invalid_config")
+  }
+  if (value.length > max) {
+    throw new HttpError(400, `${field} 长度超过限制：${max}`, "invalid_config")
+  }
+  return value
+}
+
+function requireId(value, field) {
+  const text = requireString(value, field, 128)
+  if (!ID_PATTERN.test(text)) {
+    throw new HttpError(400, `${field} 不合法`, "invalid_config")
+  }
+  return text
+}
+
+function requireTimestamp(value, field) {
+  const text = requireString(value, field, 64)
+  if (!ISO_DATE_PATTERN.test(text) || Number.isNaN(new Date(text).getTime())) {
+    throw new HttpError(400, `${field} 必须是 ISO 时间字符串`, "invalid_config")
+  }
+  return text
+}
+
+function requireEnum(value, allowed, field) {
+  if (!allowed.has(value)) {
+    throw new HttpError(400, `${field} 不合法`, "invalid_config")
+  }
+  return value
+}
+
+function requireBoolean(value, field) {
+  if (typeof value !== "boolean") {
+    throw new HttpError(400, `${field} 必须是布尔值`, "invalid_config")
+  }
+  return value
+}
+
+function requireNumber(value, field) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new HttpError(400, `${field} 必须是有限数字`, "invalid_config")
+  }
+  return value
+}
+
+function validateTextArray(value, field) {
+  return requireArray(value, field, 200).map((item, index) =>
+    requireString(item, `${field}[${index}]`),
+  )
+}
+
+function validateOptions(value, field) {
+  return requireArray(value, field, 200).map((item, index) => {
+    const option = requireObject(item, `${field}[${index}]`)
+    requireId(option.id, `${field}[${index}].id`)
+    requireString(option.label, `${field}[${index}].label`, 128)
+    requireString(option.text, `${field}[${index}].text`)
+    return option
+  })
+}
+
+function validateAnswer(value, type, field) {
+  if (type === "multiple" || type === "blank" || type === "short") {
+    return validateTextArray(value, field)
+  }
+  return requireString(value, field)
+}
+
+function createId() {
+  return randomUUID()
+}
+
+function asString(value, fallback = "") {
+  if (typeof value === "string") return value
+  if (typeof value === "number") return String(value)
+  return fallback
+}
+
+function normalizeTimestamp(value) {
+  const text = asString(value, "")
+  return ISO_DATE_PATTERN.test(text) && !Number.isNaN(new Date(text).getTime()) ? text : now()
+}
+
+function optionLabel(index) {
+  return String.fromCharCode(65 + index)
+}
+
+function normalizeType(value, source) {
+  const text = String(value ?? "").toLowerCase()
+  if (["single", "radio", "choice", "单选题", "单选"].includes(text)) return "single"
+  if (["multiple", "checkbox", "多选题", "多选"].includes(text)) return "multiple"
+  if (["boolean", "judge", "truefalse", "判断题", "判断"].includes(text)) return "boolean"
+  if (["blank", "fill", "填空题", "填空"].includes(text)) return "blank"
+  if (["short", "essay", "answer", "简答题", "简答"].includes(text)) return "short"
+  if (Array.isArray(source.options ?? source.choices)) return "single"
+  return "short"
+}
+
+function normalizeOptions(value, type) {
+  if (type === "boolean") {
+    return [
+      { id: createId(), label: "T", text: "True" },
+      { id: createId(), label: "F", text: "False" },
+    ]
+  }
+  if (!Array.isArray(value)) return []
+  return value.map((item, index) => {
+    if (typeof item === "string") {
+      return { id: createId(), label: optionLabel(index), text: item }
+    }
+    const source = item && typeof item === "object" ? item : {}
+    return {
+      id: asString(source.id, createId()),
+      label: asString(source.label ?? source.key, optionLabel(index)),
+      text: asString(source.text ?? source.content ?? source.value, ""),
+    }
+  })
+}
+
+function normalizeAnswer(value, type) {
+  if (type === "multiple" || type === "blank" || type === "short") {
+    if (Array.isArray(value)) return value.map((item) => String(item))
+    if (typeof value === "string") {
+      if (type === "multiple") {
+        return value.includes("|")
+          ? value.split("|").map((item) => item.trim())
+          : value
+            ? [value]
+            : []
+      }
+      return value ? [value] : []
+    }
+    return []
+  }
+  if (typeof value === "boolean") return value ? "T" : "F"
+  if (Array.isArray(value)) return value.join("、")
+  return asString(value, "")
+}
+
+function normalizeQuestion(value, index = 0) {
+  const timestamp = now()
+  if (!value || typeof value !== "object") {
+    return {
+      id: createId(),
+      type: "single",
+      title: `Question ${index + 1}`,
+      options: ["A", "B", "C", "D"].map((label) => ({ id: createId(), label, text: "" })),
+      answer: "",
+      explanation: "",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+  }
+  const source = value
+  const type = normalizeType(source.type ?? source.questionType ?? source.kind, source)
+  const rawTitle = asString(source.title ?? source.name ?? source.no, "")
+  const rawPrompt = asString(
+    source.prompt ?? source.question ?? source.stem ?? source.content ?? source.text,
+    "",
+  )
+  const title = rawTitle || rawPrompt || `Question ${index + 1}`
+  return {
+    id: asString(source.id, createId()),
+    type,
+    title,
+    options: normalizeOptions(source.options ?? source.choices ?? source.items, type),
+    answer: normalizeAnswer(source.answer ?? source.answers ?? source.correctAnswer, type),
+    explanation: asString(source.explanation ?? source.analysis ?? source.resolve, ""),
+    hint: typeof source.hint === "string" ? source.hint : undefined,
+    createdAt: normalizeTimestamp(source.createdAt ?? timestamp),
+    updatedAt: normalizeTimestamp(source.updatedAt ?? timestamp),
+  }
+}
+
+function deduplicateQuestionIds(questions) {
+  const seen = new Set()
+  return questions.map((question) => {
+    if (seen.has(question.id)) return { ...question, id: createId() }
+    seen.add(question.id)
+    return question
+  })
+}
+
+function normalizeList(value) {
+  if (!value || typeof value !== "object") return null
+  const timestamp = now()
+  return {
+    id: asString(value.id, createId()),
+    name: asString(value.name, "Unnamed List"),
+    description: asString(value.description, ""),
+    questions: Array.isArray(value.questions)
+      ? deduplicateQuestionIds(
+          value.questions.map((question, index) => normalizeQuestion(question, index)),
+        )
+      : [],
+    createdAt: normalizeTimestamp(value.createdAt ?? timestamp),
+    updatedAt: normalizeTimestamp(value.updatedAt ?? timestamp),
+  }
+}
+
+function deduplicateListIds(lists) {
+  const seen = new Set()
+  return lists.map((list) => {
+    if (seen.has(list.id)) return { ...list, id: createId() }
+    seen.add(list.id)
+    return list
+  })
+}
+
+function sanitizeTypeOrder(value) {
+  const seen = new Set()
+  const result = []
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (QUESTION_TYPES.has(item) && !seen.has(item)) {
+        seen.add(item)
+        result.push(item)
+      }
+    }
+  }
+  for (const type of QUESTION_TYPES) if (!seen.has(type)) result.push(type)
+  return result
+}
+
+function createDefaultConfig() {
+  const timestamp = now()
+  const list = {
+    id: createId(),
+    name: "Default List",
+    description: "",
+    questions: [],
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+  return {
+    version: 1,
+    lists: [list],
+    activeListId: list.id,
+    attempts: [],
+    settings: { ...DEFAULT_SETTINGS },
+  }
+}
+
+function normalizeAttempts(value, listIds, questionIdsByListId) {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((item) => item && typeof item === "object" && !Array.isArray(item))
+    .map((item) => {
+      const listId = asString(item.listId, "")
+      const questionId = asString(item.questionId, "")
+      if (!listIds.has(listId) || !questionIdsByListId.get(listId)?.has(questionId)) return null
+      const elapsedMs = Number(item.elapsedMs)
+      return {
+        id: asString(item.id, createId()),
+        listId,
+        questionId,
+        answer: Array.isArray(item.answer)
+          ? item.answer.map((answer) => String(answer))
+          : asString(item.answer, ""),
+        correct: typeof item.correct === "boolean" ? item.correct : false,
+        elapsedMs: Number.isFinite(elapsedMs) && elapsedMs >= 0 ? elapsedMs : 0,
+        submittedAt: normalizeTimestamp(item.submittedAt),
+      }
+    })
+    .filter(Boolean)
+}
+
+function normalizeSettings(value) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {}
+  const settings = { ...DEFAULT_SETTINGS }
+  if (THEMES.has(source.theme)) settings.theme = source.theme
+  if (LANGUAGES.has(source.language)) settings.language = source.language
+  if (typeof source.autoNext === "boolean") settings.autoNext = source.autoNext
+  if (typeof source.autoNextPause === "boolean") settings.autoNextPause = source.autoNextPause
+  if (AUTO_NEXT_SCOPES.has(source.autoNextScope)) settings.autoNextScope = source.autoNextScope
+  if (VIEW_MODES.has(source.viewMode)) settings.viewMode = source.viewMode
+  if (PRACTICE_MODES.has(source.practiceMode)) settings.practiceMode = source.practiceMode
+  if (SORT_MODES.has(source.sortMode)) settings.sortMode = source.sortMode
+  if (SUBMIT_MODES.has(source.submitMode)) settings.submitMode = source.submitMode
+  if (REVEAL_MODES.has(source.revealMode)) settings.revealMode = source.revealMode
+  if (typeof source.randomSeed === "number" && Number.isFinite(source.randomSeed)) {
+    settings.randomSeed = source.randomSeed
+  }
+  settings.typeOrder = sanitizeTypeOrder(source.typeOrder)
+  if (settings.submitMode === "each" && settings.revealMode === "end") {
+    settings.revealMode = "immediate"
+  }
+  return settings
+}
+
+function normalizeConfigJson(value) {
+  if (!value || typeof value !== "object") return createDefaultConfig()
+  const source = value
+  const fallback = createDefaultConfig()
+  const lists = Array.isArray(source.lists)
+    ? source.lists.map(normalizeList).filter(Boolean)
+    : fallback.lists
+  const safeLists = deduplicateListIds(lists.length ? lists : fallback.lists)
+  const activeListId =
+    typeof source.activeListId === "string" &&
+    safeLists.some((list) => list.id === source.activeListId)
+      ? source.activeListId
+      : safeLists[0].id
+  const listIds = new Set(safeLists.map((list) => list.id))
+  const questionIdsByListId = new Map(
+    safeLists.map((list) => [list.id, new Set(list.questions.map((question) => question.id))]),
+  )
+  return {
+    version: 1,
+    lists: safeLists,
+    activeListId,
+    attempts: normalizeAttempts(source.attempts, listIds, questionIdsByListId),
+    settings: normalizeSettings(source.settings),
+  }
+}
+
+function validateQuestion(value, field) {
+  const question = requireObject(value, field)
+  const type = requireEnum(question.type, QUESTION_TYPES, `${field}.type`)
+  requireId(question.id, `${field}.id`)
+  requireString(question.title, `${field}.title`)
+  validateOptions(question.options, `${field}.options`)
+  validateAnswer(question.answer, type, `${field}.answer`)
+  requireString(question.explanation, `${field}.explanation`)
+  if (question.hint !== undefined) requireString(question.hint, `${field}.hint`)
+  requireTimestamp(question.createdAt, `${field}.createdAt`)
+  requireTimestamp(question.updatedAt, `${field}.updatedAt`)
+  return question
+}
+
+function validateList(value, field) {
+  const list = requireObject(value, field)
+  requireId(list.id, `${field}.id`)
+  requireString(list.name, `${field}.name`, 512)
+  requireString(list.description, `${field}.description`)
+  requireArray(list.questions, `${field}.questions`, MAX_QUESTIONS_PER_LIST).forEach((question, i) =>
+    validateQuestion(question, `${field}.questions[${i}]`),
+  )
+  requireTimestamp(list.createdAt, `${field}.createdAt`)
+  requireTimestamp(list.updatedAt, `${field}.updatedAt`)
+  return list
+}
+
+function validateAttempt(value, field, listIds, questionIdsByListId) {
+  const attempt = requireObject(value, field)
+  requireId(attempt.id, `${field}.id`)
+  const listId = requireId(attempt.listId, `${field}.listId`)
+  if (!listIds.has(listId)) {
+    throw new HttpError(400, `${field}.listId 不存在`, "invalid_config")
+  }
+  const questionId = requireId(attempt.questionId, `${field}.questionId`)
+  if (!questionIdsByListId.get(listId)?.has(questionId)) {
+    throw new HttpError(400, `${field}.questionId 不存在`, "invalid_config")
+  }
+  if (Array.isArray(attempt.answer)) validateTextArray(attempt.answer, `${field}.answer`)
+  else requireString(attempt.answer, `${field}.answer`)
+  requireBoolean(attempt.correct, `${field}.correct`)
+  const elapsedMs = requireNumber(attempt.elapsedMs, `${field}.elapsedMs`)
+  if (elapsedMs < 0) throw new HttpError(400, `${field}.elapsedMs 不合法`, "invalid_config")
+  requireTimestamp(attempt.submittedAt, `${field}.submittedAt`)
+  return attempt
+}
+
+function validateSettings(value) {
+  const settings = requireObject(value, "config.settings")
+  requireEnum(settings.theme, THEMES, "config.settings.theme")
+  requireEnum(settings.language, LANGUAGES, "config.settings.language")
+  requireBoolean(settings.autoNext, "config.settings.autoNext")
+  requireBoolean(settings.autoNextPause, "config.settings.autoNextPause")
+  requireEnum(settings.autoNextScope, AUTO_NEXT_SCOPES, "config.settings.autoNextScope")
+  requireEnum(settings.viewMode, VIEW_MODES, "config.settings.viewMode")
+  requireEnum(settings.practiceMode, PRACTICE_MODES, "config.settings.practiceMode")
+  requireEnum(settings.sortMode, SORT_MODES, "config.settings.sortMode")
+  const typeOrder = requireArray(settings.typeOrder, "config.settings.typeOrder", QUESTION_TYPES.size)
+  const seenTypes = new Set()
+  for (const [index, item] of typeOrder.entries()) {
+    requireEnum(item, QUESTION_TYPES, `config.settings.typeOrder[${index}]`)
+    if (seenTypes.has(item)) {
+      throw new HttpError(400, "config.settings.typeOrder 不能包含重复题型", "invalid_config")
+    }
+    seenTypes.add(item)
+  }
+  requireEnum(settings.submitMode, SUBMIT_MODES, "config.settings.submitMode")
+  requireEnum(settings.revealMode, REVEAL_MODES, "config.settings.revealMode")
+  requireNumber(settings.randomSeed, "config.settings.randomSeed")
+  return settings
+}
+
+function validateConfigJson(value) {
+  const config = normalizeConfigJson(requireObject(value, "config"))
+  const lists = requireArray(config.lists, "config.lists", MAX_LISTS)
+  const listIds = new Set()
+  const questionIdsByListId = new Map()
+  for (const [index, list] of lists.entries()) {
+    validateList(list, `config.lists[${index}]`)
+    const id = list.id
+    if (listIds.has(id)) throw new HttpError(400, "config.lists 存在重复 id", "invalid_config")
+    listIds.add(id)
+    questionIdsByListId.set(id, new Set(list.questions.map((question) => question.id)))
+  }
+  const activeListId = requireId(config.activeListId, "config.activeListId")
+  if (!listIds.has(activeListId)) {
+    throw new HttpError(400, "config.activeListId 不存在", "invalid_config")
+  }
+  requireArray(config.attempts, "config.attempts", MAX_ATTEMPTS).forEach((attempt, index) =>
+    validateAttempt(attempt, `config.attempts[${index}]`, listIds, questionIdsByListId),
+  )
+  validateSettings(config.settings)
+  return config
 }
 
 function validateBackupId(value) {
@@ -370,6 +851,7 @@ async function handleDownloadBackup(req, res) {
   const text = await readFile(file, "utf8")
   const filename = `passloop-${username}-${backupId}.json`
   res.writeHead(200, {
+    ...securityHeaders(),
     "Content-Type": MIME_JSON,
     "Content-Disposition": `attachment; filename="${filename}"`,
     "Content-Length": Buffer.byteLength(text),
@@ -378,9 +860,9 @@ async function handleDownloadBackup(req, res) {
 }
 
 async function route(req, res) {
-  addCorsHeaders(res)
+  addCorsHeaders(req, res)
   if (req.method === "OPTIONS") {
-    res.writeHead(204)
+    res.writeHead(204, securityHeaders())
     res.end()
     return
   }

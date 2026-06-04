@@ -191,7 +191,7 @@ export function normalizeQuestion(value: unknown, index = 0, t?: TFunc): Questio
     explanation: asString(source.explanation ?? source.analysis ?? source.resolve, ""),
     hint: typeof source.hint === "string" ? source.hint : undefined,
     createdAt: asString(source.createdAt, timestamp),
-    updatedAt: timestamp,
+    updatedAt: asString(source.updatedAt, timestamp),
   }
 }
 

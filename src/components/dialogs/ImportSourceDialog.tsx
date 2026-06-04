@@ -6,11 +6,15 @@ import { useEscapeKey } from "../../hooks/useEscapeKey"
 
 export function ImportSourceDialog({
   open,
+  title,
+  description,
   onClose,
   onFileSelect,
   onUrlImport,
 }: {
   open: boolean
+  title?: string
+  description?: string
   onClose: () => void
   onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void
   onUrlImport: (url: string) => Promise<void>
@@ -48,12 +52,14 @@ export function ImportSourceDialog({
     <div className="modal-overlay">
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
         <div className="modal-header">
-          <h2>{t("importTitle")}</h2>
+          <h2>{title ?? t("importTitle")}</h2>
           <button className="icon-button" onClick={onClose} disabled={loading}>
             <X size={18} />
           </button>
         </div>
-        <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>{t("selectImportSource")}</p>
+        <p style={{ margin: "8px 0 16px", lineHeight: 1.6 }}>
+          {description ?? t("selectImportSource")}
+        </p>
         <div className="import-choice-buttons">
           <label className="import-choice-file-btn">
             <Upload size={16} /> {t("uploadLocalJsonFile")}

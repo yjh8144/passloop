@@ -4,6 +4,7 @@ const app = express();
 const portArg = process.argv.find(arg => arg.startsWith('--port='));
 const PORT = portArg ? portArg.split('=')[1] : 3001;
 const AUTH_SECRET = process.env.AUTH_SECRET;
+const TRUST_PROXY = process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true';
 
 const RATE_WINDOW = 60_000;
 const RATE_MAX = 60;
@@ -154,7 +155,9 @@ app.use((req, res) => {
     return res.status(204).end();
   }
 
-  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+  const clientIp = TRUST_PROXY && req.headers['x-forwarded-for']
+    ? req.headers['x-forwarded-for'].split(',')[0].trim()
+    : req.socket.remoteAddress;
   if (isRateLimited(clientIp)) {
     res.set('Access-Control-Allow-Origin', '*');
     return res.status(429).send('Too Many Requests');

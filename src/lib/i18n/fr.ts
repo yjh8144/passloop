@@ -273,6 +273,7 @@ export const fr: Record<string, string> = {
   totalQuestions: "{0} questions au total — où les ajouter ?",
   addToListName: "Ajouter à la liste actuelle « {0} »",
   selectImportSource: "Choisir la source :",
+  selectBackupImportSource: "Choisir la source de configuration :",
   uploadLocalJsonFile: "Télécharger un fichier JSON local",
   importFromUrl: "Importer un JSON depuis une URL",
   jsonFileUrl: "URL du fichier JSON",
@@ -396,6 +397,8 @@ export const fr: Record<string, string> = {
   modelLabel: "Modèle",
   apiUrlLabel: "URL de l'API",
   apiKeyLabel: "Clé API",
+  apiKeyStorageHint:
+    "Pour limiter l'exposition, la clé API reste seulement dans la session de page actuelle et doit être ressaisie après actualisation.",
   proxyToggleLabel: "Activer le proxy CORS",
   proxyDisabledHint: "Proxy désactivé, les requêtes vont directement à l'API",
   proxyUrlLabel: "URL du proxy CORS",
@@ -736,7 +739,7 @@ export const fr: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup:
-    "Le fichier exporté contient toutes vos questions, paramètres et configuration LLM (y compris les clés API). Veuillez protéger votre vie privée et ne pas partager ce fichier avec des personnes non fiables. Continuer ?",
+    "Le fichier exporté contient toutes vos questions, paramètres et la configuration LLM non sensible, mais pas les clés API ni les clés de proxy. Veuillez protéger votre vie privée et ne pas partager ce fichier avec des personnes non fiables. Continuer ?",
 
   // Debug
   simulateCrash: "Simuler un crash",

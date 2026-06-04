@@ -81,10 +81,13 @@ function RemoteBackupDialogContent({
     return translated === error.message ? error.message : translated
   }
 
-  const refreshList = async (targetPage = page) => {
+  const refreshList = async (
+    targetPage = page,
+    options: { rollbackList?: RemoteBackupListResponse | null } = {},
+  ) => {
     if (!canSubmit) {
       pushToast("error", t("remoteCredentialsRequired"))
-      return
+      return null
     }
     setBusy("list")
     try {
@@ -98,8 +101,13 @@ function RemoteBackupDialogContent({
       rememberSettings()
       setList(result)
       setPage(result.page)
+      return result
     } catch (error) {
+      if ("rollbackList" in options) {
+        setList(options.rollbackList ?? null)
+      }
       pushToast("error", formatError(error))
+      return null
     } finally {
       setBusy("idle")
     }
@@ -110,7 +118,8 @@ function RemoteBackupDialogContent({
       pushToast("error", t("remoteCredentialsRequired"))
       return
     }
-    let shouldRefresh = false
+    let uploadedSuccessfully = false
+    const previousList = list
     setBusy("upload")
     try {
       const result = await uploadRemoteBackup({
@@ -126,13 +135,15 @@ function RemoteBackupDialogContent({
         result.registered ? t("remoteBackupRegistered") : t("remoteBackupUploaded"),
       )
       setNote("")
-      shouldRefresh = true
+      setList((current) => optimisticUploadList(current, result.backup, PAGE_SIZE))
+      setPage(1)
+      uploadedSuccessfully = true
     } catch (error) {
       pushToast("error", formatError(error))
     } finally {
       setBusy("idle")
     }
-    if (shouldRefresh) await refreshList(1)
+    if (uploadedSuccessfully) await refreshList(1, { rollbackList: previousList })
   }
 
   const restoreBackup = async (backup: RemoteBackupItem) => {
@@ -325,4 +336,24 @@ function formatBytes(value: number) {
   if (value < 1024) return `${value} B`
   if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`
   return `${(value / 1024 / 1024).toFixed(1)} MB`
+}
+
+function optimisticUploadList(
+  current: RemoteBackupListResponse | null,
+  backup: RemoteBackupItem,
+  pageSize: number,
+): RemoteBackupListResponse {
+  const items = [backup, ...(current?.items.filter((item) => item.id !== backup.id) ?? [])].slice(
+    0,
+    pageSize,
+  )
+  const total = (current?.total ?? 0) + 1
+  return {
+    ok: true,
+    page: 1,
+    pageSize: current?.pageSize ?? pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / (current?.pageSize ?? pageSize))),
+    items,
+  }
 }

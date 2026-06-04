@@ -263,6 +263,7 @@ export const ko: Record<string, string> = {
   totalQuestions: "총 {0}문제, 어디에 추가할까요?",
   addToListName: "현재 목록 「{0}」에 추가",
   selectImportSource: "소스 선택:",
+  selectBackupImportSource: "설정 소스 선택:",
   uploadLocalJsonFile: "로컬 JSON 파일 업로드",
   importFromUrl: "URL에서 JSON 가져오기",
   jsonFileUrl: "JSON 파일 URL",
@@ -365,6 +366,8 @@ export const ko: Record<string, string> = {
   modelLabel: "모델",
   apiUrlLabel: "API 주소",
   apiKeyLabel: "API 키",
+  apiKeyStorageHint:
+    "노출 위험을 줄이기 위해 API 키는 현재 페이지 세션에만 보관되며 새로고침 후 다시 입력해야 합니다.",
   proxyToggleLabel: "CORS 프록시 활성화",
   proxyDisabledHint: "프록시 비활성화됨, API에 직접 요청합니다",
   proxyUrlLabel: "CORS 프록시 주소",
@@ -696,7 +699,7 @@ export const ko: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup:
-    "내보내기 파일에는 모든 문제, 설정, LLM 구성(API 키 포함)이 포함됩니다. 개인정보를 보호하고 신뢰할 수 없는 사람에게 파일을 공유하지 마세요. 내보내시겠습니까?",
+    "내보내기 파일에는 모든 문제, 설정, 민감하지 않은 LLM 구성이 포함되지만 API 키나 프록시 키는 포함되지 않습니다. 개인정보를 보호하고 신뢰할 수 없는 사람에게 파일을 공유하지 마세요. 내보내시겠습니까?",
 
   // Debug
   simulateCrash: "크래시 시뮬레이션",

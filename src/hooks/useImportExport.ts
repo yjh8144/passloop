@@ -54,6 +54,7 @@ interface UseImportExportParams {
   updateData: UpdateData
   data: AppData
   setData: SetState<AppData>
+  initialDialog?: "question" | "backup"
 }
 
 export function useImportExport({
@@ -64,11 +65,12 @@ export function useImportExport({
   updateData,
   data,
   setData,
+  initialDialog,
 }: UseImportExportParams) {
   const [pendingImportLists, setPendingImportLists] = useState<QuestionList[] | null>(null)
-  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(initialDialog === "question")
   const [pendingBackup, setPendingBackup] = useState<AppData | null>(null)
-  const [showBackupImportDialog, setShowBackupImportDialog] = useState(false)
+  const [showBackupImportDialog, setShowBackupImportDialog] = useState(initialDialog === "backup")
 
   const handleQuestionImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -105,9 +107,7 @@ export function useImportExport({
       proxyUrl: proxyConfig.proxyEnabled
         ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl
         : "",
-      proxyKey: proxyConfig.proxyEnabled
-        ? proxyConfig.proxyKey || defaultProxySettings.proxyKey
-        : "",
+      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey : "",
     }
     try {
       const response = await fetchViaProxy(validatedUrl, fetchProxyConfig, undefined, t)
@@ -210,9 +210,7 @@ export function useImportExport({
       proxyUrl: proxyConfig.proxyEnabled
         ? proxyConfig.proxyUrl || defaultProxySettings.proxyUrl
         : "",
-      proxyKey: proxyConfig.proxyEnabled
-        ? proxyConfig.proxyKey || defaultProxySettings.proxyKey
-        : "",
+      proxyKey: proxyConfig.proxyEnabled ? proxyConfig.proxyKey : "",
     }
     try {
       const response = await fetchViaProxy(validatedUrl, fetchProxyConfig, undefined, t)

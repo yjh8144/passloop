@@ -1,10 +1,25 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import {
+  createContext,
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import type { ReactNode } from "react"
 import type { ProxySettings } from "../lib/types"
 import { loadProxySettings, saveProxySettings, PROXY_STORAGE_KEY } from "../lib/storage"
 import { defaultProxySettings } from "../utils/constants"
-import { ProxyConfigModal } from "../components/proxy/ProxyConfigModal"
 import { debugLog } from "../lib/debug"
+import { safeRemoveStorageItem } from "../utils/safeStorage"
+
+const ProxyConfigModal = lazy(() =>
+  import("../components/proxy/ProxyConfigModal").then((module) => ({
+    default: module.ProxyConfigModal,
+  })),
+)
 
 interface ProxyContextValue {
   proxySettings: ProxySettings
@@ -33,7 +48,7 @@ export function ProxyProvider({ children }: { children: ReactNode }) {
 
   const resetProxySettings = useCallback(() => {
     debugLog("[ProxyContext] resetProxySettings")
-    localStorage.removeItem(PROXY_STORAGE_KEY)
+    safeRemoveStorageItem("local", PROXY_STORAGE_KEY)
     setSettings(defaultProxySettings)
   }, [])
 
@@ -54,12 +69,16 @@ export function ProxyProvider({ children }: { children: ReactNode }) {
   return (
     <ProxyContext.Provider value={value}>
       {children}
-      <ProxyConfigModal
-        open={showModal}
-        onClose={closeProxyConfig}
-        proxySettings={settings}
-        updateProxySettings={updateProxySettings}
-      />
+      {showModal && (
+        <Suspense fallback={null}>
+          <ProxyConfigModal
+            open={showModal}
+            onClose={closeProxyConfig}
+            proxySettings={settings}
+            updateProxySettings={updateProxySettings}
+          />
+        </Suspense>
+      )}
     </ProxyContext.Provider>
   )
 }

@@ -1,5 +1,6 @@
 import type { Question } from "../../lib/types"
 import { debugLog } from "../../lib/debug"
+import { NAV_WINDOW_SIZE, getWindowRange } from "../../utils/windowing"
 import type { ResultMap } from "../../hooks/types"
 import { useT } from "../../contexts"
 
@@ -27,27 +28,37 @@ export function Navigator(props: {
     props.setCurrentIndex(index)
   }
   const showResult = props.revealMode !== "end" || !!props.allSubmitted
+  const range = getWindowRange(props.questions.length, props.currentIndex, NAV_WINDOW_SIZE)
+  const visibleQuestions = props.questions.slice(range.start, range.end)
   return (
     <section className="inspector-panel navigator-panel">
       <h3>{t("quickNav")}</h3>
+      {props.questions.length > NAV_WINDOW_SIZE && (
+        <div className="question-nav-summary">
+          {range.start + 1}-{range.end} / {props.questions.length}
+        </div>
+      )}
       <div className="question-nav-grid">
-        {props.questions.map((question, index) => (
-          <button
-            key={question.id}
-            className={`${index === props.currentIndex ? "active" : ""} ${
-              question.id in props.results
-                ? showResult
-                  ? props.results[question.id]
-                    ? "correct"
-                    : "wrong"
-                  : "submitted"
-                : ""
-            }`}
-            onClick={() => handleClick(index)}
-          >
-            {index + 1}
-          </button>
-        ))}
+        {visibleQuestions.map((question, offset) => {
+          const index = range.start + offset
+          return (
+            <button
+              key={question.id}
+              className={`${index === props.currentIndex ? "active" : ""} ${
+                question.id in props.results
+                  ? showResult
+                    ? props.results[question.id]
+                      ? "correct"
+                      : "wrong"
+                    : "submitted"
+                  : ""
+              }`}
+              onClick={() => handleClick(index)}
+            >
+              {index + 1}
+            </button>
+          )
+        })}
       </div>
     </section>
   )
