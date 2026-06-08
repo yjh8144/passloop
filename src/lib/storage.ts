@@ -247,9 +247,7 @@ function migrateV1ToV2(v1: Partial<LlmConfig>, _fallback: LlmMultiConfig): LlmMu
   const timestamp = now()
   const id = createId()
   const hasProviderConfig =
-    typeof v1.model === "string" ||
-    typeof v1.endpoint === "string" ||
-    isLlmProvider(v1.provider)
+    typeof v1.model === "string" || typeof v1.endpoint === "string" || isLlmProvider(v1.provider)
 
   if (typeof v1.proxyUrl === "string" && v1.proxyUrl) {
     const proxyMigrated: ProxySettings = {

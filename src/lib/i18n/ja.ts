@@ -338,8 +338,7 @@ export const ja: Record<string, string> = {
     "右上の設定：並び順（元順序/ランダム/名前順/タイプ順）、回答後自動次へ、解答表示タイミングなど。",
   obPractice4:
     "サイドパネルに正答率、平均時間、進捗、誤答数を表示。ナビゲーショングリッドで回答状況を色分け表示。",
-  obPractice5:
-    "完了前でも誤答操作を使えます。未回答の問題は確認後に誤答として含められます。",
+  obPractice5: "完了前でも誤答操作を使えます。未回答の問題は確認後に誤答として含められます。",
 
   obTitleSettings: "カスタマイズ",
   obSettings1:
@@ -640,8 +639,7 @@ export const ja: Record<string, string> = {
   noWrongQuestions: "このリストに不正解はありません。",
   confirmPracticeWrongList:
     "現在の誤答から新しいリストを作成し、すぐに切り替えて練習します。続行しますか？",
-  confirmIncludeUnsubmittedWrong:
-    "未回答の問題が {0} 問あります。未回答も不正解として含めますか？",
+  confirmIncludeUnsubmittedWrong: "未回答の問題が {0} 問あります。未回答も不正解として含めますか？",
   wrongOnlySubmitted: "回答済みの誤答のみ",
   wrongIncludeUnsubmitted: "未回答を含める",
   wrongActionsTitle: "誤答操作",

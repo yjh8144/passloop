@@ -290,11 +290,7 @@ export function LlmProviderEditor({
         <button className="secondary-button" onClick={onCancel}>
           {t("cancel")}
         </button>
-        <button
-          className="primary-button"
-          onClick={onSave}
-          disabled={!canSave}
-        >
+        <button className="primary-button" onClick={onSave} disabled={!canSave}>
           {isNew ? t("addProvider") : t("saveProvider")}
         </button>
       </div>

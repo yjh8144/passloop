@@ -62,7 +62,13 @@ function newerTimestamp(a?: string, b?: string): string {
   return aTime >= bTime ? (a ?? new Date().toISOString()) : (b ?? new Date().toISOString())
 }
 
-function pickField<T>(base: T, local: T, remote: T, localUpdatedAt?: string, remoteUpdatedAt?: string) {
+function pickField<T>(
+  base: T,
+  local: T,
+  remote: T,
+  localUpdatedAt?: string,
+  remoteUpdatedAt?: string,
+) {
   const localChanged = !sameJson(local, base)
   const remoteChanged = !sameJson(remote, base)
   if (localChanged && remoteChanged) {
@@ -82,7 +88,13 @@ function mergeQuestion(
     ...remote,
     type: pickField(base.type, local.type, remote.type, local.updatedAt, remote.updatedAt),
     title: pickField(base.title, local.title, remote.title, local.updatedAt, remote.updatedAt),
-    options: pickField(base.options, local.options, remote.options, local.updatedAt, remote.updatedAt),
+    options: pickField(
+      base.options,
+      local.options,
+      remote.options,
+      local.updatedAt,
+      remote.updatedAt,
+    ),
     answer: pickField(base.answer, local.answer, remote.answer, local.updatedAt, remote.updatedAt),
     explanation: pickField(
       base.explanation,
@@ -170,7 +182,11 @@ function mergeAppData(base: AppData, local: AppData, remote: AppData): AppData {
   const lists = mergeLists(base.lists, local.lists, remote.lists)
   const settings = { ...remote.settings }
   for (const key of Object.keys(local.settings) as Array<keyof AppData["settings"]>) {
-    settings[key] = pickField(base.settings[key], local.settings[key], remote.settings[key]) as never
+    settings[key] = pickField(
+      base.settings[key],
+      local.settings[key],
+      remote.settings[key],
+    ) as never
   }
   const baseAttemptIds = new Set(base.attempts.map((attempt) => attempt.id))
   const remoteAttemptIds = new Set(remote.attempts.map((attempt) => attempt.id))

@@ -66,14 +66,7 @@ function createInitialState(): PracticeState {
 
 export function PracticeProvider({ children }: { children: ReactNode }) {
   const t = useT()
-  const {
-    activeList,
-    displayedQuestions,
-    data,
-    updateData,
-    resetHandlerRef,
-    query,
-  } = useAppData()
+  const { activeList, displayedQuestions, data, updateData, resetHandlerRef, query } = useAppData()
   const { showConfirm } = useDialog()
   const pushToast = usePushToast()
 
@@ -235,16 +228,13 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     [activeList.questions],
   )
 
-  const hasWrongListCandidates = useMemo(
-    () => {
-      const submittedCount = activeList.questions.filter((q) => q.id in state.results).length
-      if (submittedCount === 0) return false
-      return activeList.questions.some(
-        (q) => state.results[q.id] === false || !(q.id in state.results),
-      )
-    },
-    [activeList.questions, state.results],
-  )
+  const hasWrongListCandidates = useMemo(() => {
+    const submittedCount = activeList.questions.filter((q) => q.id in state.results).length
+    if (submittedCount === 0) return false
+    return activeList.questions.some(
+      (q) => state.results[q.id] === false || !(q.id in state.results),
+    )
+  }, [activeList.questions, state.results])
 
   const wrongListName = useCallback(() => {
     const suffix = t("wrongListSuffix", "").trim()

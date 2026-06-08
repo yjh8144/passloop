@@ -12,9 +12,7 @@ import {
 } from "lucide-react"
 import { useT, useNavigation } from "../../contexts"
 
-export function Sidebar(props: {
-  onOpenDebugDialog: () => void
-}) {
+export function Sidebar(props: { onOpenDebugDialog: () => void }) {
   const t = useT()
   const {
     page,

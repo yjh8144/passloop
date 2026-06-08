@@ -9,13 +9,7 @@ import { EmptyState } from "../ui/EmptyState"
 import { useEscapeKey } from "../../hooks/useEscapeKey"
 import { QuestionEditor } from "./QuestionEditor"
 import { SelfFillDialog } from "./SelfFillDialog"
-import {
-  useT,
-  usePushToast,
-  useLlmConfig,
-  useProxy,
-  useNavigation,
-} from "../../contexts"
+import { useT, usePushToast, useLlmConfig, useProxy, useNavigation } from "../../contexts"
 import { useDialog } from "../../contexts/DialogContext"
 import "../../styles/manager/manager.css"
 

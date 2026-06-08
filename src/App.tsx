@@ -115,9 +115,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
   return (
     <PracticeProvider>
       <div className={`app-shell ${desktopSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
-        <Sidebar
-          onOpenDebugDialog={() => setShowDebugDialog(true)}
-        />
+        <Sidebar onOpenDebugDialog={() => setShowDebugDialog(true)} />
 
         <main className="workspace">
           <TopbarConnected />
@@ -167,7 +165,10 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
         <ToastStack toasts={toasts} />
         {importDialog && (
           <Suspense fallback={null}>
-            <ImportExportDialogs initialDialog={importDialog} onDone={() => setImportDialog(null)} />
+            <ImportExportDialogs
+              initialDialog={importDialog}
+              onDone={() => setImportDialog(null)}
+            />
           </Suspense>
         )}
         <ResetConfirmConnected
