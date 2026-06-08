@@ -9,7 +9,13 @@ export type PushToast = (tone: Toast["tone"], message: string) => void
 export type ShowConfirm = (
   message: string,
   onConfirm: (dontAskAgain: boolean) => void,
-  options?: { dismissLabel?: string; tone?: "danger" | "normal" },
+  options?: {
+    dismissLabel?: string
+    tone?: "danger" | "normal"
+    onCancel?: () => void
+    cancelLabel?: string
+    confirmLabel?: string
+  },
 ) => void
 export type UpdateData = (recipe: (draft: AppData) => AppData) => void
 export type UpdateActiveList = (recipe: (list: QuestionList) => QuestionList) => void

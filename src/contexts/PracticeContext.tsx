@@ -43,6 +43,7 @@ interface PracticeContextValue {
 
   practiceWrongList: () => void
   exportWrongList: () => void
+  hasWrongListCandidates: boolean
 
   practiceQuestions: Question[]
   resetAll: () => void
@@ -52,6 +53,8 @@ const PracticeContext = createContext<PracticeContextValue | null>(null)
 
 const AUTO_NEXT_PAUSE_MS = 500
 const AUTO_NEXT_FAST_MS = 120
+
+type WrongListAction = "export" | "practice"
 
 function createInitialState(): PracticeState {
   return {
@@ -66,7 +69,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const {
     activeList,
     displayedQuestions,
-    wrongQuestions,
     data,
     updateData,
     resetHandlerRef,
@@ -220,6 +222,30 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   // --- Wrong question list actions ---
   const practiceQuestions = displayedQuestions
 
+  const wrongListCandidates = useCallback(
+    (includeUnsubmitted: boolean) => {
+      const wrongByResult = activeList.questions.filter(
+        (q) => stateRef.current.results[q.id] === false,
+      )
+      const unsubmitted = activeList.questions.filter((q) => !(q.id in stateRef.current.results))
+      if (!includeUnsubmitted) return wrongByResult
+      const seen = new Set(wrongByResult.map((q) => q.id))
+      return [...wrongByResult, ...unsubmitted.filter((q) => !seen.has(q.id))]
+    },
+    [activeList.questions],
+  )
+
+  const hasWrongListCandidates = useMemo(
+    () => {
+      const submittedCount = activeList.questions.filter((q) => q.id in state.results).length
+      if (submittedCount === 0) return false
+      return activeList.questions.some(
+        (q) => state.results[q.id] === false || !(q.id in state.results),
+      )
+    },
+    [activeList.questions, state.results],
+  )
+
   const wrongListName = useCallback(() => {
     const suffix = t("wrongListSuffix", "").trim()
     let name = activeList.name
@@ -229,53 +255,104 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     return t("wrongListSuffix", name)
   }, [activeList.name, t])
 
-  const exportWrongList = useCallback(() => {
-    if (!wrongQuestions.length) {
-      pushToast("info", t("noWrongQuestions"))
-      return
-    }
-    debugLog("Export wrong questions", { count: wrongQuestions.length, listName: activeList.name })
-    const list = normalizeImportedList(
-      {
+  const exportWrongQuestions = useCallback(
+    (questions: Question[]) => {
+      debugLog("Export wrong questions", { count: questions.length, listName: activeList.name })
+      const list = normalizeImportedList(
+        {
+          name: wrongListName(),
+          description: t("wrongListExportDesc"),
+          questions,
+        },
+        t,
+      )
+      downloadJson(`${list.name}.json`, list)
+    },
+    [activeList.name, t, wrongListName],
+  )
+
+  const createWrongPracticeList = useCallback(
+    (questions: Question[]) => {
+      debugLog("Create wrong practice list", { count: questions.length, listName: activeList.name })
+      const timestamp = new Date().toISOString()
+      const newList = {
+        id: createId(),
         name: wrongListName(),
-        description: t("wrongListExportDesc"),
-        questions: wrongQuestions,
-      },
-      t,
-    )
-    downloadJson(`${list.name}.json`, list)
-  }, [wrongQuestions, activeList.name, pushToast, t, wrongListName])
+        description: t("wrongListCreateDesc"),
+        questions: questions.map((q) => ({ ...q, id: createId() })),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+      updateData((current) => ({
+        ...current,
+        lists: [...current.lists, newList],
+        activeListId: newList.id,
+      }))
+      pushToast("success", t("wrongListCreated", newList.name, questions.length))
+    },
+    [activeList.name, pushToast, t, updateData, wrongListName],
+  )
+
+  const runWrongListAction = useCallback(
+    (action: WrongListAction, includeUnsubmitted: boolean) => {
+      const questions = wrongListCandidates(includeUnsubmitted)
+      if (!questions.length) {
+        pushToast("info", t("noWrongQuestions"))
+        return
+      }
+      if (action === "export") {
+        exportWrongQuestions(questions)
+      } else {
+        createWrongPracticeList(questions)
+      }
+    },
+    [createWrongPracticeList, exportWrongQuestions, pushToast, t, wrongListCandidates],
+  )
+
+  const resolveWrongListAction = useCallback(
+    (action: WrongListAction) => {
+      const submittedCount = activeList.questions.filter(
+        (q) => q.id in stateRef.current.results,
+      ).length
+      if (submittedCount === 0) {
+        pushToast("info", t("noWrongQuestions"))
+        return
+      }
+      const unsubmittedCount = activeList.questions.filter(
+        (q) => !(q.id in stateRef.current.results),
+      ).length
+      if (unsubmittedCount > 0) {
+        showConfirm(
+          t("confirmIncludeUnsubmittedWrong", unsubmittedCount),
+          () => runWrongListAction(action, true),
+          {
+            onCancel: () => runWrongListAction(action, false),
+            cancelLabel: t("wrongOnlySubmitted"),
+            confirmLabel: t("wrongIncludeUnsubmitted"),
+          },
+        )
+        return
+      }
+      runWrongListAction(action, false)
+    },
+    [activeList.questions, pushToast, runWrongListAction, showConfirm, t],
+  )
+
+  const exportWrongList = useCallback(() => {
+    resolveWrongListAction("export")
+  }, [resolveWrongListAction])
 
   const practiceWrongList = useCallback(() => {
-    if (!wrongQuestions.length) {
-      pushToast("info", t("noWrongQuestions"))
-      return
-    }
-    debugLog("Create wrong practice list", { count: wrongQuestions.length, listName: activeList.name })
-    const timestamp = new Date().toISOString()
-    const newList = {
-      id: createId(),
-      name: wrongListName(),
-      description: t("wrongListCreateDesc"),
-      questions: wrongQuestions.map((q) => ({ ...q, id: createId() })),
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    }
-    updateData((current) => ({
-      ...current,
-      lists: [...current.lists, newList],
-      activeListId: newList.id,
-    }))
-    pushToast("success", t("wrongListCreated", newList.name, wrongQuestions.length))
-  }, [wrongQuestions, activeList.name, pushToast, t, updateData, wrongListName])
+    resolveWrongListAction("practice")
+  }, [resolveWrongListAction])
 
   const confirmPracticeWrongList = useCallback(() => {
-    if (!wrongQuestions.length) {
+    if (!hasWrongListCandidates) {
       pushToast("info", t("noWrongQuestions"))
       return
     }
     showConfirm(t("confirmPracticeWrongList"), practiceWrongList)
-  }, [wrongQuestions.length, showConfirm, t, practiceWrongList, pushToast])
+  }, [hasWrongListCandidates, showConfirm, t, practiceWrongList, pushToast])
 
   // --- State setters (using dispatch to avoid stale closures) ---
   const setCurrentIndex: SetState<number> = useCallback((v) => {
@@ -478,6 +555,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       submitAll,
       practiceWrongList: confirmPracticeWrongList,
       exportWrongList,
+      hasWrongListCandidates,
       practiceQuestions,
       resetAll,
     }),
@@ -491,6 +569,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       submitAll,
       confirmPracticeWrongList,
       exportWrongList,
+      hasWrongListCandidates,
       practiceQuestions,
       resetAll,
     ],

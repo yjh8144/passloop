@@ -237,7 +237,7 @@ export const ja: Record<string, string> = {
   onboarding2: "問題インポート — 「問題をインポート」でJSON読み込み、または問題管理で手動追加。",
   onboarding3: "LLM解析 — 未整理テキストを貼り付け、LLMで標準形式に変換。",
   onboarding4: "練習 — 練習モードで回答。正答率・時間・間違いを記録。右上に設定ボタン。",
-  onboarding5: "誤答復習 — 完了後に誤答リストを作成して続けて練習できます。",
+  onboarding5: "誤答復習 — 練習中に誤答リストを作成またはエクスポートして復習できます。",
   onboardingTip:
     "ヒント：データはブラウザに保存されます。キャッシュ削除でデータ消失するため、定期的に設定エクスポートでバックアップを。",
   startUsing: "始める",
@@ -339,7 +339,7 @@ export const ja: Record<string, string> = {
   obPractice4:
     "サイドパネルに正答率、平均時間、進捗、誤答数を表示。ナビゲーショングリッドで回答状況を色分け表示。",
   obPractice5:
-    "全問回答後にまとめダイアログが表示され、全問やり直し、誤答練習、誤答エクスポートが選べます。",
+    "完了前でも誤答操作を使えます。未回答の問題は確認後に誤答として含められます。",
 
   obTitleSettings: "カスタマイズ",
   obSettings1:
@@ -640,6 +640,11 @@ export const ja: Record<string, string> = {
   noWrongQuestions: "このリストに不正解はありません。",
   confirmPracticeWrongList:
     "現在の誤答から新しいリストを作成し、すぐに切り替えて練習します。続行しますか？",
+  confirmIncludeUnsubmittedWrong:
+    "未回答の問題が {0} 問あります。未回答も不正解として含めますか？",
+  wrongOnlySubmitted: "回答済みの誤答のみ",
+  wrongIncludeUnsubmitted: "未回答を含める",
+  wrongActionsTitle: "誤答操作",
   wrongListSuffix: "{0} - 不正解",
   wrongListExportDesc: "PassLoopの回答履歴に基づいてエクスポートされた不正解リスト。",
   wrongListCreateDesc: "PassLoopの回答履歴に基づいて生成された不正解リスト。",

@@ -47,8 +47,7 @@ Plateforme locale et légère de quiz. Supporte l'import/export de questions, pl
 ### Gestion des erreurs
 
 - Collecte automatique des réponses incorrectes
-- Révision ciblée sur la page des erreurs
-- Export des erreurs comme liste indépendante
+- Créer ou exporter une liste d'erreurs pendant la pratique pour une révision ciblée
 - Chronomètre de session et statistiques en temps réel
 
 ### Statistiques

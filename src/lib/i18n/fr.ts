@@ -248,7 +248,7 @@ export const fr: Record<string, string> = {
   onboarding4:
     "Pratique — Répondez en mode pratique. Le système enregistre précision, temps et erreurs. Paramètres en haut à droite.",
   onboarding5:
-    "Révision des erreurs — Après avoir terminé, créez une liste d'erreurs pour continuer à pratiquer.",
+    "Révision des erreurs — Créez ou exportez une liste d'erreurs pendant la pratique pour continuer à réviser.",
   onboardingTip:
     "Astuce : Les données sont stockées localement. Vider le cache supprime les données. Exportez régulièrement la configuration.",
   startUsing: "Commencer",
@@ -362,7 +362,7 @@ export const fr: Record<string, string> = {
   obPractice4:
     "Le panneau latéral affiche la précision, le temps moyen, la progression et le nombre d'erreurs. La grille de navigation montre le statut par couleur.",
   obPractice5:
-    "Après avoir terminé, un résumé apparaît avec les options : tout refaire, pratiquer les erreurs ou les exporter.",
+    "Les actions sur les erreurs sont disponibles avant la fin ; les questions sans réponse peuvent être incluses après confirmation.",
 
   obTitleSettings: "Personnalisation",
   obSettings1:
@@ -676,6 +676,11 @@ export const fr: Record<string, string> = {
   noWrongQuestions: "Pas de questions erronées dans cette liste.",
   confirmPracticeWrongList:
     "Créer une nouvelle liste à partir des erreurs actuelles et y basculer pour pratiquer. Continuer ?",
+  confirmIncludeUnsubmittedWrong:
+    "{0} questions ne sont pas encore répondues. Les compter aussi comme erreurs ?",
+  wrongOnlySubmitted: "Seulement les erreurs répondues",
+  wrongIncludeUnsubmitted: "Inclure les non répondues",
+  wrongActionsTitle: "Actions sur les erreurs",
   wrongListSuffix: "{0} - Erreurs",
   wrongListExportDesc: "Questions erronées exportées depuis PassLoop basées sur l'historique.",
   wrongListCreateDesc: "Questions erronées générées depuis PassLoop basées sur l'historique.",

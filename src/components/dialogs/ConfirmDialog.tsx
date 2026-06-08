@@ -8,6 +8,9 @@ export type ConfirmDialogState = {
   onConfirm: (dontAskAgain: boolean) => void
   dismissLabel?: string
   tone?: "danger" | "normal"
+  onCancel?: () => void
+  cancelLabel?: string
+  confirmLabel?: string
 } | null
 
 export function ConfirmDialog({
@@ -47,7 +50,14 @@ export function ConfirmDialog({
           </label>
         )}
         <div className="modal-actions">
-          <button onClick={onClose}>{t("cancel")}</button>
+          <button
+            onClick={() => {
+              state.onCancel?.()
+              onClose()
+            }}
+          >
+            {state.cancelLabel ?? t("cancel")}
+          </button>
           <button
             className={state.tone === "danger" ? "danger-button" : "primary-button"}
             onClick={() => {
@@ -55,7 +65,7 @@ export function ConfirmDialog({
               onClose()
             }}
           >
-            {t("confirmAction")}
+            {state.confirmLabel ?? t("confirmAction")}
           </button>
         </div>
       </div>

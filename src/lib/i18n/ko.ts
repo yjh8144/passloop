@@ -237,7 +237,7 @@ export const ko: Record<string, string> = {
   onboarding2: '문제 가져오기 — "문제 가져오기"로 JSON 업로드 또는 문제 관리에서 수동 추가.',
   onboarding3: "LLM 분석 — 정리되지 않은 텍스트를 붙여넣고 LLM으로 표준 형식 변환.",
   onboarding4: "연습 — 연습 모드에서 답하기. 정답률/시간/오답 기록. 우측 상단에 설정 버튼.",
-  onboarding5: "오답 복습 — 완료 후 오답 목록을 만들어 계속 연습할 수 있습니다.",
+  onboarding5: "오답 복습 — 연습 중 오답 목록을 만들거나 내보내 계속 복습할 수 있습니다.",
   onboardingTip:
     "팁: 데이터는 로컬 저장됩니다. 브라우저 캐시 삭제 시 데이터 손실. 정기적으로 설정 내보내기로 백업하세요.",
   startUsing: "시작하기",
@@ -337,7 +337,7 @@ export const ko: Record<string, string> = {
   obPractice4:
     "사이드 패널에 정답률, 평균 시간, 진행률, 오답 수 표시. 내비게이션 그리드에서 답변 상태를 색상으로 확인.",
   obPractice5:
-    "모든 문제 완료 후 요약 대화상자 표시. 전체 다시 풀기, 오답 연습, 오답 내보내기를 선택할 수 있습니다.",
+    "완료 전에도 오답 작업을 사용할 수 있습니다. 미풀이 문제는 확인 후 오답으로 포함할 수 있습니다.",
 
   obTitleSettings: "개인화 설정",
   obSettings1:
@@ -637,6 +637,11 @@ export const ko: Record<string, string> = {
   noWrongQuestions: "현재 목록에 오답이 없습니다.",
   confirmPracticeWrongList:
     "현재 오답으로 새 목록을 만들고 바로 전환하여 연습합니다. 계속하시겠습니까?",
+  confirmIncludeUnsubmittedWrong:
+    "아직 풀지 않은 문제가 {0}개 있습니다. 미풀이 문제도 오답으로 포함할까요?",
+  wrongOnlySubmitted: "푼 오답만 포함",
+  wrongIncludeUnsubmitted: "미풀이 포함",
+  wrongActionsTitle: "오답 작업",
   wrongListSuffix: "{0} - 오답",
   wrongListExportDesc: "PassLoop 답변 기록 기반 오답 목록.",
   wrongListCreateDesc: "PassLoop 답변 기록 기반 생성된 오답 목록.",

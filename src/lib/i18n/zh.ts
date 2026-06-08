@@ -237,7 +237,7 @@ export const zh: Record<string, string> = {
   onboarding3: "LLM 解析 — 粘贴未整理的题目文本，配置 LLM 后一键转换为标准题库格式。",
   onboarding4:
     "刷题练习 — 在「刷题台」中答题，系统会记录正确率、用时和错题。右上角有设置按钮，可切换排序、模式等选项。",
-  onboarding5: "错题复习 — 练习完成后可生成错题题单继续练习。",
+  onboarding5: "错题复习 — 练习过程中可生成或导出错题题单继续练习。",
   onboardingTip:
     "提示：数据存储在浏览器本地，清除浏览器缓存会丢失数据。建议定期使用「导出配置」备份。",
   startUsing: "开始使用",
@@ -287,7 +287,8 @@ export const zh: Record<string, string> = {
     "右上角设置可切换：排序方式（原顺序/随机/按名称/按题型）、答后自动下一题、答案揭示时机等。",
   obPractice4:
     "侧边统计面板显示正确率、平均用时、进度和错题数量，快捷导航网格可按颜色查看作答状态。",
-  obPractice5: "全部作答完成后弹出统计弹窗，可选择重做全部、练习错题或导出错题。",
+  obPractice5:
+    "错题操作可在未完成时使用；若仍有未做题，会先询问是否将未做题也算作错题。",
 
   obTitleSettings: "个性化设置",
   obSettings1:
@@ -624,6 +625,10 @@ export const zh: Record<string, string> = {
   remoteInvalidResponse: "远程服务返回的数据格式不正确。",
   noWrongQuestions: "当前题单还没有错题。",
   confirmPracticeWrongList: "将根据当前错题生成一个新题单，并立即切换过去继续练习。是否继续？",
+  confirmIncludeUnsubmittedWrong: "当前还有 {0} 道题未做，是否将未做题也算作错题？",
+  wrongOnlySubmitted: "只包含已答错题",
+  wrongIncludeUnsubmitted: "包含未做题",
+  wrongActionsTitle: "错题操作",
   wrongListSuffix: "{0} - 错题",
   wrongListExportDesc: "由 PassLoop 根据答题记录导出的错题题单。",
   wrongListCreateDesc: "由 PassLoop 根据答题记录生成的错题题单。",

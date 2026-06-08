@@ -246,7 +246,8 @@ export const en: Record<string, string> = {
   onboarding3: "LLM Parser — Paste unformatted text and convert to standard format with LLM.",
   onboarding4:
     "Practice — Answer questions in Practice mode. The system records accuracy, time, and wrong answers. Settings are in the top-right corner.",
-  onboarding5: "Wrong review — After finishing, create a wrong-question list and keep practicing.",
+  onboarding5:
+    "Wrong review — Create or export a wrong-question list during practice and keep reviewing.",
   onboardingTip:
     "Tip: Data is stored locally. Clearing browser cache will lose data. Export config regularly as backup.",
   startUsing: "Get Started",
@@ -307,7 +308,7 @@ export const en: Record<string, string> = {
   obPractice4:
     "The side panel shows accuracy, average time, progress, and wrong count. The navigation grid shows answer status by color.",
   obPractice5:
-    "After completing all questions, a summary dialog appears with options to start over, practice wrong questions, or export them.",
+    "Wrong-question actions are available before completion; unanswered questions can be included after confirmation.",
 
   obTitleSettings: "Personalization",
   obSettings1:
@@ -659,6 +660,11 @@ export const en: Record<string, string> = {
   noWrongQuestions: "No wrong questions in this list.",
   confirmPracticeWrongList:
     "Create a new list from current wrong questions and switch to it for practice. Continue?",
+  confirmIncludeUnsubmittedWrong:
+    "{0} questions are still unanswered. Count unanswered questions as wrong too?",
+  wrongOnlySubmitted: "Only answered wrong",
+  wrongIncludeUnsubmitted: "Include unanswered",
+  wrongActionsTitle: "Wrong question actions",
   wrongListSuffix: "{0} - Wrong",
   wrongListExportDesc: "Wrong questions exported from PassLoop based on attempt history.",
   wrongListCreateDesc: "Wrong questions generated from PassLoop based on attempt history.",

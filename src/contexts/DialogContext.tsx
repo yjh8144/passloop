@@ -27,6 +27,9 @@ export function DialogProvider({ children }: { children: ReactNode }) {
       onConfirm,
       dismissLabel: options?.dismissLabel,
       tone: options?.tone,
+      onCancel: options?.onCancel,
+      cancelLabel: options?.cancelLabel,
+      confirmLabel: options?.confirmLabel,
     })
   }, [])
 

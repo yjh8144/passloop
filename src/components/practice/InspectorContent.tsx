@@ -21,6 +21,7 @@ export interface InspectorContentProps {
   onClearListAttempts: () => void
   onPracticeWrong: () => void
   onExportWrong: () => void
+  hasWrongListCandidates: boolean
   onPaperJump?: (index: number) => void
 }
 
@@ -50,6 +51,19 @@ export function InspectorContent(props: InspectorContentProps) {
             <button className="btn-danger" onClick={props.onClearListAttempts}>
               <Undo2 size={16} /> {t("redoAll")}
             </button>
+            <button onClick={props.onPracticeWrong}>
+              <Shuffle size={16} /> {t("practiceWrongBtn")}
+            </button>
+            <button onClick={props.onExportWrong}>
+              <Download size={16} /> {t("exportWrongBtn")}
+            </button>
+          </div>
+        </section>
+      )}
+      {!props.allSubmitted && props.hasWrongListCandidates && (
+        <section className="inspector-panel">
+          <h3>{t("wrongActionsTitle")}</h3>
+          <div className="completion-buttons">
             <button onClick={props.onPracticeWrong}>
               <Shuffle size={16} /> {t("practiceWrongBtn")}
             </button>

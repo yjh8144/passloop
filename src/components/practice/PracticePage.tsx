@@ -25,6 +25,7 @@ export function PracticePage() {
     submitAll,
     practiceWrongList,
     exportWrongList,
+    hasWrongListCandidates,
     startedAtRef,
   } = usePracticeContext()
 
@@ -305,6 +306,7 @@ export function PracticePage() {
             onClearListAttempts={clearActiveListAttempts}
             onPracticeWrong={practiceWrongList}
             onExportWrong={exportWrongList}
+            hasWrongListCandidates={hasWrongListCandidates}
             onPaperJump={jumpToPaperIndex}
           />
         </aside>
@@ -339,6 +341,7 @@ export function PracticePage() {
             onClearListAttempts={clearActiveListAttempts}
             onPracticeWrong={practiceWrongList}
             onExportWrong={exportWrongList}
+            hasWrongListCandidates={hasWrongListCandidates}
             onPaperJump={(idx) => {
               jumpToPaperIndex(idx)
               setInspectorFloatOpen(false)
