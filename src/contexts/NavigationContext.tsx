@@ -20,10 +20,17 @@ interface NavigationContextValue {
 
 const NavigationContext = createContext<NavigationContextValue | null>(null)
 
+const pages: Page[] = ["practice", "manager", "llm", "settings"]
+
+function loadValidPage(): Page {
+  const saved = loadSessionPage()
+  return pages.includes(saved as Page) ? (saved as Page) : "practice"
+}
+
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const t = useT()
   const { showConfirm } = useDialog()
-  const [page, setPage] = useState<Page>(() => (loadSessionPage() as Page) || "practice")
+  const [page, setPage] = useState<Page>(() => loadValidPage())
   const [mobileSidebarCollapsed, setMobileSidebarCollapsed] = useState(false)
   const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(false)
   const llmUnsavedRef = useRef(false)

@@ -3,7 +3,7 @@ export const ko: Record<string, string> = {
   dashboard: "연습",
   manager: "문제 관리",
   llm: "LLM 분석",
-  wrong: "오답 세트",
+  settings: "설정",
 
   // Sidebar actions
   addList: "새 목록",
@@ -237,7 +237,7 @@ export const ko: Record<string, string> = {
   onboarding2: '문제 가져오기 — "문제 가져오기"로 JSON 업로드 또는 문제 관리에서 수동 추가.',
   onboarding3: "LLM 분석 — 정리되지 않은 텍스트를 붙여넣고 LLM으로 표준 형식 변환.",
   onboarding4: "연습 — 연습 모드에서 답하기. 정답률/시간/오답 기록. 우측 상단에 설정 버튼.",
-  onboarding5: "오답 세트 — 틀린 문제를 집중 연습.",
+  onboarding5: "오답 복습 — 완료 후 오답 목록을 만들어 계속 연습할 수 있습니다.",
   onboardingTip:
     "팁: 데이터는 로컬 저장됩니다. 브라우저 캐시 삭제 시 데이터 손실. 정기적으로 설정 내보내기로 백업하세요.",
   startUsing: "시작하기",
@@ -337,13 +337,7 @@ export const ko: Record<string, string> = {
   obPractice4:
     "사이드 패널에 정답률, 평균 시간, 진행률, 오답 수 표시. 내비게이션 그리드에서 답변 상태를 색상으로 확인.",
   obPractice5:
-    "모든 문제 완료 후 요약 대화상자 표시. 전체 다시 풀기, 오답 다시 풀기, 오답을 새 목록으로 내보내기 선택 가능.",
-
-  obTitleWrong: "오답 복습",
-  obWrong1: '"오답 세트"를 클릭하여 틀린 문제의 집중 연습에 들어갑니다.',
-  obWrong2: "연습 후 오답을 독립 목록으로 내보내어 반복 복습할 수 있습니다.",
-  obWrong3:
-    "오답 페이지에는 독자적인 세션 타이머와 정답률 통계가 있어 약점 개선을 추적할 수 있습니다.",
+    "모든 문제 완료 후 요약 대화상자 표시. 전체 다시 풀기, 오답 연습, 오답 내보내기를 선택할 수 있습니다.",
 
   obTitleSettings: "개인화 설정",
   obSettings1: "상단 바에서 테마 전환(7종: Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
@@ -545,7 +539,6 @@ export const ko: Record<string, string> = {
 
   // Practice Page
   practiceTitle: "연습",
-  wrongPracticeTitle: "오답 연습",
   practiceMemorizeHint: "암기 모드는 답과 해설을 바로 표시합니다.",
   practicePracticeHint: "제출 후 정답률, 오답, 평균 시간을 기록합니다.",
   showInspector: "사이드바 표시",
@@ -553,9 +546,8 @@ export const ko: Record<string, string> = {
   allComplete: "전체 완료",
   completionSummary: "총 {0}문제, 정답 {1}문제, 오답 {2}문제",
   redoAll: "처음부터 다시",
-  redoWrongBtn: "오답 다시 풀기",
+  practiceWrongBtn: "오답 연습",
   exportWrongBtn: "오답 내보내기",
-  createWrongList: "오답 목록 만들기",
   submitAllAnswers: "전체 제출",
   noQuestionsTitle: "문제 없음",
   noQuestionsDesc: "JSON 파일을 가져오거나 문제 관리에서 추가하세요.",
@@ -568,6 +560,11 @@ export const ko: Record<string, string> = {
 
   // Topbar
   practiceSettingsTitle: "연습 설정",
+  settingsTitle: "설정",
+  settingsDesc: "연습 환경, 외관, AI/네트워크, 백업을 관리합니다.",
+  appearanceSettings: "외관",
+  aiNetworkSettings: "AI 및 네트워크",
+  dataSettings: "데이터 및 백업",
   questionsUnit: "문제",
 
   // Sidebar
@@ -637,8 +634,8 @@ export const ko: Record<string, string> = {
   remoteRequestFailed: "원격 백업 요청에 실패했습니다.",
   remoteInvalidResponse: "원격 서버 응답 형식이 올바르지 않습니다.",
   noWrongQuestions: "현재 목록에 오답이 없습니다.",
-  confirmRedoWrong:
-    "오답 다시 풀기를 하면 해당 문제의 현재 답변 기록이 초기화됩니다. 계속하시겠습니까?",
+  confirmPracticeWrongList:
+    "현재 오답으로 새 목록을 만들고 바로 전환하여 연습합니다. 계속하시겠습니까?",
   wrongListSuffix: "{0} - 오답",
   wrongListExportDesc: "PassLoop 답변 기록 기반 오답 목록.",
   wrongListCreateDesc: "PassLoop 답변 기록 기반 생성된 오답 목록.",

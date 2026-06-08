@@ -1,4 +1,4 @@
-import { Download, Plus, Shuffle, Undo2, X } from "lucide-react"
+import { Download, Shuffle, Undo2, X } from "lucide-react"
 import type { Question } from "../../lib/types"
 import type { ResultMap } from "../../hooks/types"
 import { useT } from "../../contexts"
@@ -11,9 +11,8 @@ interface CompletionDialogProps {
   questions: Question[]
   results: ResultMap
   onClearListAttempts: () => void
-  onRedoWrong: () => void
+  onPracticeWrong: () => void
   onExportWrong: () => void
-  onCreateWrongList: () => void
 }
 
 export function CompletionDialog(props: CompletionDialogProps) {
@@ -73,10 +72,10 @@ export function CompletionDialog(props: CompletionDialogProps) {
             onClick={() => {
               debugLog("[CompletionDialog] action: redoWrong")
               props.onClose()
-              props.onRedoWrong()
+              props.onPracticeWrong()
             }}
           >
-            <Shuffle size={16} /> {t("redoWrongBtn")}
+            <Shuffle size={16} /> {t("practiceWrongBtn")}
           </button>
           <button
             onClick={() => {
@@ -86,15 +85,6 @@ export function CompletionDialog(props: CompletionDialogProps) {
             }}
           >
             <Download size={16} /> {t("exportWrongBtn")}
-          </button>
-          <button
-            onClick={() => {
-              debugLog("[CompletionDialog] action: createWrongList")
-              props.onClose()
-              props.onCreateWrongList()
-            }}
-          >
-            <Plus size={16} /> {t("createWrongList")}
           </button>
         </div>
       </div>

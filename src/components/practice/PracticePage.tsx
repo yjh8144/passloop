@@ -5,7 +5,7 @@ import { Navigator } from "./Navigator"
 import { QuestionCard } from "./QuestionCard"
 import { InspectorContent } from "./InspectorContent"
 import { CompletionDialog } from "./CompletionDialog"
-import { useT, usePracticeContext, useAppData, useNavigation } from "../../contexts"
+import { useT, usePracticeContext, useAppData } from "../../contexts"
 import { loadPosition } from "../../utils/session"
 import { debugLog } from "../../lib/debug"
 
@@ -13,7 +13,6 @@ const PAPER_SCROLL_LOCK_MS = 650
 
 export function PracticePage() {
   const t = useT()
-  const { page } = useNavigation()
   const { data, stats, clearActiveListAttempts, activeList } = useAppData()
   const {
     practiceQuestions: questions,
@@ -24,15 +23,12 @@ export function PracticePage() {
     results,
     submitQuestion,
     submitAll,
-    wrongSession: rawWrongSession,
-    resetWrongPractice,
+    practiceWrongList,
     exportWrongList,
-    createWrongList,
     startedAtRef,
   } = usePracticeContext()
 
   const settings = data.settings
-  const wrongSession = page === "wrong" ? rawWrongSession : null
 
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false)
   const [inspectorFloatOpen, setInspectorFloatOpen] = useState(false)
@@ -147,7 +143,6 @@ export function PracticePage() {
   // scroll stack and nothing scrolls to it; the observer would also clobber it back to 0.
   useEffect(() => {
     if (settings.viewMode !== "paper" || !questions.length) return
-    if (page === "wrong") return
     if (initialScrollDoneRef.current === activeList.id) return
     initialScrollDoneRef.current = activeList.id
     const target = Math.min(loadPosition(activeList.id), questions.length - 1)
@@ -164,7 +159,7 @@ export function PracticePage() {
         })
       })
     })
-  }, [settings.viewMode, questions.length, activeList.id, page, setCurrentIndex])
+  }, [settings.viewMode, questions.length, activeList.id, setCurrentIndex])
 
   const content =
     questions.length === 0 ? (
@@ -228,7 +223,7 @@ export function PracticePage() {
       <section className="question-stage">
         <div className="stage-header">
           <div>
-            <h1>{page === "wrong" ? t("wrongPracticeTitle") : t("practiceTitle")}</h1>
+            <h1>{t("practiceTitle")}</h1>
             <p>{settings.practiceMode === "memorize" ? t("memorizeHint") : t("practiceHint")}</p>
           </div>
           <div className="stage-tools">
@@ -303,16 +298,13 @@ export function PracticePage() {
             results={results}
             stats={stats}
             settings={settings}
-            mode={page}
-            wrongSession={wrongSession}
             allSubmitted={allSubmitted}
             correctCount={correctCount}
             wrongCount={wrongCount}
             navigatorClassName="desktop-navigator"
             onClearListAttempts={clearActiveListAttempts}
-            onRedoWrong={resetWrongPractice}
+            onPracticeWrong={practiceWrongList}
             onExportWrong={exportWrongList}
-            onCreateWrongList={createWrongList}
             onPaperJump={jumpToPaperIndex}
           />
         </aside>
@@ -341,15 +333,12 @@ export function PracticePage() {
             results={results}
             stats={stats}
             settings={settings}
-            mode={page}
-            wrongSession={wrongSession}
             allSubmitted={allSubmitted}
             correctCount={correctCount}
             wrongCount={wrongCount}
             onClearListAttempts={clearActiveListAttempts}
-            onRedoWrong={resetWrongPractice}
+            onPracticeWrong={practiceWrongList}
             onExportWrong={exportWrongList}
-            onCreateWrongList={createWrongList}
             onPaperJump={(idx) => {
               jumpToPaperIndex(idx)
               setInspectorFloatOpen(false)
@@ -364,9 +353,8 @@ export function PracticePage() {
         questions={questions}
         results={results}
         onClearListAttempts={clearActiveListAttempts}
-        onRedoWrong={resetWrongPractice}
+        onPracticeWrong={practiceWrongList}
         onExportWrong={exportWrongList}
-        onCreateWrongList={createWrongList}
       />
     </div>
   )

@@ -9,22 +9,20 @@ import {
 } from "react"
 import type { MutableRefObject, ReactNode } from "react"
 import { useAppData } from "./AppDataContext"
-import { useNavigation } from "./NavigationContext"
 import { useDialog } from "./DialogContext"
 import { usePushToast } from "./ToastContext"
 import { useT } from "./I18nContext"
 import { practiceReducer } from "../hooks/practiceReducer"
-import type { PracticeState, WrongSession } from "../hooks/practiceReducer"
+import type { PracticeState } from "../hooks/practiceReducer"
 import { useSessionPersistence } from "../hooks/useSessionPersistence"
-import { useWrongPractice } from "../hooks/useWrongPractice"
 import { evaluateQuestion, hasUnsubmittedProgress } from "../utils/evaluate"
-import { createId } from "../lib/question"
+import { createId, normalizeImportedList } from "../lib/question"
+import { downloadJson } from "../lib/storage"
 import { debugLog } from "../lib/debug"
 import { elapsedSince } from "../utils/time"
 import {
   loadSessionAnswers,
   loadPosition,
-  loadWrongSession,
   clearPosition,
   savePosition,
   loadSuppressEmptyConfirm,
@@ -43,11 +41,8 @@ interface PracticeContextValue {
   submitQuestion: (question: Question, overrideAnswer?: string | string[]) => void
   submitAll: () => void
 
-  wrongSession: WrongSession | null
-  startWrongPractice: () => boolean
-  resetWrongPractice: () => void
+  practiceWrongList: () => void
   exportWrongList: () => void
-  createWrongList: () => void
 
   practiceQuestions: Question[]
   resetAll: () => void
@@ -63,13 +58,11 @@ function createInitialState(): PracticeState {
     answers: loadSessionAnswers(),
     results: {},
     currentIndex: 0,
-    wrongSession: loadWrongSession(),
   }
 }
 
 export function PracticeProvider({ children }: { children: ReactNode }) {
   const t = useT()
-  const { page, setPage } = useNavigation()
   const {
     activeList,
     displayedQuestions,
@@ -101,21 +94,16 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   useEffect(() => clearAutoNextTimer, [clearAutoNextTimer])
 
   // --- Persistence ---
-  useSessionPersistence(state.answers, state.currentIndex, state.wrongSession)
+  useSessionPersistence(state.answers, state.currentIndex)
 
-  // --- Save position to localStorage (skip initial 0 before restore, skip in wrong mode) ---
+  // --- Save position to localStorage (skip initial 0 before restore) ---
   useEffect(() => {
-    if (
-      positionRestoredRef.current &&
-      positionRestoredForListRef.current === activeList.id &&
-      page !== "wrong"
-    ) {
+    if (positionRestoredRef.current && positionRestoredForListRef.current === activeList.id) {
       savePosition(activeList.id, state.currentIndex)
     }
-  }, [state.currentIndex, activeList.id, page])
+  }, [state.currentIndex, activeList.id])
 
   // --- Restore results from localStorage attempts to prevent duplicate submissions ---
-  // Skip questions that are in the current wrong practice session (they should be re-answerable)
   // On list switch, reset state first, then restore from attempts in the same effect so the
   // reset doesn't wipe out the restored values (dispatch order is reduce order).
   const prevListIdRef = useRef(activeList.id)
@@ -132,15 +120,10 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     const derived: Record<string, boolean> = {}
     const derivedAnswers: AnswerMap = {}
     const latestAt: Record<string, string> = {}
-    const wrongIds = state.wrongSession ? new Set<string>() : null
-    if (wrongIds && page === "wrong") {
-      for (const q of wrongQuestions) wrongIds.add(q.id)
-    }
     // Restore the latest attempt per question by submission time, not array order,
     // so merged/imported attempts (appended out of order) restore correctly.
     for (const attempt of data.attempts) {
       if (attempt.listId !== activeList.id) continue
-      if (wrongIds && wrongIds.has(attempt.questionId)) continue
       const prevAt = latestAt[attempt.questionId]
       if (prevAt === undefined || attempt.submittedAt >= prevAt) {
         latestAt[attempt.questionId] = attempt.submittedAt
@@ -216,11 +199,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, [displayedQuestions, activeList.id])
 
   // --- Register reset handler for AppDataContext ---
-  const pageRef = useRef(page)
-  useEffect(() => {
-    pageRef.current = page
-  })
-
   const handleListReset = useCallback(
     (mode: "full" | "selective", questionIds: string[]) => {
       clearAutoNextTimer()
@@ -231,73 +209,73 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       } else {
         dispatch({ type: "LIST_RESET_SELECTIVE", questionIds })
         for (const id of questionIds) delete startedAtRef.current[id]
-        if (pageRef.current === "wrong") setPage("practice")
       }
     },
-    [setPage, activeList.id, clearAutoNextTimer],
+    [activeList.id, clearAutoNextTimer],
   )
   useEffect(() => {
     resetHandlerRef.current = handleListReset
   })
 
-  // --- Wrong practice ---
-  const practiceQuestions = page === "wrong" ? wrongQuestions : displayedQuestions
+  // --- Wrong question list actions ---
+  const practiceQuestions = displayedQuestions
 
-  const { startWrongPractice, resetWrongPractice, exportWrongList, createWrongList } =
-    useWrongPractice({
-      dispatch,
-      wrongQuestions,
-      wrongSession: state.wrongSession,
-      page,
-      setPage,
-      activeList,
-      updateData,
-      pushToast,
-      startedAtRef,
-      t,
-      showConfirm,
-    })
+  const wrongListName = useCallback(() => {
+    const suffix = t("wrongListSuffix", "").trim()
+    let name = activeList.name
+    while (suffix && name.endsWith(suffix)) {
+      name = name.slice(0, -suffix.length).trim()
+    }
+    return t("wrongListSuffix", name)
+  }, [activeList.name, t])
 
-  const confirmStartWrongPractice = useCallback((): boolean => {
+  const exportWrongList = useCallback(() => {
     if (!wrongQuestions.length) {
       pushToast("info", t("noWrongQuestions"))
-      return false
-    }
-    showConfirm(t("confirmRedoWrong"), () => startWrongPractice())
-    return true
-  }, [wrongQuestions.length, showConfirm, t, startWrongPractice, pushToast])
-
-  const confirmResetWrongPractice = useCallback(() => {
-    if (!wrongQuestions.length) {
-      resetWrongPractice()
       return
     }
-    showConfirm(t("confirmRedoWrong"), resetWrongPractice)
-  }, [wrongQuestions.length, showConfirm, t, resetWrongPractice])
+    debugLog("Export wrong questions", { count: wrongQuestions.length, listName: activeList.name })
+    const list = normalizeImportedList(
+      {
+        name: wrongListName(),
+        description: t("wrongListExportDesc"),
+        questions: wrongQuestions,
+      },
+      t,
+    )
+    downloadJson(`${list.name}.json`, list)
+  }, [wrongQuestions, activeList.name, pushToast, t, wrongListName])
 
-  // When page transitions to "wrong" via NavigationContext, initialize wrong practice
-  // if not already active. If start fails (no wrong questions), revert to practice.
-  useEffect(() => {
-    if (page === "wrong" && !state.wrongSession) {
-      if (!wrongQuestions.length) {
-        pushToast("info", t("noWrongQuestions"))
-        setPage("practice")
-        return
-      }
-      const questionIds = wrongQuestions.map((q) => q.id)
-      debugLog("Wrong practice started (nav)", {
-        questionCount: wrongQuestions.length,
-        listId: activeList.id,
-      })
-      dispatch({
-        type: "START_WRONG_PRACTICE",
-        sessionId: createId(),
-        startedAt: Date.now(),
-        questionIds,
-      })
-      for (const id of questionIds) delete startedAtRef.current[id]
+  const practiceWrongList = useCallback(() => {
+    if (!wrongQuestions.length) {
+      pushToast("info", t("noWrongQuestions"))
+      return
     }
-  }, [page, state.wrongSession, wrongQuestions, activeList.id, pushToast, t, setPage])
+    debugLog("Create wrong practice list", { count: wrongQuestions.length, listName: activeList.name })
+    const timestamp = new Date().toISOString()
+    const newList = {
+      id: createId(),
+      name: wrongListName(),
+      description: t("wrongListCreateDesc"),
+      questions: wrongQuestions.map((q) => ({ ...q, id: createId() })),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+    updateData((current) => ({
+      ...current,
+      lists: [...current.lists, newList],
+      activeListId: newList.id,
+    }))
+    pushToast("success", t("wrongListCreated", newList.name, wrongQuestions.length))
+  }, [wrongQuestions, activeList.name, pushToast, t, updateData, wrongListName])
+
+  const confirmPracticeWrongList = useCallback(() => {
+    if (!wrongQuestions.length) {
+      pushToast("info", t("noWrongQuestions"))
+      return
+    }
+    showConfirm(t("confirmPracticeWrongList"), practiceWrongList)
+  }, [wrongQuestions.length, showConfirm, t, practiceWrongList, pushToast])
 
   // --- State setters (using dispatch to avoid stale closures) ---
   const setCurrentIndex: SetState<number> = useCallback((v) => {
@@ -341,7 +319,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
             : { ...stateRef.current.answers, [question.id]: overrideAnswer }
         const startedAt = startedAtRef.current[question.id] ?? Date.now()
         const correct = evaluateQuestion(question, answers)
-        const inWrongMode = page === "wrong"
         debugLog("Question submitted", {
           questionId: question.id,
           title: question.title,
@@ -349,7 +326,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           elapsedMs: elapsedSince(startedAt),
           answer: answers[question.id],
         })
-        dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct, inWrongMode })
+        dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct })
         updateData((current) => ({
           ...current,
           attempts: [
@@ -413,7 +390,6 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     },
     [
       practiceQuestions,
-      page,
       activeList.id,
       data.settings,
       pushToast,
@@ -454,13 +430,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           submittedAt: new Date().toISOString(),
         })
       }
-      const inWrongMode = page === "wrong"
       dispatch({
         type: "SUBMIT_ALL",
         results: newResults,
-        submittedCount: unsubmitted.length,
-        correctCount,
-        inWrongMode,
       })
       updateData((current) => ({
         ...current,
@@ -485,7 +457,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     } else {
       doSubmitAll()
     }
-  }, [practiceQuestions, page, activeList.id, pushToast, showConfirm, t, updateData, isAnswerEmpty])
+  }, [practiceQuestions, activeList.id, pushToast, showConfirm, t, updateData, isAnswerEmpty])
 
   const resetAll = useCallback(() => {
     clearAutoNextTimer()
@@ -504,11 +476,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       startedAtRef,
       submitQuestion,
       submitAll,
-      wrongSession: state.wrongSession,
-      startWrongPractice: confirmStartWrongPractice,
-      resetWrongPractice: confirmResetWrongPractice,
+      practiceWrongList: confirmPracticeWrongList,
       exportWrongList,
-      createWrongList,
       practiceQuestions,
       resetAll,
     }),
@@ -520,11 +489,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       setCurrentIndex,
       submitQuestion,
       submitAll,
-      state.wrongSession,
-      confirmStartWrongPractice,
-      confirmResetWrongPractice,
+      confirmPracticeWrongList,
       exportWrongList,
-      createWrongList,
       practiceQuestions,
       resetAll,
     ],

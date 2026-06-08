@@ -3,7 +3,7 @@ export const ja: Record<string, string> = {
   dashboard: "練習",
   manager: "問題管理",
   llm: "LLM 解析",
-  wrong: "間違いセット",
+  settings: "設定",
 
   // Sidebar actions
   addList: "新規リスト",
@@ -237,7 +237,7 @@ export const ja: Record<string, string> = {
   onboarding2: "問題インポート — 「問題をインポート」でJSON読み込み、または問題管理で手動追加。",
   onboarding3: "LLM解析 — 未整理テキストを貼り付け、LLMで標準形式に変換。",
   onboarding4: "練習 — 練習モードで回答。正答率・時間・間違いを記録。右上に設定ボタン。",
-  onboarding5: "間違いセット — 間違えた問題を集中練習。",
+  onboarding5: "誤答復習 — 完了後に誤答リストを作成して続けて練習できます。",
   onboardingTip:
     "ヒント：データはブラウザに保存されます。キャッシュ削除でデータ消失するため、定期的に設定エクスポートでバックアップを。",
   startUsing: "始める",
@@ -339,12 +339,7 @@ export const ja: Record<string, string> = {
   obPractice4:
     "サイドパネルに正答率、平均時間、進捗、誤答数を表示。ナビゲーショングリッドで回答状況を色分け表示。",
   obPractice5:
-    "全問回答後にまとめダイアログが表示され、全問やり直し、誤答やり直し、誤答を新リストとしてエクスポートが選べます。",
-
-  obTitleWrong: "誤答復習",
-  obWrong1: "「誤答セット」をクリックして、間違えた問題の集中練習に入ります。",
-  obWrong2: "練習後、誤答を独立したリストとしてエクスポートし、繰り返し復習できます。",
-  obWrong3: "誤答ページには独自のセッションタイマーと正答率統計があり、弱点の改善を追跡できます。",
+    "全問回答後にまとめダイアログが表示され、全問やり直し、誤答練習、誤答エクスポートが選べます。",
 
   obTitleSettings: "カスタマイズ",
   obSettings1:
@@ -548,7 +543,6 @@ export const ja: Record<string, string> = {
 
   // Practice Page
   practiceTitle: "練習",
-  wrongPracticeTitle: "誤答復習",
   practiceMemorizeHint: "暗記モードは解答と解説を直接表示します。",
   practicePracticeHint: "提出後に正答率、誤答、平均時間を記録。",
   showInspector: "サイドバー表示",
@@ -556,9 +550,8 @@ export const ja: Record<string, string> = {
   allComplete: "全問完了",
   completionSummary: "全 {0} 問、正解 {1} 問、不正解 {2} 問",
   redoAll: "最初からやり直す",
-  redoWrongBtn: "誤答をやり直す",
+  practiceWrongBtn: "誤答を練習",
   exportWrongBtn: "誤答をエクスポート",
-  createWrongList: "誤答リスト作成",
   submitAllAnswers: "全回答を提出",
   noQuestionsTitle: "問題なし",
   noQuestionsDesc: "JSON ファイルをインポートするか、問題管理で追加してください。",
@@ -571,6 +564,11 @@ export const ja: Record<string, string> = {
 
   // Topbar
   practiceSettingsTitle: "練習設定",
+  settingsTitle: "設定",
+  settingsDesc: "練習設定、外観、AI/ネットワーク、バックアップを管理します。",
+  appearanceSettings: "外観",
+  aiNetworkSettings: "AI とネットワーク",
+  dataSettings: "データとバックアップ",
   questionsUnit: "問",
 
   // Sidebar
@@ -640,8 +638,8 @@ export const ja: Record<string, string> = {
   remoteRequestFailed: "リモートバックアップ要求に失敗しました。",
   remoteInvalidResponse: "リモートサーバーの応答形式が正しくありません。",
   noWrongQuestions: "このリストに不正解はありません。",
-  confirmRedoWrong:
-    "不正解の再挑戦を行うと、これらの問題の現在の回答記録がクリアされます。続行しますか？",
+  confirmPracticeWrongList:
+    "現在の誤答から新しいリストを作成し、すぐに切り替えて練習します。続行しますか？",
   wrongListSuffix: "{0} - 不正解",
   wrongListExportDesc: "PassLoopの回答履歴に基づいてエクスポートされた不正解リスト。",
   wrongListCreateDesc: "PassLoopの回答履歴に基づいて生成された不正解リスト。",

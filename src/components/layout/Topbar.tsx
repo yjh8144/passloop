@@ -27,8 +27,8 @@ export function Topbar(props: {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const overlayInputRef = useRef<HTMLInputElement>(null)
   const localQueryRef = useRef(localQuery)
-  const showSearch = props.page === "practice" || props.page === "wrong"
-  const showSettingsButton = props.page === "practice" || props.page === "wrong"
+  const showSearch = props.page === "practice"
+  const showSettingsButton = props.page === "practice"
 
   useEffect(() => {
     localQueryRef.current = localQuery

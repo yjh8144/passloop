@@ -3,7 +3,7 @@ export const zh: Record<string, string> = {
   dashboard: "刷题台",
   manager: "题库管理",
   llm: "LLM 解析",
-  wrong: "错题临时页",
+  settings: "设置",
 
   // Sidebar actions
   addList: "新建题单",
@@ -237,7 +237,7 @@ export const zh: Record<string, string> = {
   onboarding3: "LLM 解析 — 粘贴未整理的题目文本，配置 LLM 后一键转换为标准题库格式。",
   onboarding4:
     "刷题练习 — 在「刷题台」中答题，系统会记录正确率、用时和错题。右上角有设置按钮，可切换排序、模式等选项。",
-  onboarding5: "错题重练 — 点击「错题临时页」可集中练习做错的题目。",
+  onboarding5: "错题复习 — 练习完成后可生成错题题单继续练习。",
   onboardingTip:
     "提示：数据存储在浏览器本地，清除浏览器缓存会丢失数据。建议定期使用「导出配置」备份。",
   startUsing: "开始使用",
@@ -287,12 +287,7 @@ export const zh: Record<string, string> = {
     "右上角设置可切换：排序方式（原顺序/随机/按名称/按题型）、答后自动下一题、答案揭示时机等。",
   obPractice4:
     "侧边统计面板显示正确率、平均用时、进度和错题数量，快捷导航网格可按颜色查看作答状态。",
-  obPractice5: "全部作答完成后弹出统计弹窗，可选择重做全部、重做错题或将错题导出为新题单。",
-
-  obTitleWrong: "错题重练",
-  obWrong1: "点击「错题临时页」进入错题集中练习，自动收集当前题单做错的题目。",
-  obWrong2: "练习结束后可将错题导出为独立题单，方便后续反复练习。",
-  obWrong3: "错题页有独立的会话计时和正确率统计，帮助跟踪薄弱环节的进步。",
+  obPractice5: "全部作答完成后弹出统计弹窗，可选择重做全部、练习错题或导出错题。",
 
   obTitleSettings: "个性化设置",
   obSettings1: "顶栏提供主题切换（7 种主题：Mint、Paper、Lavender、Ocean、Rose、Night、Nord）。",
@@ -534,7 +529,6 @@ export const zh: Record<string, string> = {
 
   // Practice Page
   practiceTitle: "刷题台",
-  wrongPracticeTitle: "错题重练",
   practiceMemorizeHint: "背题模式会直接展示答案和解析。",
   practicePracticeHint: "提交后会记录正确率、错题和平均用时。",
   showInspector: "显示侧栏",
@@ -542,9 +536,8 @@ export const zh: Record<string, string> = {
   allComplete: "全部完成",
   completionSummary: "共 {0} 题，正确 {1} 题，错误 {2} 题",
   redoAll: "重新刷题",
-  redoWrongBtn: "重做错题",
+  practiceWrongBtn: "练习错题",
   exportWrongBtn: "导出错题",
-  createWrongList: "错题生成题单",
   submitAllAnswers: "提交全部答案",
   noQuestionsTitle: "暂无题目",
   noQuestionsDesc: "请先导入题库 JSON，或在题库管理中新增题目。",
@@ -557,6 +550,11 @@ export const zh: Record<string, string> = {
 
   // Topbar
   practiceSettingsTitle: "刷题设置",
+  settingsTitle: "设置",
+  settingsDesc: "管理练习偏好、外观、AI 网络和数据备份。",
+  appearanceSettings: "外观",
+  aiNetworkSettings: "AI 与网络",
+  dataSettings: "数据与备份",
   questionsUnit: "题",
 
   // Sidebar
@@ -624,7 +622,7 @@ export const zh: Record<string, string> = {
   remoteRequestFailed: "远程备份请求失败。",
   remoteInvalidResponse: "远程服务返回的数据格式不正确。",
   noWrongQuestions: "当前题单还没有错题。",
-  confirmRedoWrong: "重做错题将清除这些题目的当前作答记录，是否继续？",
+  confirmPracticeWrongList: "将根据当前错题生成一个新题单，并立即切换过去继续练习。是否继续？",
   wrongListSuffix: "{0} - 错题",
   wrongListExportDesc: "由 PassLoop 根据答题记录导出的错题题单。",
   wrongListCreateDesc: "由 PassLoop 根据答题记录生成的错题题单。",

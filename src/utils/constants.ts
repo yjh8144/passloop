@@ -55,7 +55,6 @@ export const defaultLlmMultiConfig: LlmMultiConfig = {
 export const ANSWERS_SESSION_KEY = "passloop.session.answers"
 export const INDEX_SESSION_KEY = "passloop.session.index"
 export const POSITIONS_STORAGE_KEY = "passloop.session.positions"
-export const WRONG_SESSION_KEY = "passloop.session.wrong"
 export const PAGE_SESSION_KEY = "passloop.session.page"
 export const SUPPRESS_EMPTY_CONFIRM_KEY = "passloop.session.suppressEmptyConfirm"
 export const ONBOARDING_KEY = "passloop.onboarding.shown"

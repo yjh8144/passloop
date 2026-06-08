@@ -40,6 +40,11 @@ const ManagerPage = lazy(() =>
 const LlmPage = lazy(() =>
   import("./components/llm/LlmPage").then((module) => ({ default: module.LlmPage })),
 )
+const SettingsPage = lazy(() =>
+  import("./components/settings/SettingsPage").then((module) => ({
+    default: module.SettingsPage,
+  })),
+)
 const ImportExportDialogs = lazy(() =>
   import("./components/dialogs/ImportExportDialogs").then((module) => ({
     default: module.ImportExportDialogs,
@@ -111,14 +116,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
     <PracticeProvider>
       <div className={`app-shell ${desktopSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Sidebar
-          onQuestionImport={() => setImportDialog("question")}
-          onBackupImport={() => setImportDialog("backup")}
-          onRemoteBackup={() => setImportDialog("remote")}
-          onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-          onExportBackup={handleExportBackup}
-          onResetAll={() => setResetConfirmDialog(true)}
           onOpenDebugDialog={() => setShowDebugDialog(true)}
-          onOpenOfflineDialog={() => setShowOfflineDialog(true)}
         />
 
         <main className="workspace">
@@ -140,6 +138,16 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
                 addImportedList={addImportedList}
                 unsavedRef={llmUnsavedRef}
               />
+            ) : page === "settings" ? (
+              <SettingsPage
+                onQuestionImport={() => setImportDialog("question")}
+                onBackupImport={() => setImportDialog("backup")}
+                onRemoteBackup={() => setImportDialog("remote")}
+                onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
+                onExportBackup={handleExportBackup}
+                onResetAll={() => setResetConfirmDialog(true)}
+                onOpenOfflineDialog={() => setShowOfflineDialog(true)}
+              />
             ) : (
               <PracticePage />
             )}
@@ -154,14 +162,7 @@ function AppShell({ toasts }: { toasts: ReturnType<typeof useToast>["toasts"] })
           </footer>
         </main>
 
-        <BottomNav
-          onQuestionImport={() => setImportDialog("question")}
-          onBackupImport={() => setImportDialog("backup")}
-          onRemoteBackup={() => setImportDialog("remote")}
-          onExportList={() => downloadJson(`${activeList.name}.json`, activeList)}
-          onExportBackup={handleExportBackup}
-          onResetAll={() => setResetConfirmDialog(true)}
-        />
+        <BottomNav />
 
         <ToastStack toasts={toasts} />
         {importDialog && (

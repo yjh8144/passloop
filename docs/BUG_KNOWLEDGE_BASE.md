@@ -11,7 +11,7 @@ This knowledge base tracks fixed bugs, regression coverage, and newly discovered
 | `ce5bcc3` Restore selected options after reopening page in practice mode | Select answer B on the built-in test list, reload the page, verify B remains checked | B stayed checked after reload | Passed |
 | `a3da2d5` Practice/editor correctness bugs | Submit correct single-choice answer, verify result chip, answer panel, stats, and next navigation | Correct result shown, stats updated, next navigation worked | Passed |
 | `3537887` Harden practice state and add debug test list | Open Debug via seven brand clicks, enable Debug, create all-types test list | Created "测试题单（全题型）" with 10 questions | Passed |
-| Wrong-practice state handling | Submit a wrong answer, enter wrong temporary page, re-answer correctly | Wrong question became re-answerable and cleared after correct retry | Passed |
+| Wrong-question review workflow | Submit a wrong answer, create a wrong-question list, and practice the copied question | Wrong questions are reviewed through a normal list instead of a temporary page | Passed |
 | `a98e285` Restore last-viewed question in paper mode | Switch to paper mode and verify all cards render with prior submitted state intact | All 10 cards rendered; previous submitted answers stayed locked and visible | Passed |
 | `4149c84` Empty-answer confirmation | In paper/unified-submit mode, click the bottom submit-all button with unanswered questions | Confirm dialog listed questions 3-10 and included "本次不再提示" | Passed |
 | `fa5fc1b` Modal interaction consistency | Open import/debug/empty-submit dialogs and close with explicit cancel action | Dialogs closed without leaking state | Passed |
@@ -29,6 +29,5 @@ This knowledge base tracks fixed bugs, regression coverage, and newly discovered
 
 ## Notes
 
-- The first submit-all click hit the compact top button and did not visibly open the confirm dialog during browser automation. Retesting through the bottom `.paper-stack .submit-all-button` opened the expected dialog. Future regression scripts should cover both submit-all entry points explicitly.
 - Remote backup regression needs the deployed backup service URL. The app host at `http://121.40.35.52:9364` serves the frontend, but does not expose `/api/backups`.
 - The working tree already contains unrelated local changes and untracked helper files. Maintenance edits should stay tightly scoped and avoid reverting those changes.

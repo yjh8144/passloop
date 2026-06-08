@@ -1,10 +1,8 @@
-import { Download, Plus, Shuffle, Trash2, Undo2 } from "lucide-react"
+import { Download, Shuffle, Trash2, Undo2 } from "lucide-react"
 import type { Question } from "../../lib/types"
 import type { getListStats } from "../../lib/question"
-import type { Page, ResultMap } from "../../hooks/types"
+import type { ResultMap } from "../../hooks/types"
 import { StatsPanel } from "./StatsPanel"
-import { WrongSessionPanel } from "./WrongSessionPanel"
-import type { WrongSession } from "./WrongSessionPanel"
 import { Navigator } from "./Navigator"
 import { useT } from "../../contexts"
 import type { AppData } from "../../lib/types"
@@ -16,16 +14,13 @@ export interface InspectorContentProps {
   results: ResultMap
   stats: ReturnType<typeof getListStats>
   settings: AppData["settings"]
-  mode: Page
-  wrongSession: WrongSession | null
   allSubmitted: boolean
   correctCount: number
   wrongCount: number
   navigatorClassName?: string
   onClearListAttempts: () => void
-  onRedoWrong: () => void
+  onPracticeWrong: () => void
   onExportWrong: () => void
-  onCreateWrongList: () => void
   onPaperJump?: (index: number) => void
 }
 
@@ -55,14 +50,11 @@ export function InspectorContent(props: InspectorContentProps) {
             <button className="btn-danger" onClick={props.onClearListAttempts}>
               <Undo2 size={16} /> {t("redoAll")}
             </button>
-            <button onClick={props.onRedoWrong}>
-              <Shuffle size={16} /> {t("redoWrongBtn")}
+            <button onClick={props.onPracticeWrong}>
+              <Shuffle size={16} /> {t("practiceWrongBtn")}
             </button>
             <button onClick={props.onExportWrong}>
               <Download size={16} /> {t("exportWrongBtn")}
-            </button>
-            <button onClick={props.onCreateWrongList}>
-              <Plus size={16} /> {t("createWrongList")}
             </button>
           </div>
         </section>
@@ -79,7 +71,6 @@ export function InspectorContent(props: InspectorContentProps) {
           </button>
         </section>
       )}
-      {props.mode === "wrong" && <WrongSessionPanel session={props.wrongSession} />}
       {props.navigatorClassName ? (
         <div className={props.navigatorClassName}>{navigator}</div>
       ) : (

@@ -2,12 +2,10 @@ import {
   ANSWERS_SESSION_KEY,
   INDEX_SESSION_KEY,
   POSITIONS_STORAGE_KEY,
-  WRONG_SESSION_KEY,
   PAGE_SESSION_KEY,
   SUPPRESS_EMPTY_CONFIRM_KEY,
 } from "./constants"
 import type { AnswerMap } from "../hooks/types"
-import type { WrongSession } from "../hooks/practiceReducer"
 import { debugError } from "../lib/debug"
 import { safeGetStorageItem, safeRemoveStorageItem, safeSetStorageItem } from "./safeStorage"
 
@@ -71,24 +69,6 @@ export function clearPosition(listId: string): boolean {
   } catch (e) {
     debugError("clearPosition failed", e)
     return false
-  }
-}
-
-export function loadWrongSession(): WrongSession | null {
-  try {
-    const raw = safeGetStorageItem("session", WRONG_SESSION_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch (e) {
-    debugError("loadWrongSession failed", e)
-    return null
-  }
-}
-
-export function saveWrongSession(session: WrongSession | null): boolean {
-  if (session) {
-    return safeSetStorageItem("session", WRONG_SESSION_KEY, JSON.stringify(session))
-  } else {
-    return safeRemoveStorageItem("session", WRONG_SESSION_KEY)
   }
 }
 

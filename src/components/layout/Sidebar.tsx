@@ -4,32 +4,16 @@ import {
   Bot,
   ChevronDown,
   ChevronUp,
-  CloudBackup,
   Edit3,
-  FileDown,
-  FileUp,
   Github,
-  Globe,
-  HardDriveDownload,
   PanelLeftClose,
   PanelLeftOpen,
   Settings2,
-  RotateCcw,
-  Trash2,
-  FolderDown,
-  FolderUp,
 } from "lucide-react"
-import { useT, useNavigation, useLlmConfig, useProxy } from "../../contexts"
+import { useT, useNavigation } from "../../contexts"
 
 export function Sidebar(props: {
-  onQuestionImport: () => void
-  onBackupImport: () => void
-  onRemoteBackup: () => void
-  onExportList: () => void
-  onExportBackup: () => void
-  onResetAll: () => void
   onOpenDebugDialog: () => void
-  onOpenOfflineDialog: () => void
 }) {
   const t = useT()
   const {
@@ -40,8 +24,6 @@ export function Sidebar(props: {
     desktopSidebarCollapsed,
     setDesktopSidebarCollapsed,
   } = useNavigation()
-  const { openLlmConfig } = useLlmConfig()
-  const { openProxyConfig } = useProxy()
   const { onOpenDebugDialog } = props
   const clickTimesRef = useRef<number[]>([])
 
@@ -122,45 +104,15 @@ export function Sidebar(props: {
             <Bot size={17} /> {t("llm")}
           </button>
           <button
-            className={page === "wrong" ? "active" : ""}
+            className={page === "settings" ? "active" : ""}
             onClick={() => {
-              changePage("wrong")
+              changePage("settings")
               setMobileSidebarCollapsed(true)
             }}
           >
-            <RotateCcw size={17} /> {t("wrong")}
+            <Settings2 size={17} /> {t("settings")}
           </button>
         </nav>
-
-        <div className="sidebar-actions">
-          <button onClick={openLlmConfig}>
-            <Settings2 size={16} /> {t("llmConfigBtn")}
-          </button>
-          <button onClick={openProxyConfig}>
-            <Globe size={16} /> {t("proxySettingsBtn")}
-          </button>
-          <button onClick={props.onQuestionImport}>
-            <FileUp size={16} /> {t("importQuestions")}
-          </button>
-          <button onClick={props.onBackupImport}>
-            <FolderUp size={16} /> {t("importBackup")}
-          </button>
-          <button onClick={props.onExportList}>
-            <FileDown size={16} /> {t("exportList")}
-          </button>
-          <button onClick={props.onExportBackup}>
-            <FolderDown size={16} /> {t("exportBackup")}
-          </button>
-          <button onClick={props.onRemoteBackup}>
-            <CloudBackup size={16} /> {t("remoteBackup")}
-          </button>
-          <button onClick={props.onOpenOfflineDialog}>
-            <HardDriveDownload size={16} /> {t("offlineVersion")}
-          </button>
-          <button className="danger-outline" onClick={props.onResetAll}>
-            <Trash2 size={16} /> {t("clearAllData")}
-          </button>
-        </div>
       </div>
     </aside>
   )

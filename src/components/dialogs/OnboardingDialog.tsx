@@ -43,10 +43,6 @@ export function OnboardingDialog({ open, onClose }: { open: boolean; onClose: ()
       ],
     },
     {
-      title: t("obTitleWrong"),
-      content: [t("obWrong1"), t("obWrong2"), t("obWrong3")],
-    },
-    {
       title: t("obTitleSettings"),
       content: [t("obSettings1"), t("obSettings2"), t("obSettings3"), t("obSettings4")],
     },

@@ -3,7 +3,7 @@ export const en: Record<string, string> = {
   dashboard: "Practice",
   manager: "Question Bank",
   llm: "LLM Parser",
-  wrong: "Wrong Set",
+  settings: "Settings",
 
   // Sidebar actions
   addList: "New List",
@@ -246,7 +246,7 @@ export const en: Record<string, string> = {
   onboarding3: "LLM Parser — Paste unformatted text and convert to standard format with LLM.",
   onboarding4:
     "Practice — Answer questions in Practice mode. The system records accuracy, time, and wrong answers. Settings are in the top-right corner.",
-  onboarding5: 'Wrong Set — Click "Wrong Set" to practice questions you got wrong.',
+  onboarding5: "Wrong review — After finishing, create a wrong-question list and keep practicing.",
   onboardingTip:
     "Tip: Data is stored locally. Clearing browser cache will lose data. Export config regularly as backup.",
   startUsing: "Get Started",
@@ -307,13 +307,7 @@ export const en: Record<string, string> = {
   obPractice4:
     "The side panel shows accuracy, average time, progress, and wrong count. The navigation grid shows answer status by color.",
   obPractice5:
-    "After completing all questions, a summary dialog appears with options to redo all, redo wrong ones, or export wrong questions as a new list.",
-
-  obTitleWrong: "Wrong Questions Review",
-  obWrong1: 'Click "Wrong Set" to enter focused review of questions you answered incorrectly.',
-  obWrong2: "After practice, export wrong questions as a standalone list for repeated review.",
-  obWrong3:
-    "The wrong questions page has its own session timer and accuracy stats to track improvement on weak areas.",
+    "After completing all questions, a summary dialog appears with options to start over, practice wrong questions, or export them.",
 
   obTitleSettings: "Personalization",
   obSettings1:
@@ -568,7 +562,6 @@ export const en: Record<string, string> = {
 
   // Practice Page
   practiceTitle: "Practice",
-  wrongPracticeTitle: "Wrong Set Review",
   practiceMemorizeHint: "Memorize mode shows answers and explanations directly.",
   practicePracticeHint: "Submissions record accuracy, wrong answers, and avg time.",
   showInspector: "Show sidebar",
@@ -576,9 +569,8 @@ export const en: Record<string, string> = {
   allComplete: "All Complete",
   completionSummary: "{0} questions total, {1} correct, {2} wrong",
   redoAll: "Start over",
-  redoWrongBtn: "Redo wrong",
+  practiceWrongBtn: "Practice wrong",
   exportWrongBtn: "Export wrong",
-  createWrongList: "Create wrong list",
   submitAllAnswers: "Submit All",
   noQuestionsTitle: "No questions",
   noQuestionsDesc: "Import a JSON file or add questions in Question Bank.",
@@ -591,6 +583,11 @@ export const en: Record<string, string> = {
 
   // Topbar
   practiceSettingsTitle: "Practice settings",
+  settingsTitle: "Settings",
+  settingsDesc: "Manage practice preferences, appearance, AI/network, and backups.",
+  appearanceSettings: "Appearance",
+  aiNetworkSettings: "AI & Network",
+  dataSettings: "Data & Backup",
   questionsUnit: "Q",
 
   // Sidebar
@@ -660,7 +657,8 @@ export const en: Record<string, string> = {
   remoteRequestFailed: "Remote backup request failed.",
   remoteInvalidResponse: "Remote server returned an invalid response.",
   noWrongQuestions: "No wrong questions in this list.",
-  confirmRedoWrong: "Redo will clear current answers for these questions. Continue?",
+  confirmPracticeWrongList:
+    "Create a new list from current wrong questions and switch to it for practice. Continue?",
   wrongListSuffix: "{0} - Wrong",
   wrongListExportDesc: "Wrong questions exported from PassLoop based on attempt history.",
   wrongListCreateDesc: "Wrong questions generated from PassLoop based on attempt history.",

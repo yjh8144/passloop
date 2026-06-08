@@ -3,7 +3,7 @@ export const fr: Record<string, string> = {
   dashboard: "Pratique",
   manager: "Banque de questions",
   llm: "Analyse LLM",
-  wrong: "Erreurs",
+  settings: "Paramètres",
 
   // Sidebar actions
   addList: "Nouvelle liste",
@@ -247,7 +247,8 @@ export const fr: Record<string, string> = {
     "Analyse LLM — Collez du texte non formaté et convertissez en format standard avec le LLM.",
   onboarding4:
     "Pratique — Répondez en mode pratique. Le système enregistre précision, temps et erreurs. Paramètres en haut à droite.",
-  onboarding5: "Erreurs — Pratiquez les questions ratées de manière concentrée.",
+  onboarding5:
+    "Révision des erreurs — Après avoir terminé, créez une liste d'erreurs pour continuer à pratiquer.",
   onboardingTip:
     "Astuce : Les données sont stockées localement. Vider le cache supprime les données. Exportez régulièrement la configuration.",
   startUsing: "Commencer",
@@ -361,14 +362,7 @@ export const fr: Record<string, string> = {
   obPractice4:
     "Le panneau latéral affiche la précision, le temps moyen, la progression et le nombre d'erreurs. La grille de navigation montre le statut par couleur.",
   obPractice5:
-    "Après avoir terminé, un résumé apparaît avec les options : tout refaire, refaire les erreurs, ou exporter les erreurs comme nouvelle liste.",
-
-  obTitleWrong: "Révision des erreurs",
-  obWrong1: "Cliquez sur « Erreurs » pour une révision ciblée des questions incorrectes.",
-  obWrong2:
-    "Après la pratique, exportez les erreurs comme liste indépendante pour une révision répétée.",
-  obWrong3:
-    "La page d'erreurs dispose de son propre chronomètre de session et de statistiques de précision pour suivre l'amélioration des points faibles.",
+    "Après avoir terminé, un résumé apparaît avec les options : tout refaire, pratiquer les erreurs ou les exporter.",
 
   obTitleSettings: "Personnalisation",
   obSettings1:
@@ -584,7 +578,6 @@ export const fr: Record<string, string> = {
 
   // Practice Page
   practiceTitle: "Pratique",
-  wrongPracticeTitle: "Révision des erreurs",
   practiceMemorizeHint: "Le mode mémorisation affiche directement réponses et explications.",
   practicePracticeHint: "Les soumissions enregistrent précision, erreurs et temps moyen.",
   showInspector: "Afficher la barre latérale",
@@ -592,9 +585,8 @@ export const fr: Record<string, string> = {
   allComplete: "Tout terminé",
   completionSummary: "{0} questions au total, {1} correctes, {2} incorrectes",
   redoAll: "Recommencer",
-  redoWrongBtn: "Refaire les erreurs",
+  practiceWrongBtn: "Pratiquer les erreurs",
   exportWrongBtn: "Exporter les erreurs",
-  createWrongList: "Créer liste d'erreurs",
   submitAllAnswers: "Tout soumettre",
   noQuestionsTitle: "Aucune question",
   noQuestionsDesc: "Importez un fichier JSON ou ajoutez des questions dans la banque de questions.",
@@ -607,6 +599,11 @@ export const fr: Record<string, string> = {
 
   // Topbar
   practiceSettingsTitle: "Paramètres de pratique",
+  settingsTitle: "Paramètres",
+  settingsDesc: "Gérez la pratique, l'apparence, l'IA/réseau et les sauvegardes.",
+  appearanceSettings: "Apparence",
+  aiNetworkSettings: "IA et réseau",
+  dataSettings: "Données et sauvegarde",
   questionsUnit: "Q",
 
   // Sidebar
@@ -677,8 +674,8 @@ export const fr: Record<string, string> = {
   remoteRequestFailed: "Échec de la requête de sauvegarde distante.",
   remoteInvalidResponse: "Le serveur distant a renvoyé une réponse invalide.",
   noWrongQuestions: "Pas de questions erronées dans cette liste.",
-  confirmRedoWrong:
-    "Refaire les erreurs effacera les réponses actuelles de ces questions. Continuer ?",
+  confirmPracticeWrongList:
+    "Créer une nouvelle liste à partir des erreurs actuelles et y basculer pour pratiquer. Continuer ?",
   wrongListSuffix: "{0} - Erreurs",
   wrongListExportDesc: "Questions erronées exportées depuis PassLoop basées sur l'historique.",
   wrongListCreateDesc: "Questions erronées générées depuis PassLoop basées sur l'historique.",

@@ -47,9 +47,9 @@ A local, lightweight quiz platform. Supports question import/export, multiple pr
 ### Wrong Answer Management
 
 - Automatic collection of incorrect answers
-- Focused review on wrong questions page
+- Create a wrong-answer list after practice for focused review
 - Export wrong answers as standalone list
-- Session timer and real-time statistics
+- Answer statistics remain attached to each list
 
 ### Answer Statistics
 

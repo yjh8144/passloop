@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react"
 import type { AppData, QuestionList, Toast } from "../lib/types"
 
-export type Page = "practice" | "manager" | "llm" | "wrong"
+export type Page = "practice" | "manager" | "llm" | "settings"
 export type AnswerMap = Record<string, string | string[]>
 export type ResultMap = Record<string, boolean>
 
