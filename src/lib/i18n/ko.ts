@@ -340,7 +340,8 @@ export const ko: Record<string, string> = {
     "모든 문제 완료 후 요약 대화상자 표시. 전체 다시 풀기, 오답 연습, 오답 내보내기를 선택할 수 있습니다.",
 
   obTitleSettings: "개인화 설정",
-  obSettings1: "상단 바에서 테마 전환(7종: Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
+  obSettings1:
+    "설정 페이지의 외관 영역에서 테마를 전환할 수 있습니다(7종: Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
   obSettings2: "5개 언어 지원: 중국어, English, 日本語, 한국어, Français.",
   obSettings3: "사이드바 접기로 화면 공간 절약. 모바일에서는 자동으로 하단 내비바로 전환.",
   obSettings4: "오프라인 버전(단일 HTML 파일)을 다운로드하여 네트워크 없이 사용 가능.",

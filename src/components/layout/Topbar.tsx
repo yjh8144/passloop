@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { ChevronDown, Languages, Palette, Plus, Search, Settings2, Trash2 } from "lucide-react"
+import { ChevronDown, Plus, Search, Settings2, Trash2 } from "lucide-react"
 import type { AppData, QuestionList } from "../../lib/types"
 import { ControlPanel } from "../practice/ControlPanel"
 import type { Page } from "../../hooks/types"
@@ -203,42 +203,6 @@ export function Topbar(props: {
         )}
       </div>
       <div className="topbar-actions">
-        <label className="select-label" title={t("theme")}>
-          <Palette size={16} />
-          <select
-            aria-label={t("theme")}
-            value={props.data.settings.theme}
-            onChange={(event) =>
-              props.updateSettings({ theme: event.target.value as AppData["settings"]["theme"] })
-            }
-          >
-            <option value="mint">Mint</option>
-            <option value="paper">Paper</option>
-            <option value="lavender">Lavender</option>
-            <option value="ocean">Ocean</option>
-            <option value="rose">Rose</option>
-            <option value="night">Night</option>
-            <option value="nord">Nord</option>
-          </select>
-        </label>
-        <label className="select-label" title={t("language")}>
-          <Languages size={16} />
-          <select
-            aria-label={t("language")}
-            value={props.data.settings.language}
-            onChange={(event) =>
-              props.updateSettings({
-                language: event.target.value as AppData["settings"]["language"],
-              })
-            }
-          >
-            <option value="zh">中文</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-            <option value="ko">한국어</option>
-            <option value="fr">Français</option>
-          </select>
-        </label>
         {showSettingsButton && (
           <div className="topbar-settings-wrap">
             <button

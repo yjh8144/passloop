@@ -343,7 +343,7 @@ export const ja: Record<string, string> = {
 
   obTitleSettings: "カスタマイズ",
   obSettings1:
-    "トップバーでテーマ切り替え（7 種：Mint、Paper、Lavender、Ocean、Rose、Night、Nord）。",
+    "設定ページの外観セクションでテーマを切り替えできます（7 種：Mint、Paper、Lavender、Ocean、Rose、Night、Nord）。",
   obSettings2: "5 言語対応：中国語、English、日本語、한국어、Français。",
   obSettings3: "サイドバーは折りたたみ可能。モバイルでは自動的に下部ナビバーに切り替わります。",
   obSettings4: "オフライン版（単一 HTML ファイル）をダウンロードして、ネットワークなしで使用可能。",

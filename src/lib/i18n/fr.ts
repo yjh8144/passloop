@@ -366,7 +366,7 @@ export const fr: Record<string, string> = {
 
   obTitleSettings: "Personnalisation",
   obSettings1:
-    "La barre supérieure permet de changer le thème (7 thèmes : Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
+    "La section Apparence des paramètres permet de changer le thème (7 thèmes : Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
   obSettings2: "5 langues supportées : chinois, English, 日本語, 한국어, Français.",
   obSettings3:
     "La barre latérale peut être réduite pour gagner de l'espace. Sur mobile, elle devient automatiquement une barre de navigation inférieure.",

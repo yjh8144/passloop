@@ -290,7 +290,8 @@ export const zh: Record<string, string> = {
   obPractice5: "全部作答完成后弹出统计弹窗，可选择重做全部、练习错题或导出错题。",
 
   obTitleSettings: "个性化设置",
-  obSettings1: "顶栏提供主题切换（7 种主题：Mint、Paper、Lavender、Ocean、Rose、Night、Nord）。",
+  obSettings1:
+    "设置页的外观区域提供主题切换（7 种主题：Mint、Paper、Lavender、Ocean、Rose、Night、Nord）。",
   obSettings2: "支持 5 种语言：中文、English、日本語、한국어、Français。",
   obSettings3: "侧边栏可折叠以节省屏幕空间，移动端自动切换为底部导航栏。",
   obSettings4: "支持下载离线版本（单个 HTML 文件），无需网络即可使用。",

@@ -311,7 +311,7 @@ export const en: Record<string, string> = {
 
   obTitleSettings: "Personalization",
   obSettings1:
-    "The top bar offers theme switching (7 themes: Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
+    "Theme switching lives in the Appearance section of Settings (7 themes: Mint, Paper, Lavender, Ocean, Rose, Night, Nord).",
   obSettings2: "Supports 5 languages: Chinese, English, Japanese, Korean, French.",
   obSettings3:
     "The sidebar can be collapsed to save screen space. On mobile, it automatically switches to a bottom navigation bar.",

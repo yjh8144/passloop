@@ -233,23 +233,6 @@
   margin-bottom: 0;
 }
 
-.select-label {
-  min-width: 116px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  padding-left: 10px;
-}
-
-.select-label select {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
 .icon-button {
   width: 36px;
   min-width: 36px;
@@ -373,28 +356,6 @@
     min-width: 0;
   }
 
-  .select-label {
-    position: relative;
-    min-width: 0;
-    width: 36px;
-    height: 36px;
-    min-height: 36px;
-    overflow: hidden;
-    padding: 0;
-    justify-content: center;
-    border-radius: 8px;
-    flex-shrink: 0;
-  }
-
-  .select-label select {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-  }
-
   .topbar-settings-wrap {
     position: static;
   }
@@ -429,12 +390,6 @@
 
   .list-picker-name {
     max-width: 72px;
-  }
-
-  .select-label {
-    width: 32px;
-    height: 32px;
-    min-height: 32px;
   }
 
   .topbar .icon-button {
