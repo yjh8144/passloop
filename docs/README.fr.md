@@ -144,7 +144,8 @@ Toutes les données utilisateur sont stockées dans le localStorage du navigateu
 | Clé | Contenu |
 |-----|---------|
 | `passloop.app.v1` | Questions, listes, historique, paramètres |
-| `passloop.llm-config.v1` | Configuration API LLM |
+| `passloop.llm-config.v2` | Configuration des fournisseurs LLM (sans clés API) |
+| `passloop.proxy.v1` | Configuration du proxy CORS (sans clés de proxy) |
 | `passloop.debug` | Basculement mode debug |
 
 Vider les données du navigateur supprimera toutes les questions et tous les historiques. Exportez régulièrement vos sauvegardes.

@@ -145,7 +145,8 @@ All user data is stored in browser localStorage:
 | Key | Content |
 |-----|---------|
 | `passloop.app.v1` | Questions, lists, answer records, settings |
-| `passloop.llm-config.v1` | LLM API configuration |
+| `passloop.llm-config.v2` | LLM provider configuration (without API keys) |
+| `passloop.proxy.v1` | CORS proxy configuration (without proxy keys) |
 | `passloop.debug` | Debug mode toggle |
 
 Clearing browser data will delete all questions and records. Export backups regularly.

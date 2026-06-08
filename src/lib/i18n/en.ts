@@ -725,7 +725,7 @@ export const en: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup:
-    "The exported config file contains all questions, settings, and non-sensitive LLM configuration, but not API keys or proxy keys. Please protect your privacy and do not share the file with untrusted parties. Proceed?",
+    "The exported config file contains your lists, questions, answer records, and app settings. It does not include LLM provider configuration, API keys, or proxy keys. Please protect your privacy and do not share the file with untrusted parties. Proceed?",
 
   // Debug
   simulateCrash: "Simulate Crash",

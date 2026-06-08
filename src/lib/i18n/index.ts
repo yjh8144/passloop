@@ -10,6 +10,7 @@ const dictLoaders: Record<LanguageName, () => Promise<Dict>> = {
   ko: () => import("./ko").then((module) => module.ko),
   fr: () => import("./fr").then((module) => module.fr),
 }
+const dictCache: Partial<Record<LanguageName, Dict>> = { zh }
 
 function createTranslator(dict: Dict): TFunc {
   return (key: string, ...args: (string | number)[]) => {
@@ -22,10 +23,11 @@ function createTranslator(dict: Dict): TFunc {
 }
 
 export function getTranslator(language: LanguageName): TFunc {
-  return createTranslator(language === "zh" ? zh : zh)
+  return createTranslator(dictCache[language] ?? zh)
 }
 
 export async function loadTranslator(language: LanguageName): Promise<TFunc> {
   const dict = await (dictLoaders[language] ?? dictLoaders.zh)()
+  dictCache[language] = dict
   return createTranslator(dict)
 }

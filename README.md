@@ -138,7 +138,8 @@ LLM API 存在跨域限制，项目在 `proxy/` 目录提供两种可选代理�
 | Key | 内容 |
 |-----|------|
 | `passloop.app.v1` | 题库、题单、答题记录、设置 |
-| `passloop.llm-config.v1` | LLM 接口配置 |
+| `passloop.llm-config.v2` | LLM 提供商配置（不包含 API Key） |
+| `passloop.proxy.v1` | CORS 代理配置（不包含代理密钥） |
 | `passloop.debug` | 调试模式开关 |
 
 清除浏览器数据会导致所有题目和记录丢失，建议定期使用「导出备份」功能保存数据。

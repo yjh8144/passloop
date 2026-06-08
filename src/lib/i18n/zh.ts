@@ -687,7 +687,7 @@ export const zh: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup:
-    "导出配置文件将包含你的所有题目、设置和 LLM 非敏感配置，不包含 API Key 或代理密钥。请注意保护隐私，不要将导出文件分享给不信任的人。确定导出？",
+    "导出配置文件将包含你的题单、题目、答题记录和应用设置，不包含 LLM 提供商配置、API Key 或代理密钥。请注意保护隐私，不要将导出文件分享给不信任的人。确定导出？",
 
   // Debug
   simulateCrash: "模拟崩溃",

@@ -144,7 +144,8 @@ LLM API にはクロスオリジン制限があります。`proxy/` ディレク
 | Key | 内容 |
 |-----|------|
 | `passloop.app.v1` | 問題、リスト、解答記録、設定 |
-| `passloop.llm-config.v1` | LLM API 設定 |
+| `passloop.llm-config.v2` | LLMプロバイダー設定（APIキーなし） |
+| `passloop.proxy.v1` | CORSプロキシ設定（プロキシキーなし） |
 | `passloop.debug` | デバッグモード切替 |
 
 ブラウザデータを削除するとすべての問題と記録が失われます。定期的にバックアップをエクスポートしてください。

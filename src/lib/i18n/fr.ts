@@ -741,7 +741,7 @@ export const fr: Record<string, string> = {
 
   // Export confirm
   confirmExportBackup:
-    "Le fichier exporté contient toutes vos questions, paramètres et la configuration LLM non sensible, mais pas les clés API ni les clés de proxy. Veuillez protéger votre vie privée et ne pas partager ce fichier avec des personnes non fiables. Continuer ?",
+    "Le fichier exporté contient vos listes, questions, historiques de réponses et paramètres de l'application. Il n'inclut pas la configuration des fournisseurs LLM, les clés API ni les clés de proxy. Veuillez protéger votre vie privée et ne pas partager ce fichier avec des personnes non fiables. Continuer ?",
 
   // Debug
   simulateCrash: "Simuler un crash",

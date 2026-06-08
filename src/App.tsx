@@ -60,21 +60,30 @@ type ImportExportDialogKind = "question" | "backup" | "remote"
 
 export function App() {
   const [data, setData] = useState<AppData>(() => loadData())
-  const [t, setT] = useState(() => getTranslator(data.settings.language))
+  const [translatorState, setTranslatorState] = useState(() => ({
+    language: "zh" as AppData["settings"]["language"],
+    t: getTranslator("zh"),
+  }))
   const { toasts, pushToast } = useToast()
 
   useEffect(() => {
     let cancelled = false
     loadTranslator(data.settings.language).then((translator) => {
-      if (!cancelled) setT(() => translator)
+      if (!cancelled) {
+        setTranslatorState({ language: data.settings.language, t: translator })
+      }
     })
     return () => {
       cancelled = true
     }
   }, [data.settings.language])
 
+  if (translatorState.language !== data.settings.language) {
+    return <PageLoading />
+  }
+
   return (
-    <I18nProvider t={t}>
+    <I18nProvider t={translatorState.t}>
       <ToastProvider pushToast={pushToast}>
         <DialogProvider>
           <ProxyProvider>

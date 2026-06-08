@@ -18,12 +18,10 @@ import {
   loadSessionAnswers,
   loadSessionIndex,
   loadSuppressEmptyConfirm,
-  loadWrongSession,
   savePosition,
   saveSessionAnswers,
   saveSessionIndex,
   saveSuppressEmptyConfirm,
-  saveWrongSession,
 } from "../src/utils/session.ts"
 import {
   safeGetStorageItem,
@@ -105,8 +103,6 @@ test("session persistence survives refresh chaos with denied sessionStorage", ()
   assert.equal(saveSessionAnswers({ q1: "A" }), false)
   assert.equal(loadSessionIndex(), 0)
   assert.equal(saveSessionIndex(3), false)
-  assert.equal(loadWrongSession(), null)
-  assert.equal(saveWrongSession({ id: "w1", startedAt: 1, elapsedSeconds: 0, submitted: 0, correct: 0 }), false)
   assert.equal(loadSuppressEmptyConfirm(), false)
   assert.equal(saveSuppressEmptyConfirm(true), false)
 })

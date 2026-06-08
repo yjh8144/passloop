@@ -144,7 +144,8 @@ LLM API에는 크로스 오리진 제한이 있습니다. `proxy/` 디렉터리�
 | Key | 내용 |
 |-----|------|
 | `passloop.app.v1` | 문제, 목록, 답변 기록, 설정 |
-| `passloop.llm-config.v1` | LLM API 구성 |
+| `passloop.llm-config.v2` | LLM 제공자 구성(API 키 제외) |
+| `passloop.proxy.v1` | CORS 프록시 구성(프록시 키 제외) |
 | `passloop.debug` | 디버그 모드 토글 |
 
 브라우저 데이터를 삭제하면 모든 문제와 기록이 사라집니다. 정기적으로 백업을 내보내세요.
