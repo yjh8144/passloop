@@ -15,8 +15,13 @@ import { useT } from "./I18nContext"
 import { practiceReducer } from "../hooks/practiceReducer"
 import type { PracticeState } from "../hooks/practiceReducer"
 import { useSessionPersistence } from "../hooks/useSessionPersistence"
-import { evaluateQuestion, hasUnsubmittedProgress } from "../utils/evaluate"
-import { createId, normalizeImportedList } from "../lib/question"
+import { evaluateQuestion, hasUnsubmittedProgressForKeys } from "../utils/evaluate"
+import {
+  cloneQuestionsWithFreshIds,
+  createId,
+  createPracticeQuestionKey,
+  normalizeImportedList,
+} from "../lib/question"
 import { downloadJson } from "../lib/storage"
 import { debugLog } from "../lib/debug"
 import { elapsedSince } from "../utils/time"
@@ -56,8 +61,26 @@ const AUTO_NEXT_FAST_MS = 120
 
 type WrongListAction = "export" | "practice"
 
+type LatestAttempt = AppData["attempts"][number]
+
 function questionSignature(listId: string, questions: Question[]) {
   return `${listId}\u0001${questions.map((question) => question.id).join("\u0000")}`
+}
+
+function attemptsSignature(listId: string, attempts: AppData["attempts"]) {
+  return attempts
+    .filter((attempt) => attempt.listId === listId)
+    .map(
+      (attempt) =>
+        `${attempt.questionId}\u0000${attempt.correct ? 1 : 0}\u0000${attempt.submittedAt}`,
+    )
+    .join("\u0001")
+}
+
+function isEmptyAnswer(value: string | string[] | undefined) {
+  if (value === undefined || value === null) return true
+  if (Array.isArray(value)) return value.length === 0 || value.every((s) => !s.trim())
+  return typeof value === "string" && !value.trim()
 }
 
 function createInitialState(): PracticeState {
@@ -107,6 +130,17 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   // reset doesn't wipe out the restored values (dispatch order is reduce order).
   const prevListIdRef = useRef(activeList.id)
   const preSearchIndexRef = useRef<number | null>(null)
+  const activeQuestionKeys = useMemo(
+    () =>
+      activeList.questions.map((question) =>
+        createPracticeQuestionKey(activeList.id, question.id),
+      ),
+    [activeList.id, activeList.questions],
+  )
+  const activeAttemptsSignature = useMemo(
+    () => attemptsSignature(activeList.id, data.attempts),
+    [activeList.id, data.attempts],
+  )
   useEffect(() => {
     const isListSwitch = activeList.id !== prevListIdRef.current
     if (isListSwitch) {
@@ -118,6 +152,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     }
     const derived: Record<string, boolean> = {}
     const derivedAnswers: AnswerMap = {}
+    const latestAttemptByQuestion = new Map<string, LatestAttempt>()
     const latestAt: Record<string, string> = {}
     // Restore the latest attempt per question by submission time, not array order,
     // so merged/imported attempts (appended out of order) restore correctly.
@@ -126,24 +161,52 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       const prevAt = latestAt[attempt.questionId]
       if (prevAt === undefined || attempt.submittedAt >= prevAt) {
         latestAt[attempt.questionId] = attempt.submittedAt
-        derived[attempt.questionId] = attempt.correct
-        derivedAnswers[attempt.questionId] = attempt.answer
+        latestAttemptByQuestion.set(attempt.questionId, attempt)
       }
     }
-    dispatch({ type: "RESTORE_RESULTS", results: derived })
-    dispatch({ type: "RESTORE_ANSWERS", answers: derivedAnswers })
-  }, [activeList.id]) // eslint-disable-line react-hooks/exhaustive-deps
+    const removeAnswerKeys: string[] = []
+    for (const question of activeList.questions) {
+      const key = createPracticeQuestionKey(activeList.id, question.id)
+      const attempt = latestAttemptByQuestion.get(question.id)
+      if (attempt) {
+        derived[key] = attempt.correct
+        derivedAnswers[key] = attempt.answer
+        removeAnswerKeys.push(question.id)
+        continue
+      }
+      const currentAnswer = stateRef.current.answers[key]
+      const legacyAnswer = stateRef.current.answers[question.id]
+      if (currentAnswer === undefined && !isEmptyAnswer(legacyAnswer)) {
+        derivedAnswers[key] = legacyAnswer
+        removeAnswerKeys.push(question.id)
+      }
+    }
+    dispatch({
+      type: "RESTORE_DERIVED_STATE",
+      questionKeys: activeQuestionKeys,
+      results: derived,
+      answers: derivedAnswers,
+      removeAnswerKeys,
+    })
+  }, [
+    activeList.id,
+    activeList.questions,
+    activeAttemptsSignature,
+    activeQuestionKeys,
+    clearAutoNextTimer,
+    data.attempts,
+  ])
 
   // --- beforeunload warning for paper mode with unsubmitted answers ---
   useEffect(() => {
     if (data.settings.submitMode !== "paper") return
-    if (!hasUnsubmittedProgress(state.answers, state.results)) return
+    if (!hasUnsubmittedProgressForKeys(state.answers, state.results, activeQuestionKeys)) return
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault()
     }
     window.addEventListener("beforeunload", handler)
     return () => window.removeEventListener("beforeunload", handler)
-  }, [data.settings.submitMode, state.answers, state.results])
+  }, [data.settings.submitMode, state.answers, state.results, activeQuestionKeys])
 
   // --- Reset index when displayed questions change (search, sort) ---
   const prevQuestionsSignatureRef = useRef(questionSignature(activeList.id, displayedQuestions))
@@ -207,8 +270,11 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         startedAtRef.current = {}
         clearPosition(activeList.id)
       } else {
-        dispatch({ type: "LIST_RESET_SELECTIVE", questionIds })
-        for (const id of questionIds) delete startedAtRef.current[id]
+        const questionKeys = questionIds.map((id) => createPracticeQuestionKey(activeList.id, id))
+        dispatch({ type: "LIST_RESET_SELECTIVE", questionKeys })
+        for (const id of questionIds) {
+          delete startedAtRef.current[createPracticeQuestionKey(activeList.id, id)]
+        }
       }
     },
     [activeList.id, clearAutoNextTimer],
@@ -223,23 +289,29 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const wrongListCandidates = useCallback(
     (includeUnsubmitted: boolean) => {
       const wrongByResult = activeList.questions.filter(
-        (q) => stateRef.current.results[q.id] === false,
+        (q) => stateRef.current.results[createPracticeQuestionKey(activeList.id, q.id)] === false,
       )
-      const unsubmitted = activeList.questions.filter((q) => !(q.id in stateRef.current.results))
+      const unsubmitted = activeList.questions.filter(
+        (q) => !(createPracticeQuestionKey(activeList.id, q.id) in stateRef.current.results),
+      )
       if (!includeUnsubmitted) return wrongByResult
       const seen = new Set(wrongByResult.map((q) => q.id))
       return [...wrongByResult, ...unsubmitted.filter((q) => !seen.has(q.id))]
     },
-    [activeList.questions],
+    [activeList.id, activeList.questions],
   )
 
   const hasWrongListCandidates = useMemo(() => {
-    const submittedCount = activeList.questions.filter((q) => q.id in state.results).length
+    const submittedCount = activeList.questions.filter(
+      (q) => createPracticeQuestionKey(activeList.id, q.id) in state.results,
+    ).length
     if (submittedCount === 0) return false
     return activeList.questions.some(
-      (q) => state.results[q.id] === false || !(q.id in state.results),
+      (q) =>
+        state.results[createPracticeQuestionKey(activeList.id, q.id)] === false ||
+        !(createPracticeQuestionKey(activeList.id, q.id) in state.results),
     )
-  }, [activeList.questions, state.results])
+  }, [activeList.id, activeList.questions, state.results])
 
   const wrongListName = useCallback(() => {
     const suffix = t("wrongListSuffix", "").trim()
@@ -270,11 +342,12 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     (questions: Question[]) => {
       debugLog("Create wrong practice list", { count: questions.length, listName: activeList.name })
       const timestamp = new Date().toISOString()
+      const cloned = cloneQuestionsWithFreshIds(questions)
       const newList = {
         id: createId(),
         name: wrongListName(),
         description: t("wrongListCreateDesc"),
-        questions: questions.map((q) => ({ ...q, id: createId() })),
+        questions: cloned.questions,
         createdAt: timestamp,
         updatedAt: timestamp,
       }
@@ -307,14 +380,14 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const resolveWrongListAction = useCallback(
     (action: WrongListAction) => {
       const submittedCount = activeList.questions.filter(
-        (q) => q.id in stateRef.current.results,
+        (q) => createPracticeQuestionKey(activeList.id, q.id) in stateRef.current.results,
       ).length
       if (submittedCount === 0) {
         pushToast("info", t("noWrongQuestions"))
         return
       }
       const unsubmittedCount = activeList.questions.filter(
-        (q) => !(q.id in stateRef.current.results),
+        (q) => !(createPracticeQuestionKey(activeList.id, q.id) in stateRef.current.results),
       ).length
       if (unsubmittedCount > 0) {
         showConfirm(
@@ -330,7 +403,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       }
       runWrongListAction(action, false)
     },
-    [activeList.questions, pushToast, runWrongListAction, showConfirm, t],
+    [activeList.id, activeList.questions, pushToast, runWrongListAction, showConfirm, t],
   )
 
   const exportWrongList = useCallback(() => {
@@ -369,18 +442,17 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   // --- Submission logic ---
   const isAnswerEmpty = useCallback((question: Question): boolean => {
     const answers = stateRef.current.answers
-    const val = answers[question.id]
-    if (val === undefined || val === null) return true
-    if (Array.isArray(val)) return val.length === 0 || val.every((s) => !s.trim())
-    return typeof val === "string" && !val.trim()
-  }, [])
+    return isEmptyAnswer(answers[createPracticeQuestionKey(activeList.id, question.id)])
+  }, [activeList.id])
 
   const submitQuestion = useCallback(
     (question: Question, overrideAnswer?: string | string[]) => {
       const { results } = stateRef.current
-      if (question.id in results) {
+      const key = createPracticeQuestionKey(activeList.id, question.id)
+      if (key in results) {
         const allDone =
-          practiceQuestions.length > 0 && practiceQuestions.every((q) => q.id in results)
+          practiceQuestions.length > 0 &&
+          practiceQuestions.every((q) => createPracticeQuestionKey(activeList.id, q.id) in results)
         if (allDone) pushToast("info", t("allQuestionsFinished"))
         return
       }
@@ -388,26 +460,26 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         const answers =
           overrideAnswer === undefined
             ? stateRef.current.answers
-            : { ...stateRef.current.answers, [question.id]: overrideAnswer }
-        const startedAt = startedAtRef.current[question.id] ?? Date.now()
-        const correct = evaluateQuestion(question, answers)
+            : { ...stateRef.current.answers, [key]: overrideAnswer }
+        const startedAt = startedAtRef.current[key] ?? Date.now()
+        const correct = evaluateQuestion(question, answers, key)
         debugLog("Question submitted", {
           questionId: question.id,
           title: question.title,
           correct,
           elapsedMs: elapsedSince(startedAt),
-          answer: answers[question.id],
+          answer: answers[key],
         })
         const attempt: AppData["attempts"][number] = {
           id: createId(),
           listId: activeList.id,
           questionId: question.id,
-          answer: answers[question.id] ?? "",
+          answer: answers[key] ?? "",
           correct,
           elapsedMs: elapsedSince(startedAt),
           submittedAt: new Date().toISOString(),
         }
-        dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct })
+        dispatch({ type: "SUBMIT_QUESTION", resultKey: key, correct })
         updateData((current) => ({
           ...current,
           attempts: [...current.attempts, attempt],
@@ -473,7 +545,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   const submitAll = useCallback(() => {
     const { results } = stateRef.current
-    const unsubmitted = practiceQuestions.filter((q) => !(q.id in results))
+    const unsubmitted = practiceQuestions.filter(
+      (q) => !(createPracticeQuestionKey(activeList.id, q.id) in results),
+    )
     if (!unsubmitted.length) return
     const emptyQuestions = unsubmitted.filter((q) => isAnswerEmpty(q))
     const doSubmitAll = () => {
@@ -487,15 +561,16 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       const newAttempts: AppData["attempts"] = []
       const submittedAt = new Date().toISOString()
       for (const question of unsubmitted) {
-        const startedAt = startedAtRef.current[question.id] ?? Date.now()
-        const correct = evaluateQuestion(question, answers)
-        newResults[question.id] = correct
+        const key = createPracticeQuestionKey(activeList.id, question.id)
+        const startedAt = startedAtRef.current[key] ?? Date.now()
+        const correct = evaluateQuestion(question, answers, key)
+        newResults[key] = correct
         if (correct) correctCount++
         newAttempts.push({
           id: createId(),
           listId: activeList.id,
           questionId: question.id,
-          answer: answers[question.id] ?? "",
+          answer: answers[key] ?? "",
           correct,
           elapsedMs: elapsedSince(startedAt),
           submittedAt,

@@ -10,7 +10,7 @@ import {
 } from "react"
 import type { MutableRefObject, ReactNode } from "react"
 import type { AppData, Question, QuestionList } from "../lib/types"
-import { getListStats, getTypeLabels, sortQuestions } from "../lib/question"
+import { cloneListWithFreshIds, getListStats, getTypeLabels, sortQuestions } from "../lib/question"
 import {
   createEmptyQuestionList,
   loadData,
@@ -435,11 +435,15 @@ export function AppDataProvider({
 
   const addImportedList = useCallback(
     (list: QuestionList) => {
-      debugLog("Add imported list", { name: list.name, questionCount: list.questions.length })
+      const { list: importedList } = cloneListWithFreshIds(list)
+      debugLog("Add imported list", {
+        name: importedList.name,
+        questionCount: importedList.questions.length,
+      })
       updateData((current) => ({
         ...current,
-        lists: [...current.lists, list],
-        activeListId: list.id,
+        lists: [...current.lists, importedList],
+        activeListId: importedList.id,
       }))
       pushToast("success", t("importedToLocal"))
     },

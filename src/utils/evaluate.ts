@@ -2,15 +2,23 @@ import type { Question } from "../lib/types"
 import { isAnswerCorrect } from "../lib/question"
 import type { AnswerMap, ResultMap } from "../hooks/types"
 
-export function evaluateQuestion(question: Question, answers: AnswerMap) {
-  return isAnswerCorrect(question, answers[question.id] ?? "")
+export function evaluateQuestion(question: Question, answers: AnswerMap, answerKey = question.id) {
+  return isAnswerCorrect(question, answers[answerKey] ?? "")
 }
 
 // True when there is at least one answer that has non-empty content but has not
 // yet been submitted (i.e. is not recorded in results). Shared so the list-switch
 // warning and the page-unload guard stay in sync.
 export function hasUnsubmittedProgress(answers: AnswerMap, results: ResultMap): boolean {
-  return Object.keys(answers).some((id) => {
+  return hasUnsubmittedProgressForKeys(answers, results, Object.keys(answers))
+}
+
+export function hasUnsubmittedProgressForKeys(
+  answers: AnswerMap,
+  results: ResultMap,
+  answerKeys: string[],
+): boolean {
+  return answerKeys.some((id) => {
     if (id in results) return false
     const val = answers[id]
     if (Array.isArray(val)) return val.some((s) => s.trim())

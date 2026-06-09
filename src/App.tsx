@@ -19,8 +19,8 @@ import {
   useT,
 } from "./contexts"
 import { createDefaultData, downloadJson, loadData } from "./lib/storage"
-import { createTestQuestionList } from "./lib/question"
-import { hasUnsubmittedProgress } from "./utils/evaluate"
+import { createPracticeQuestionKey, createTestQuestionList } from "./lib/question"
+import { hasUnsubmittedProgressForKeys } from "./utils/evaluate"
 import { debugLog } from "./lib/debug"
 import { ONBOARDING_KEY } from "./utils/constants"
 import { safeGetStorageItem, safeSetStorageItem } from "./utils/safeStorage"
@@ -241,7 +241,10 @@ function TopbarConnected() {
       debugLog("Switch active list", { from: data.activeListId, to: id })
       // Only warn about losing progress for genuinely unsubmitted, non-empty answers.
       // (answers also holds values restored from past attempts, which are already saved.)
-      if (hasUnsubmittedProgress(answers, results)) {
+      const activeQuestionKeys = activeList.questions.map((question) =>
+        createPracticeQuestionKey(activeList.id, question.id),
+      )
+      if (hasUnsubmittedProgressForKeys(answers, results, activeQuestionKeys)) {
         showConfirm(t("confirmSwitchList"), () => {
           setData((current) => ({ ...current, activeListId: id }))
         })
@@ -249,7 +252,7 @@ function TopbarConnected() {
         setData((current) => ({ ...current, activeListId: id }))
       }
     },
-    [data.activeListId, answers, results, showConfirm, t, setData],
+    [data.activeListId, activeList, answers, results, showConfirm, t, setData],
   )
 
   return (

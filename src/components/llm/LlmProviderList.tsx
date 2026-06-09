@@ -4,6 +4,7 @@ import type { LlmProvider } from "../../lib/types"
 import { useT } from "../../contexts"
 import { testLlmConnection } from "../../lib/llm"
 import { useLlmConfig } from "../../contexts/LlmConfigContext"
+import { useProxy } from "../../contexts/ProxyContext"
 
 interface LlmProviderListProps {
   providers: LlmProvider[]
@@ -23,6 +24,7 @@ type CheckStatus = "idle" | "checking" | "ok" | "fail"
 export function LlmProviderList({ providers, onEdit, onDelete, onAdd }: LlmProviderListProps) {
   const t = useT()
   const { resolveProvider } = useLlmConfig()
+  const { proxySettings } = useProxy()
   const [statuses, setStatuses] = useState<Record<string, CheckStatus>>({})
 
   const handleCheck = async (id: string) => {
@@ -30,7 +32,7 @@ export function LlmProviderList({ providers, onEdit, onDelete, onAdd }: LlmProvi
     if (!config) return
     setStatuses((s) => ({ ...s, [id]: "checking" }))
     try {
-      await testLlmConnection(config, t)
+      await testLlmConnection({ ...config, ...proxySettings }, t)
       setStatuses((s) => ({ ...s, [id]: "ok" }))
     } catch {
       setStatuses((s) => ({ ...s, [id]: "fail" }))

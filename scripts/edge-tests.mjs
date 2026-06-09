@@ -2,6 +2,14 @@ import { build } from "esbuild"
 
 const source = `
   import {
+    cloneQuestionsWithFreshIds,
+    createPracticeQuestionKey,
+    getListStats,
+    isPracticeQuestionKeyForList,
+    validateQuestionForSave,
+    parsePracticeQuestionKey,
+  } from "./src/lib/question.ts"
+  import {
     LLM_CONFIG_STORAGE_KEY,
     LLM_MULTI_CONFIG_STORAGE_KEY,
     PROXY_STORAGE_KEY,
@@ -105,6 +113,131 @@ const source = `
   equal(normalized.lists[0].questions[0].title, longUnicodeText)
   equal(normalized.lists[0].questions[0].answer[0], longUnicodeText)
   deepEqual(normalized.settings.typeOrder, ["short", "single", "multiple", "boolean", "blank"])
+
+  const dirtySettings = normalizeAppData({
+    lists: [{ id: "l1", name: "List", description: "", questions: [], createdAt: "x", updatedAt: "x" }],
+    activeListId: "l1",
+    attempts: [],
+    settings: {
+      theme: "bad",
+      language: "bad",
+      autoNext: "yes",
+      autoNextPause: 1,
+      autoNextScope: "bad",
+      viewMode: "grid",
+      practiceMode: "bad",
+      sortMode: "bad",
+      submitMode: "each",
+      revealMode: "end",
+      randomSeed: Infinity,
+      typeOrder: ["blank", "blank", "single", "bad"],
+    },
+  })
+  equal(dirtySettings.settings.theme, "mint")
+  equal(dirtySettings.settings.language, "zh")
+  equal(dirtySettings.settings.autoNext, false)
+  equal(dirtySettings.settings.autoNextPause, true)
+  equal(dirtySettings.settings.revealMode, "immediate")
+  equal(Number.isFinite(dirtySettings.settings.randomSeed), true)
+  deepEqual(dirtySettings.settings.typeOrder, ["blank", "single", "multiple", "boolean", "short"])
+
+  const scopedKey = createPracticeQuestionKey("list-a", "q-a")
+  deepEqual(parsePracticeQuestionKey(scopedKey), { listId: "list-a", questionId: "q-a" })
+  equal(isPracticeQuestionKeyForList(scopedKey, "list-a"), true)
+  equal(isPracticeQuestionKeyForList(scopedKey, "list-b"), false)
+
+  const duplicateLabelQuestion = {
+    id: "q-dup",
+    type: "single",
+    title: "Pick one",
+    options: [
+      { id: "o1", label: "A", text: "One" },
+      { id: "o2", label: "A", text: "Two" },
+    ],
+    answer: "A",
+    explanation: "",
+    createdAt: "x",
+    updatedAt: "x",
+  }
+  equal(validateQuestionForSave(duplicateLabelQuestion), "duplicateOptions")
+  equal(validateQuestionForSave({ ...duplicateLabelQuestion, options: [
+    { id: "o1", label: "A", text: "One" },
+    { id: "o2", label: "B", text: "Two" },
+  ], answer: "C" }), "answerInvalid")
+  equal(validateQuestionForSave({ ...duplicateLabelQuestion, type: "multiple", options: [
+    { id: "o1", label: "A", text: "One" },
+    { id: "o2", label: "B", text: "Two" },
+  ], answer: ["A", "A"] }), "duplicateAnswers")
+
+  const clonePlan = cloneQuestionsWithFreshIds([
+    { ...duplicateLabelQuestion, options: [
+      { id: "o1", label: "A", text: "One" },
+      { id: "o2", label: "B", text: "Two" },
+    ], answer: "A" },
+  ])
+  equal(clonePlan.questions.length, 1)
+  equal(clonePlan.questions[0].id === "q-dup", false)
+  equal(clonePlan.questions[0].options[0].id === "o1", false)
+  equal(clonePlan.questionIdMap.get("q-dup"), clonePlan.questions[0].id)
+
+  const stats = getListStats(
+    {
+      id: "stats-list",
+      name: "Stats",
+      description: "",
+      questions: [{ ...clonePlan.questions[0], id: "q-stats" }],
+      createdAt: "x",
+      updatedAt: "x",
+    },
+    [
+      { id: "a-old", listId: "stats-list", questionId: "q-stats", answer: "A", correct: false, elapsedMs: 1000, submittedAt: "2024-01-01T00:00:00.000Z" },
+      { id: "a-new", listId: "stats-list", questionId: "q-stats", answer: "A", correct: true, elapsedMs: 2000, submittedAt: "2024-01-02T00:00:00.000Z" },
+    ],
+  )
+  equal(stats.correct, 1)
+  equal(stats.wrong, 0)
+
+  const duplicatedIds = normalizeAppData({
+    version: 1,
+    lists: [
+      {
+        id: "dup-list",
+        name: "First",
+        description: "",
+        questions: [
+          { id: "dup-q", type: "single", title: "First Q", options: [{ id: "a", label: "A", text: "A" }, { id: "b", label: "B", text: "B" }], answer: "A", explanation: "", createdAt: "x", updatedAt: "x" },
+          { id: "dup-q", type: "single", title: "First Q duplicate", options: [{ id: "a", label: "A", text: "A" }, { id: "b", label: "B", text: "B" }], answer: "B", explanation: "", createdAt: "x", updatedAt: "x" },
+        ],
+        createdAt: "x",
+        updatedAt: "x",
+      },
+      {
+        id: "dup-list",
+        name: "Second",
+        description: "",
+        questions: [
+          { id: "second-q", type: "single", title: "Second Q", options: [{ id: "a", label: "A", text: "A" }, { id: "b", label: "B", text: "B" }], answer: "A", explanation: "", createdAt: "x", updatedAt: "x" },
+        ],
+        createdAt: "x",
+        updatedAt: "x",
+      },
+    ],
+    activeListId: "dup-list",
+    attempts: [
+      { id: "at-1", listId: "dup-list", questionId: "dup-q", answer: "A", correct: true, elapsedMs: 10, submittedAt: "2024-01-03T00:00:00.000Z" },
+      { id: "at-2", listId: "dup-list", questionId: "second-q", answer: "A", correct: true, elapsedMs: 10, submittedAt: "2024-01-03T00:00:01.000Z" },
+    ],
+    settings: {},
+  })
+  equal(duplicatedIds.lists.length, 2)
+  equal(duplicatedIds.lists[0].id, "dup-list")
+  equal(duplicatedIds.lists[1].id === "dup-list", false)
+  equal(duplicatedIds.lists[0].questions[0].id, "dup-q")
+  equal(duplicatedIds.lists[0].questions[1].id === "dup-q", false)
+  equal(duplicatedIds.attempts[0].listId, duplicatedIds.lists[0].id)
+  equal(duplicatedIds.attempts[0].questionId, duplicatedIds.lists[0].questions[0].id)
+  equal(duplicatedIds.attempts[1].listId, duplicatedIds.lists[1].id)
+  equal(duplicatedIds.attempts[1].questionId, duplicatedIds.lists[1].questions[0].id)
 
   const items = Array.from({ length: 10000 }, (_, index) => index)
   const firstPage = getPageSlice(items, 1, DEFAULT_PAGE_SIZE)

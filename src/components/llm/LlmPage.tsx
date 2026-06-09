@@ -15,7 +15,13 @@ import {
   X,
 } from "lucide-react"
 import type { QuestionList } from "../../lib/types"
-import { createId, normalizeImportedList, parseQuestionJson } from "../../lib/question"
+import {
+  cloneQuestionsWithFreshIds,
+  getQuestionValidationMessage,
+  normalizeImportedList,
+  parseQuestionJson,
+  validateQuestionForSave,
+} from "../../lib/question"
 import { streamParseLlm, extractJsonText } from "../../lib/llm"
 import { downloadJson } from "../../lib/storage"
 import { debugLog } from "../../lib/debug"
@@ -50,6 +56,7 @@ export function LlmPage(props: {
   const [streamingText, setStreamingText] = useState("")
   const [outputTab, setOutputTab] = useState<"json" | "preview">("json")
   const [saved, setSaved] = useState(false)
+  const [parsedDirty, setParsedDirty] = useState(false)
   const [showSelfParse, setShowSelfParse] = useState(false)
   const [selfParseMode, setSelfParseMode] = useState<"answer" | "explanation" | "both" | "none">(
     "both",
@@ -70,8 +77,8 @@ export function LlmPage(props: {
   }, [])
 
   useEffect(() => {
-    unsavedRef.current = parsedList !== null
-  }, [parsedList, unsavedRef])
+    unsavedRef.current = parsedDirty
+  }, [parsedDirty, unsavedRef])
 
   const runParser = async () => {
     if (!rawText.trim()) {
@@ -106,6 +113,7 @@ export function LlmPage(props: {
     setStreamingText("")
     setParsedList(null)
     setParsedJsonText("")
+    setParsedDirty(false)
     setManualInput(false)
     setManualJsonText("")
     parseAbortRef.current?.abort()
@@ -131,6 +139,7 @@ export function LlmPage(props: {
       setParsedJsonText(JSON.stringify(lists[0], null, 2))
       setStreamingText("")
       setSaved(false)
+      setParsedDirty(true)
       pushToast("success", t("llmParseComplete"))
     } catch (error) {
       if (controller.signal.aborted || (error as { name?: string })?.name === "AbortError") {
@@ -167,18 +176,10 @@ export function LlmPage(props: {
       return
     }
     for (let i = 0; i < list.questions.length; i++) {
-      const q = list.questions[i]
-      if (!q.title.trim()) {
-        debugLog("Validation failed: missing title", { index: i })
-        pushToast("error", t("validateNoTitle", i + 1))
-        return
-      }
-      if ((q.type === "single" || q.type === "multiple") && q.options.length < 2) {
-        debugLog("Validation failed: insufficient options", {
-          index: i,
-          optionCount: q.options.length,
-        })
-        pushToast("error", t("validateFewOptions", i + 1))
+      const issue = validateQuestionForSave(list.questions[i])
+      if (issue) {
+        debugLog("Validation failed: invalid question", { index: i, issue })
+        pushToast("error", getQuestionValidationMessage(issue, t, i))
         return
       }
     }
@@ -186,6 +187,7 @@ export function LlmPage(props: {
     setParsedList(list)
     setParsedJsonText(JSON.stringify(list, null, 2))
     setSaved(true)
+    setParsedDirty(true)
     pushToast("success", t("validatePassed"))
   }
 
@@ -292,7 +294,7 @@ export function LlmPage(props: {
                           questionCount: list.questions.length,
                         })
                         downloadJson(`${list.name}.json`, list)
-                        unsavedRef.current = false
+                        setParsedDirty(false)
                       }
                     }}
                   >
@@ -304,14 +306,14 @@ export function LlmPage(props: {
                       const edited = getEditedList()
                       if (!edited) return
                       debugLog("Import to current list", { questionCount: edited.questions.length })
-                      const incoming = edited.questions.map((q) => ({ ...q, id: createId() }))
+                      const incoming = cloneQuestionsWithFreshIds(edited.questions).questions
                       updateActiveList((currentList) => ({
                         ...currentList,
                         questions: [...currentList.questions, ...incoming],
                         updatedAt: new Date().toISOString(),
                       }))
                       pushToast("success", t("addedToCurrentList", edited.questions.length))
-                      unsavedRef.current = false
+                      setParsedDirty(false)
                     }}
                   >
                     <Plus size={16} /> {t("importCurrentList")}
@@ -325,7 +327,7 @@ export function LlmPage(props: {
                           questionCount: list.questions.length,
                         })
                         addImportedList(list)
-                        unsavedRef.current = false
+                        setParsedDirty(false)
                       }
                     }}
                   >
@@ -349,6 +351,8 @@ export function LlmPage(props: {
               onChange={(event) => {
                 const nextText = event.target.value
                 setParsedJsonText(nextText)
+                setSaved(false)
+                setParsedDirty(true)
                 try {
                   setParsedList(normalizeImportedList(JSON.parse(nextText), t))
                 } catch {
@@ -363,6 +367,8 @@ export function LlmPage(props: {
               onChange={(updated) => {
                 setParsedList(updated)
                 setParsedJsonText(JSON.stringify(updated, null, 2))
+                setSaved(false)
+                setParsedDirty(true)
               }}
             />
           )
@@ -419,6 +425,7 @@ export function LlmPage(props: {
                   setParsedList(lists[0])
                   setParsedJsonText(JSON.stringify(lists[0], null, 2))
                   setSaved(false)
+                  setParsedDirty(true)
                   setManualInput(false)
                   pushToast("success", t("jsonParseSuccess"))
                 } catch (error) {

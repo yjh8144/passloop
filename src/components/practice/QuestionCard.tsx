@@ -20,6 +20,7 @@ export function QuestionCard(props: {
   id?: string
   index: number
   question: Question
+  answerKey?: string
   answers: AnswerMap
   setAnswers: (value: AnswerMap | ((value: AnswerMap) => AnswerMap)) => void
   result?: boolean
@@ -73,8 +74,9 @@ export function QuestionCard(props: {
   const showFeedback = showAnswer
   const formattedAnswer = formatAnswer(props.question.answer)
   const stackAnswerPanel = shouldStackAnswerPanel(props.question, formattedAnswer)
+  const answerKey = props.answerKey ?? props.question.id
   const updateAnswer = (id: string, value: string | string[]) => {
-    props.setAnswers((current) => ({ ...current, [id]: value }))
+    props.setAnswers((current) => ({ ...current, [props.answerKey ?? id]: value }))
   }
   return (
     <article id={props.id} className={`question-card ${props.compact ? "compact" : ""}`}>
@@ -99,7 +101,7 @@ export function QuestionCard(props: {
 
       <AnswerInput
         question={props.question}
-        value={props.answers[props.question.id]}
+        value={props.answers[answerKey]}
         onChange={updateAnswer}
         practiceMode={props.practiceMode}
         disabled={props.submitted}

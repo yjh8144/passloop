@@ -508,8 +508,10 @@ export const ko: Record<string, string> = {
   questionTypeLabel: "유형",
   questionTitleRequired: "문제 지문을 입력하세요.",
   questionOptionsRequired: "유효한 선택지를 2개 이상 입력하세요.",
+  questionOptionLabelsDuplicate: "선택지 라벨은 중복될 수 없습니다.",
   questionAnswerRequired: "정답을 선택하거나 입력하세요.",
   questionAnswerInvalid: "정답은 유효한 선택지와 일치해야 합니다.",
+  questionAnswerDuplicate: "정답에 중복 선택지를 포함할 수 없습니다.",
 
   // Self-fill Dialog
   selfFillHeader: "자체 답/해설 보충",

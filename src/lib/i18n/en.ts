@@ -529,8 +529,10 @@ export const en: Record<string, string> = {
   questionTypeLabel: "Type",
   questionTitleRequired: "Enter the question prompt first.",
   questionOptionsRequired: "Enter at least 2 valid options.",
+  questionOptionLabelsDuplicate: "Option labels must be unique.",
   questionAnswerRequired: "Choose or enter the correct answer.",
   questionAnswerInvalid: "The correct answer must match a valid option.",
+  questionAnswerDuplicate: "Correct answers cannot contain duplicate options.",
 
   // Self-fill Dialog
   selfFillHeader: "Self-fill Answers/Explanations",

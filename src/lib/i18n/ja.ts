@@ -510,8 +510,10 @@ export const ja: Record<string, string> = {
   questionTypeLabel: "問題タイプ",
   questionTitleRequired: "問題文を入力してください。",
   questionOptionsRequired: "有効な選択肢を 2 つ以上入力してください。",
+  questionOptionLabelsDuplicate: "選択肢ラベルは重複できません。",
   questionAnswerRequired: "正解を選択または入力してください。",
   questionAnswerInvalid: "正解は有効な選択肢に対応している必要があります。",
+  questionAnswerDuplicate: "正解に重複した選択肢を含めることはできません。",
 
   // Self-fill Dialog
   selfFillHeader: "セルフ補充 解答/解説",

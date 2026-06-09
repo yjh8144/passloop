@@ -1,14 +1,16 @@
 import type {
   AppData,
+  AttemptRecord,
   LlmConfig,
   LlmMultiConfig,
   LlmProvider,
   ProxySettings,
+  Question,
   QuestionList,
   QuestionType,
   Settings,
 } from "./types"
-import { createId, deduplicateQuestionIds, normalizeQuestion } from "./question"
+import { createId, normalizeQuestion } from "./question"
 import { questionTypes } from "../utils/constants"
 import { debugError } from "./debug"
 import { safeGetStorageItem, safeRemoveStorageItem, safeSetStorageItem } from "../utils/safeStorage"
@@ -53,6 +55,51 @@ export function sanitizeTypeOrder(value: unknown): QuestionType[] {
   }
   for (const type of questionTypes) if (!seen.has(type)) result.push(type)
   return result
+}
+
+function pickEnum<T extends string>(value: unknown, allowed: readonly T[], fallback: T): T {
+  return allowed.includes(value as T) ? (value as T) : fallback
+}
+
+function pickBoolean(value: unknown, fallback: boolean) {
+  return typeof value === "boolean" ? value : fallback
+}
+
+function normalizeSettings(value: unknown): Settings {
+  const source = value && typeof value === "object" ? (value as Partial<Settings>) : {}
+  const settings: Settings = {
+    theme: pickEnum(
+      source.theme,
+      ["mint", "paper", "lavender", "ocean", "rose", "night", "nord"],
+      defaultSettings.theme,
+    ),
+    language: pickEnum(source.language, ["zh", "en", "ja", "ko", "fr"], defaultSettings.language),
+    autoNext: pickBoolean(source.autoNext, defaultSettings.autoNext),
+    autoNextPause: pickBoolean(source.autoNextPause, defaultSettings.autoNextPause),
+    autoNextScope: pickEnum(source.autoNextScope, ["all", "correct"], defaultSettings.autoNextScope),
+    viewMode: pickEnum(source.viewMode, ["single", "paper"], defaultSettings.viewMode),
+    practiceMode: pickEnum(
+      source.practiceMode,
+      ["practice", "memorize"],
+      defaultSettings.practiceMode,
+    ),
+    sortMode: pickEnum(
+      source.sortMode,
+      ["manual", "random", "name", "type", "type-random"],
+      defaultSettings.sortMode,
+    ),
+    typeOrder: sanitizeTypeOrder(source.typeOrder),
+    submitMode: pickEnum(source.submitMode, ["each", "paper"], defaultSettings.submitMode),
+    revealMode: pickEnum(source.revealMode, ["immediate", "end"], defaultSettings.revealMode),
+    randomSeed:
+      typeof source.randomSeed === "number" && Number.isFinite(source.randomSeed)
+        ? source.randomSeed
+        : defaultSettings.randomSeed,
+  }
+  if (settings.submitMode === "each" && settings.revealMode === "end") {
+    settings.revealMode = "immediate"
+  }
+  return settings
 }
 
 export function createEmptyQuestionList(name = "Default List"): QuestionList {
@@ -320,10 +367,17 @@ export function normalizeAppData(value: unknown): AppData {
   const fallback = createDefaultData()
   if (!value || typeof value !== "object") return fallback
   const source = value as Partial<AppData>
-  const lists = Array.isArray(source.lists)
-    ? source.lists.map(normalizeList).filter(Boolean)
-    : fallback.lists
-  const safeLists = deduplicateListIds(lists.length ? (lists as QuestionList[]) : fallback.lists)
+  const entries = Array.isArray(source.lists)
+    ? source.lists.map(normalizeListEntry).filter(Boolean)
+    : fallback.lists.map((list) => ({
+        list,
+        originalListId: list.id,
+        questionIdMap: new Map(list.questions.map((question) => [question.id, question.id])),
+      }))
+  const safeEntries = deduplicateListEntries(
+    entries.length ? (entries as NormalizedListEntry[]) : normalizeFallbackEntries(fallback.lists),
+  )
+  const safeLists = safeEntries.map((entry) => entry.list)
   const activeListId =
     typeof source.activeListId === "string" &&
     safeLists.some((list) => list.id === source.activeListId)
@@ -333,43 +387,140 @@ export function normalizeAppData(value: unknown): AppData {
     version: 1,
     lists: safeLists,
     activeListId,
-    attempts: Array.isArray(source.attempts) ? source.attempts : [],
-    settings: { ...defaultSettings, ...(source.settings ?? {}) },
+    attempts: normalizeAttempts(source.attempts, safeEntries),
+    settings: normalizeSettings(source.settings),
   }
-  if (result.settings.submitMode === "each" && result.settings.revealMode === "end") {
-    result.settings = { ...result.settings, revealMode: "immediate" }
-  }
-  result.settings.typeOrder = sanitizeTypeOrder(result.settings.typeOrder)
   return result
 }
 
-function deduplicateListIds(lists: QuestionList[]): QuestionList[] {
+interface NormalizedListEntry {
+  list: QuestionList
+  originalListId: string
+  questionIdMap: Map<string, string>
+}
+
+function normalizeFallbackEntries(lists: QuestionList[]): NormalizedListEntry[] {
+  return lists.map((list) => ({
+    list,
+    originalListId: list.id,
+    questionIdMap: new Map(list.questions.map((question) => [question.id, question.id])),
+  }))
+}
+
+function deduplicateListEntries(entries: NormalizedListEntry[]): NormalizedListEntry[] {
   const seen = new Set<string>()
-  return lists.map((list) => {
+  return entries.map((entry) => {
+    const { list } = entry
     if (seen.has(list.id)) {
-      return { ...list, id: createId() }
+      const nextList = { ...list, id: createId() }
+      seen.add(nextList.id)
+      return { ...entry, list: nextList }
     }
     seen.add(list.id)
-    return list
+    return entry
   })
 }
 
 export function normalizeList(value: unknown): QuestionList | null {
+  return normalizeListEntry(value)?.list ?? null
+}
+
+function normalizeListEntry(value: unknown): NormalizedListEntry | null {
   if (!value || typeof value !== "object") return null
   const source = value as Partial<QuestionList>
   const timestamp = now()
+  const originalListId = typeof source.id === "string" ? source.id : createId()
+  const questions = Array.isArray(source.questions)
+    ? normalizeQuestionsWithMap(source.questions)
+    : { questions: [], questionIdMap: new Map<string, string>() }
+  return {
+    originalListId,
+    questionIdMap: questions.questionIdMap,
+    list: {
+      id: originalListId,
+      name: typeof source.name === "string" ? source.name : "Unnamed List",
+      description: typeof source.description === "string" ? source.description : "",
+      questions: questions.questions,
+      createdAt: typeof source.createdAt === "string" ? source.createdAt : timestamp,
+      updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : timestamp,
+    },
+  }
+}
+
+function normalizeQuestionsWithMap(values: unknown[]): {
+  questions: Question[]
+  questionIdMap: Map<string, string>
+} {
+  const seen = new Set<string>()
+  const questionIdMap = new Map<string, string>()
+  const questions = values.map((question, index) => {
+    const normalized = normalizeQuestion(question, index)
+    const source = question && typeof question === "object" ? (question as Partial<Question>) : {}
+    const originalQuestionId = typeof source.id === "string" ? source.id : normalized.id
+    const safeQuestion = seen.has(normalized.id)
+      ? { ...normalized, id: createId() }
+      : normalized
+    seen.add(safeQuestion.id)
+    if (!questionIdMap.has(originalQuestionId)) {
+      questionIdMap.set(originalQuestionId, safeQuestion.id)
+    }
+    return safeQuestion
+  })
+  return { questions, questionIdMap }
+}
+
+function normalizeAttempts(value: unknown, entries: NormalizedListEntry[]): AttemptRecord[] {
+  if (!Array.isArray(value)) return []
+  const byOriginalListId = new Map<string, NormalizedListEntry[]>()
+  const bySafeListId = new Map<string, NormalizedListEntry>()
+  for (const entry of entries) {
+    const listEntries = byOriginalListId.get(entry.originalListId) ?? []
+    listEntries.push(entry)
+    byOriginalListId.set(entry.originalListId, listEntries)
+    bySafeListId.set(entry.list.id, entry)
+  }
+  return value
+    .map((item) => normalizeAttempt(item, byOriginalListId, bySafeListId))
+    .filter((attempt): attempt is AttemptRecord => attempt !== null)
+}
+
+function normalizeAttempt(
+  value: unknown,
+  byOriginalListId: Map<string, NormalizedListEntry[]>,
+  bySafeListId: Map<string, NormalizedListEntry>,
+): AttemptRecord | null {
+  if (!value || typeof value !== "object") return null
+  const source = value as Partial<AttemptRecord>
+  if (typeof source.listId !== "string" || typeof source.questionId !== "string") return null
+  const originalListId = source.listId
+  const originalQuestionId = source.questionId
+  const candidates = byOriginalListId.get(originalListId) ?? []
+  const entry =
+    candidates.find((candidate) => candidate.questionIdMap.has(originalQuestionId)) ??
+    bySafeListId.get(originalListId) ??
+    candidates[0]
+  const listId = entry?.list.id ?? originalListId
+  const questionId = entry?.questionIdMap.get(originalQuestionId) ?? originalQuestionId
+  const elapsedMs =
+    typeof source.elapsedMs === "number" && Number.isFinite(source.elapsedMs)
+      ? Math.max(0, source.elapsedMs)
+      : 0
   return {
     id: typeof source.id === "string" ? source.id : createId(),
-    name: typeof source.name === "string" ? source.name : "Unnamed List",
-    description: typeof source.description === "string" ? source.description : "",
-    questions: Array.isArray(source.questions)
-      ? deduplicateQuestionIds(
-          source.questions.map((question, index) => normalizeQuestion(question, index)),
-        )
-      : [],
-    createdAt: typeof source.createdAt === "string" ? source.createdAt : timestamp,
-    updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : timestamp,
+    listId,
+    questionId,
+    answer: normalizeAttemptAnswer(source.answer),
+    correct: typeof source.correct === "boolean" ? source.correct : false,
+    elapsedMs,
+    submittedAt: typeof source.submittedAt === "string" ? source.submittedAt : now(),
   }
+}
+
+function normalizeAttemptAnswer(value: unknown): string | string[] {
+  if (Array.isArray(value)) return value.map((item) => String(item))
+  if (typeof value === "string") return value
+  if (typeof value === "number" || typeof value === "boolean") return String(value)
+  return ""
 }
 
 export function readFileAsText(file: File) {

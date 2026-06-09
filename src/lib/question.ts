@@ -13,6 +13,33 @@ export function createId() {
   return crypto.randomUUID?.() ?? `id-${Date.now()}-${Math.random()}`
 }
 
+export function createPracticeQuestionKey(listId: string, questionId: string) {
+  return JSON.stringify([listId, questionId])
+}
+
+export function parsePracticeQuestionKey(
+  key: string,
+): { listId: string; questionId: string } | null {
+  try {
+    const parsed = JSON.parse(key)
+    if (
+      Array.isArray(parsed) &&
+      parsed.length === 2 &&
+      typeof parsed[0] === "string" &&
+      typeof parsed[1] === "string"
+    ) {
+      return { listId: parsed[0], questionId: parsed[1] }
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
+export function isPracticeQuestionKeyForList(key: string, listId: string) {
+  return parsePracticeQuestionKey(key)?.listId === listId
+}
+
 export function deduplicateQuestionIds(questions: Question[]): Question[] {
   const seen = new Set<string>()
   return questions.map((question) => {
@@ -22,6 +49,39 @@ export function deduplicateQuestionIds(questions: Question[]): Question[] {
     seen.add(question.id)
     return question
   })
+}
+
+export function cloneQuestionsWithFreshIds(questions: Question[]): {
+  questions: Question[]
+  questionIdMap: Map<string, string>
+} {
+  const questionIdMap = new Map<string, string>()
+  const nextQuestions = questions.map((question) => {
+    const id = createId()
+    questionIdMap.set(question.id, id)
+    return {
+      ...question,
+      id,
+      options: question.options.map((option) => ({ ...option, id: createId() })),
+    }
+  })
+  return { questions: nextQuestions, questionIdMap }
+}
+
+export function cloneListWithFreshIds(list: QuestionList): {
+  list: QuestionList
+  questionIdMap: Map<string, string>
+} {
+  const { questions, questionIdMap } = cloneQuestionsWithFreshIds(list.questions)
+  return {
+    list: {
+      ...list,
+      id: createId(),
+      questions,
+      updatedAt: new Date().toISOString(),
+    },
+    questionIdMap,
+  }
 }
 
 const now = () => new Date().toISOString()
@@ -370,6 +430,66 @@ export function normalizeText(value: string | string[]) {
 
 export function formatAnswer(value: string | string[]) {
   return Array.isArray(value) ? value.join("、") : value
+}
+
+export type QuestionValidationIssue =
+  | "title"
+  | "options"
+  | "duplicateOptions"
+  | "answerRequired"
+  | "answerInvalid"
+  | "duplicateAnswers"
+
+export function validateQuestionForSave(question: Question): QuestionValidationIssue | null {
+  if (!question.title.trim()) return "title"
+
+  if (question.type === "single" || question.type === "multiple" || question.type === "boolean") {
+    const validOptions = question.options.filter(
+      (option) => option.label.trim() && option.text.trim(),
+    )
+    if (validOptions.length < 2) return "options"
+
+    const labels = validOptions.map((option) => option.label.trim())
+    const labelSet = new Set(labels)
+    if (labelSet.size !== labels.length) return "duplicateOptions"
+
+    if (question.type === "multiple") {
+      const answers = toArray(question.answer)
+        .map((answer) => answer.trim())
+        .filter(Boolean)
+      if (!answers.length) return "answerRequired"
+      if (new Set(answers).size !== answers.length) return "duplicateAnswers"
+      if (answers.some((answer) => !labelSet.has(answer))) return "answerInvalid"
+      return null
+    }
+
+    const answer = typeof question.answer === "string" ? question.answer.trim() : ""
+    if (!answer) return "answerRequired"
+    if (!labelSet.has(answer)) return "answerInvalid"
+    return null
+  }
+
+  const answers = toArray(question.answer)
+    .map((answer) => answer.trim())
+    .filter(Boolean)
+  return answers.length ? null : "answerRequired"
+}
+
+export function getQuestionValidationMessage(
+  issue: QuestionValidationIssue,
+  t: TFunc,
+  index?: number,
+) {
+  if (issue === "title") {
+    return index === undefined ? t("questionTitleRequired") : t("validateNoTitle", index + 1)
+  }
+  if (issue === "options") {
+    return index === undefined ? t("questionOptionsRequired") : t("validateFewOptions", index + 1)
+  }
+  if (issue === "duplicateOptions") return t("questionOptionLabelsDuplicate")
+  if (issue === "duplicateAnswers") return t("questionAnswerDuplicate")
+  if (issue === "answerRequired") return t("questionAnswerRequired")
+  return t("questionAnswerInvalid")
 }
 
 export function getListStats(list: QuestionList, attempts: AttemptRecord[]) {

@@ -1,4 +1,6 @@
 import express from 'express';
+import { lookup } from 'node:dns/promises';
+import net from 'node:net';
 
 const app = express();
 const portArg = process.argv.find(arg => arg.startsWith('--port='));
@@ -119,7 +121,7 @@ function isBlockedIpv6(g) {
   return false;
 }
 
-function validateUrl(urlString) {
+async function validateUrl(urlString) {
   let parsed;
   try { parsed = new URL(urlString); } catch { return false; }
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
@@ -131,13 +133,29 @@ function validateUrl(urlString) {
     hostname.endsWith('.local') ||
     hostname.endsWith('.internal')
   ) return false;
-  if (hostname.startsWith('[') && hostname.endsWith(']')) {
-    const v6 = expandIpv6(hostname.slice(1, -1));
-    return v6 ? !isBlockedIpv6(v6) : false;
-  }
+  if (hostname.startsWith('[') && hostname.endsWith(']')) hostname = hostname.slice(1, -1);
   const v4 = parseIpv4(hostname);
   if (v4) return !isBlockedIpv4(v4);
-  return true;
+  const v6 = expandIpv6(hostname);
+  if (v6) return !isBlockedIpv6(v6);
+  let addresses;
+  try {
+    addresses = await lookup(hostname, { all: true, verbatim: true });
+  } catch {
+    return false;
+  }
+  if (!addresses.length) return false;
+  return addresses.every(({ address, family }) => {
+    if (family === 4) {
+      const octets = parseIpv4(address);
+      return octets ? !isBlockedIpv4(octets) : false;
+    }
+    if (family === 6 || net.isIP(address) === 6) {
+      const groups = expandIpv6(address);
+      return groups ? !isBlockedIpv6(groups) : false;
+    }
+    return false;
+  });
 }
 
 if (!AUTH_SECRET) {
@@ -174,12 +192,12 @@ app.use((req, res) => {
     return res.status(400).send('Missing ?url= parameter');
   }
 
-  if (!validateUrl(targetUrl)) {
-    res.set('Access-Control-Allow-Origin', '*');
-    return res.status(403).send('Forbidden: target URL not allowed');
-  }
-
   (async () => {
+    if (!(await validateUrl(targetUrl))) {
+      res.set('Access-Control-Allow-Origin', '*');
+      return res.status(403).send('Forbidden: target URL not allowed');
+    }
+
     try {
       const headers = { 'Content-Type': req.headers['content-type'] || 'application/json' };
       if (req.headers['authorization']) headers['Authorization'] = req.headers['authorization'];

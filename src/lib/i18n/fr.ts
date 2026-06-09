@@ -542,8 +542,10 @@ export const fr: Record<string, string> = {
   questionTypeLabel: "Type",
   questionTitleRequired: "Saisissez d'abord l'énoncé.",
   questionOptionsRequired: "Saisissez au moins 2 options valides.",
+  questionOptionLabelsDuplicate: "Les libellés des options doivent être uniques.",
   questionAnswerRequired: "Choisissez ou saisissez la bonne réponse.",
   questionAnswerInvalid: "La bonne réponse doit correspondre à une option valide.",
+  questionAnswerDuplicate: "Les bonnes réponses ne peuvent pas contenir d'options en double.",
 
   // Self-fill Dialog
   selfFillHeader: "Auto-complétion réponses/explications",

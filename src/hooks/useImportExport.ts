@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { ChangeEvent } from "react"
 import type { AppData, QuestionList, TFunc } from "../lib/types"
-import { createId, parseQuestionJson } from "../lib/question"
+import { cloneQuestionsWithFreshIds, createId, parseQuestionJson } from "../lib/question"
 import { normalizeAppData, readFileAsText } from "../lib/storage"
 import { debugLog } from "../lib/debug"
 import { fetchViaProxy } from "../lib/llm"
@@ -44,6 +44,14 @@ interface ProxyConfig {
   proxyEnabled: boolean
   proxyUrl: string
   proxyKey: string
+}
+
+function createQuestionClonePlan(lists: QuestionList[]) {
+  const questions = lists.flatMap((list) => {
+    const cloned = cloneQuestionsWithFreshIds(list.questions)
+    return cloned.questions
+  })
+  return { questions }
 }
 
 interface UseImportExportParams {
@@ -128,9 +136,7 @@ export function useImportExport({
 
   const commitImport = (mode: ImportCommitMode) => {
     if (!pendingImportLists) return
-    const questions = pendingImportLists
-      .flatMap((l) => l.questions)
-      .map((q) => ({ ...q, id: createId() }))
+    const { questions } = createQuestionClonePlan(pendingImportLists)
     if (mode === "current") {
       debugLog("Import to current list", { questionCount: questions.length })
       updateActiveList((list) => ({
@@ -241,21 +247,44 @@ export function useImportExport({
         importedLists: pendingBackup.lists.length,
       })
       const existingIds = new Set(data.lists.map((l) => l.id))
-      const idRemap = new Map<string, string>()
-      const newLists = pendingBackup.lists.map((l) => {
-        if (existingIds.has(l.id)) {
+      const existingQuestionIds = new Set(
+        data.lists.flatMap((list) => list.questions.map((q) => q.id)),
+      )
+      const listIdRemap = new Map<string, string>()
+      const questionIdRemap = new Map<string, string>()
+      const newLists = pendingBackup.lists.map((list) => {
+        const shouldRemapList = existingIds.has(list.id)
+        const shouldRemapQuestions =
+          shouldRemapList || list.questions.some((question) => existingQuestionIds.has(question.id))
+        let nextList = list
+        if (shouldRemapList) {
           const newId = createId()
-          idRemap.set(l.id, newId)
-          return { ...l, id: newId }
+          listIdRemap.set(list.id, newId)
+          nextList = { ...nextList, id: newId }
         }
-        return l
+        if (shouldRemapQuestions) {
+          const cloned = cloneQuestionsWithFreshIds(list.questions)
+          for (const [oldId, newId] of cloned.questionIdMap) {
+            questionIdRemap.set(`${list.id}\u0000${oldId}`, newId)
+          }
+          nextList = { ...nextList, questions: cloned.questions }
+        }
+        return nextList
       })
       const existingAttemptKeys = new Set(
-        data.attempts.map((a) => `${a.questionId}-${a.submittedAt}`),
+        data.attempts.map((a) => `${a.listId}\u0000${a.questionId}\u0000${a.submittedAt}`),
       )
       const newAttempts = pendingBackup.attempts
-        .filter((a) => !existingAttemptKeys.has(`${a.questionId}-${a.submittedAt}`))
-        .map((a) => (idRemap.has(a.listId) ? { ...a, listId: idRemap.get(a.listId)! } : a))
+        .map((attempt) => {
+          const nextListId = listIdRemap.get(attempt.listId) ?? attempt.listId
+          const nextQuestionId =
+            questionIdRemap.get(`${attempt.listId}\u0000${attempt.questionId}`) ??
+            attempt.questionId
+          return { ...attempt, listId: nextListId, questionId: nextQuestionId }
+        })
+        .filter(
+          (a) => !existingAttemptKeys.has(`${a.listId}\u0000${a.questionId}\u0000${a.submittedAt}`),
+        )
       updateData((current) => ({
         ...current,
         lists: [...current.lists, ...newLists],

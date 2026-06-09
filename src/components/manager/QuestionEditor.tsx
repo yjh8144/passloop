@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react"
 import { Check, Plus, Trash2, X } from "lucide-react"
 import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
-import { createId, getTypeLabels, normalizeQuestion, toArray } from "../../lib/question"
+import {
+  createId,
+  getQuestionValidationMessage,
+  getTypeLabels,
+  normalizeQuestion,
+  validateQuestionForSave,
+} from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
 import { usePushToast, useT } from "../../contexts"
 import { useDialog } from "../../contexts/DialogContext"
@@ -77,31 +83,8 @@ export function QuestionEditor(props: {
     })
   }
   const validateDraft = () => {
-    if (!draft.title.trim()) return t("questionTitleRequired")
-    if (draft.type === "single" || draft.type === "multiple" || draft.type === "boolean") {
-      const validOptions = draft.options.filter(
-        (option) => option.label.trim() && option.text.trim(),
-      )
-      if (validOptions.length < 2) return t("questionOptionsRequired")
-      const validLabels = new Set(validOptions.map((option) => option.label.trim()))
-      if (draft.type === "multiple") {
-        const answers = toArray(draft.answer)
-          .map((answer) => answer.trim())
-          .filter(Boolean)
-        if (!answers.length) return t("questionAnswerRequired")
-        if (answers.some((answer) => !validLabels.has(answer))) return t("questionAnswerInvalid")
-      } else {
-        const answer = typeof draft.answer === "string" ? draft.answer.trim() : ""
-        if (!answer) return t("questionAnswerRequired")
-        if (!validLabels.has(answer)) return t("questionAnswerInvalid")
-      }
-    } else {
-      const answers = toArray(draft.answer)
-        .map((answer) => answer.trim())
-        .filter(Boolean)
-      if (!answers.length) return t("questionAnswerRequired")
-    }
-    return ""
+    const issue = validateQuestionForSave(draft)
+    return issue ? getQuestionValidationMessage(issue, t) : ""
   }
   const handleSave = () => {
     const error = validateDraft()

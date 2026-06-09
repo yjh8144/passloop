@@ -91,12 +91,33 @@ function isBlockedIpv6(g) {
   return false;
 }
 
-function validateUrl(urlString) {
+function parseAllowedTargetHosts(value) {
+  if (!value) return null;
+  const hosts = String(value)
+    .split(',')
+    .map((item) => item.trim().toLowerCase().replace(/\.+$/, ''))
+    .filter(Boolean);
+  return hosts.length ? new Set(hosts) : null;
+}
+
+function hostMatchesAllowlist(hostname, allowlist) {
+  if (!allowlist) return true;
+  if (allowlist.has(hostname)) return true;
+  for (const allowed of allowlist) {
+    if (allowed.startsWith('*.') && hostname.endsWith(allowed.slice(1))) return true;
+  }
+  return false;
+}
+
+function validateUrl(urlString, env) {
   let parsed;
   try { parsed = new URL(urlString); } catch { return false; }
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
   let hostname = parsed.hostname.toLowerCase().replace(/\.+$/, '');
   if (!hostname) return false;
+  if (!hostMatchesAllowlist(hostname, parseAllowedTargetHosts(env?.ALLOWED_TARGET_HOSTS))) {
+    return false;
+  }
   if (
     hostname === 'localhost' ||
     hostname.endsWith('.localhost') ||
@@ -109,6 +130,8 @@ function validateUrl(urlString) {
   }
   const v4 = parseIpv4(hostname);
   if (v4) return !isBlockedIpv4(v4);
+  // Cloudflare Workers cannot resolve DNS in user code. Configure
+  // ALLOWED_TARGET_HOSTS in production to close DNS-rebinding/SSRF gaps for names.
   return true;
 }
 
@@ -145,7 +168,7 @@ export default {
       });
     }
 
-    if (!validateUrl(targetUrl)) {
+    if (!validateUrl(targetUrl, env)) {
       return new Response('Forbidden: target URL not allowed', {
         status: 403,
         headers: { 'Access-Control-Allow-Origin': '*' },

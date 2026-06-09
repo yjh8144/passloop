@@ -8,8 +8,9 @@ import { CompletionDialog } from "./CompletionDialog"
 import { useT, usePracticeContext, useAppData } from "../../contexts"
 import { loadPosition } from "../../utils/session"
 import { debugLog } from "../../lib/debug"
-import { getListStats } from "../../lib/question"
+import { createPracticeQuestionKey, getListStats } from "../../lib/question"
 import type { AttemptRecord } from "../../lib/types"
+import type { ResultMap } from "../../hooks/types"
 
 const PAPER_SCROLL_LOCK_MS = 650
 
@@ -37,15 +38,30 @@ export function PracticePage() {
   const [inspectorFloatOpen, setInspectorFloatOpen] = useState(false)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
   const activeQuestion = questions[currentIndex]
+  const getQuestionKey = useCallback(
+    (questionId: string) => createPracticeQuestionKey(activeList.id, questionId),
+    [activeList.id],
+  )
   useEffect(() => {
-    if (activeQuestion && !startedAtRef.current[activeQuestion.id]) {
-      startedAtRef.current[activeQuestion.id] = Date.now()
+    if (!activeQuestion) return
+    const key = getQuestionKey(activeQuestion.id)
+    if (!startedAtRef.current[key]) {
+      startedAtRef.current[key] = Date.now()
     }
-  }, [activeQuestion, startedAtRef])
+  }, [activeQuestion, getQuestionKey, startedAtRef])
 
-  const allSubmitted = questions.length > 0 && questions.every((q) => q.id in results)
-  const correctCount = questions.filter((q) => results[q.id] === true).length
-  const wrongCount = questions.filter((q) => results[q.id] === false).length
+  const visibleResults = useMemo<ResultMap>(() => {
+    const mapped: ResultMap = {}
+    for (const question of questions) {
+      const key = getQuestionKey(question.id)
+      if (key in results) mapped[question.id] = results[key]
+    }
+    return mapped
+  }, [getQuestionKey, questions, results])
+  const allSubmitted =
+    questions.length > 0 && questions.every((q) => getQuestionKey(q.id) in results)
+  const correctCount = questions.filter((q) => results[getQuestionKey(q.id)] === true).length
+  const wrongCount = questions.filter((q) => results[getQuestionKey(q.id)] === false).length
   const visibleStats = useMemo(() => {
     const attemptByQuestion = new Map<string, AttemptRecord>()
     for (const attempt of data.attempts) {
@@ -56,20 +72,21 @@ export function PracticePage() {
       }
     }
     for (const question of questions) {
-      if (!(question.id in results)) continue
+      const key = getQuestionKey(question.id)
+      if (!(key in results)) continue
       const prev = attemptByQuestion.get(question.id)
       attemptByQuestion.set(question.id, {
         id: prev?.id ?? `session-${question.id}`,
         listId: activeList.id,
         questionId: question.id,
-        answer: prev?.answer ?? answers[question.id] ?? "",
-        correct: results[question.id],
+        answer: prev?.answer ?? answers[key] ?? "",
+        correct: results[key],
         elapsedMs: prev?.elapsedMs ?? 0,
         submittedAt: prev?.submittedAt ?? "",
       })
     }
     return getListStats({ ...activeList, questions }, [...attemptByQuestion.values()])
-  }, [activeList, questions, data.attempts, results, answers])
+  }, [activeList, questions, data.attempts, results, answers, getQuestionKey])
 
   useEffect(() => {
     if (!inspectorFloatOpen) return
@@ -204,10 +221,11 @@ export function PracticePage() {
             id={`question-${index}`}
             index={index}
             question={question}
+            answerKey={getQuestionKey(question.id)}
             answers={answers}
             setAnswers={setAnswers}
-            result={results[question.id]}
-            submitted={question.id in results}
+            result={results[getQuestionKey(question.id)]}
+            submitted={getQuestionKey(question.id) in results}
             practiceMode={settings.practiceMode}
             onSubmit={() => submitQuestion(question)}
             onAutoSubmit={(value) => submitQuestion(question, value)}
@@ -220,7 +238,7 @@ export function PracticePage() {
         ))}
         {settings.practiceMode !== "memorize" &&
           settings.submitMode === "paper" &&
-          questions.some((q) => !(q.id in results)) && (
+          questions.some((q) => !(getQuestionKey(q.id) in results)) && (
             <button className="submit-all-button" onClick={submitAll}>
               <Check size={18} /> {t("submitAllAnswers")}
             </button>
@@ -231,10 +249,11 @@ export function PracticePage() {
         <QuestionCard
           index={currentIndex}
           question={activeQuestion}
+          answerKey={getQuestionKey(activeQuestion.id)}
           answers={answers}
           setAnswers={setAnswers}
-          result={results[activeQuestion.id]}
-          submitted={activeQuestion.id in results}
+          result={results[getQuestionKey(activeQuestion.id)]}
+          submitted={getQuestionKey(activeQuestion.id) in results}
           practiceMode={settings.practiceMode}
           onSubmit={() => submitQuestion(activeQuestion)}
           onAutoSubmit={(value) => submitQuestion(activeQuestion, value)}
@@ -261,7 +280,7 @@ export function PracticePage() {
           <div className="stage-tools">
             {settings.submitMode === "paper" &&
               settings.practiceMode !== "memorize" &&
-              questions.some((q) => !(q.id in results)) && (
+              questions.some((q) => !(getQuestionKey(q.id) in results)) && (
                 <button className="submit-all-button compact" onClick={submitAll}>
                   <Check size={16} /> {t("submitAllAnswers")}
                 </button>
@@ -310,7 +329,7 @@ export function PracticePage() {
           <Navigator
             questions={questions}
             currentIndex={currentIndex}
-            results={results}
+            results={visibleResults}
             setCurrentIndex={setCurrentIndex}
             viewMode={settings.viewMode}
             revealMode={settings.revealMode}
@@ -327,7 +346,7 @@ export function PracticePage() {
             questions={questions}
             currentIndex={currentIndex}
             setCurrentIndex={setCurrentIndex}
-            results={results}
+            results={visibleResults}
             stats={visibleStats}
             settings={settings}
             allSubmitted={allSubmitted}
@@ -363,7 +382,7 @@ export function PracticePage() {
               setCurrentIndex(idx)
               setInspectorFloatOpen(false)
             }}
-            results={results}
+            results={visibleResults}
             stats={visibleStats}
             settings={settings}
             allSubmitted={allSubmitted}
@@ -385,7 +404,7 @@ export function PracticePage() {
         open={showCompletionDialog}
         onClose={() => setShowCompletionDialog(false)}
         questions={questions}
-        results={results}
+        results={visibleResults}
         onClearListAttempts={clearActiveListAttempts}
         onPracticeWrong={practiceWrongList}
         onExportWrong={exportWrongList}

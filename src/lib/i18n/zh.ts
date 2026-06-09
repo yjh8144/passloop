@@ -498,8 +498,10 @@ export const zh: Record<string, string> = {
   questionTypeLabel: "题型",
   questionTitleRequired: "请先填写题干。",
   questionOptionsRequired: "请至少填写 2 个有效选项。",
+  questionOptionLabelsDuplicate: "选项标识不能重复。",
   questionAnswerRequired: "请选择或填写正确答案。",
   questionAnswerInvalid: "正确答案必须对应一个有效选项。",
+  questionAnswerDuplicate: "正确答案中不能包含重复选项。",
 
   // Self-fill Dialog
   selfFillHeader: "自助补充答案/解析",
