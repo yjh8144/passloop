@@ -76,7 +76,11 @@ function normalizeSettings(value: unknown): Settings {
     language: pickEnum(source.language, ["zh", "en", "ja", "ko", "fr"], defaultSettings.language),
     autoNext: pickBoolean(source.autoNext, defaultSettings.autoNext),
     autoNextPause: pickBoolean(source.autoNextPause, defaultSettings.autoNextPause),
-    autoNextScope: pickEnum(source.autoNextScope, ["all", "correct"], defaultSettings.autoNextScope),
+    autoNextScope: pickEnum(
+      source.autoNextScope,
+      ["all", "correct"],
+      defaultSettings.autoNextScope,
+    ),
     viewMode: pickEnum(source.viewMode, ["single", "paper"], defaultSettings.viewMode),
     practiceMode: pickEnum(
       source.practiceMode,
@@ -457,9 +461,7 @@ function normalizeQuestionsWithMap(values: unknown[]): {
     const normalized = normalizeQuestion(question, index)
     const source = question && typeof question === "object" ? (question as Partial<Question>) : {}
     const originalQuestionId = typeof source.id === "string" ? source.id : normalized.id
-    const safeQuestion = seen.has(normalized.id)
-      ? { ...normalized, id: createId() }
-      : normalized
+    const safeQuestion = seen.has(normalized.id) ? { ...normalized, id: createId() } : normalized
     seen.add(safeQuestion.id)
     if (!questionIdMap.has(originalQuestionId)) {
       questionIdMap.set(originalQuestionId, safeQuestion.id)

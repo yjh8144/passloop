@@ -132,9 +132,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const preSearchIndexRef = useRef<number | null>(null)
   const activeQuestionKeys = useMemo(
     () =>
-      activeList.questions.map((question) =>
-        createPracticeQuestionKey(activeList.id, question.id),
-      ),
+      activeList.questions.map((question) => createPracticeQuestionKey(activeList.id, question.id)),
     [activeList.id, activeList.questions],
   )
   const activeAttemptsSignature = useMemo(
@@ -440,10 +438,13 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // --- Submission logic ---
-  const isAnswerEmpty = useCallback((question: Question): boolean => {
-    const answers = stateRef.current.answers
-    return isEmptyAnswer(answers[createPracticeQuestionKey(activeList.id, question.id)])
-  }, [activeList.id])
+  const isAnswerEmpty = useCallback(
+    (question: Question): boolean => {
+      const answers = stateRef.current.answers
+      return isEmptyAnswer(answers[createPracticeQuestionKey(activeList.id, question.id)])
+    },
+    [activeList.id],
+  )
 
   const submitQuestion = useCallback(
     (question: Question, overrideAnswer?: string | string[]) => {
