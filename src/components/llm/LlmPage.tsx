@@ -79,6 +79,7 @@ export function LlmPage(props: {
       return
     }
     if (!config) {
+      pushToast("info", t("configureLlmForParse"))
       openLlmConfig()
       return
     }
@@ -213,12 +214,16 @@ export function LlmPage(props: {
             >
               <Copy size={17} /> {t("selfParse")}
             </button>
-            <button className="primary-button" onClick={loading ? cancelParser : runParser}>
-              <Sparkles size={17} /> {loading ? t("cancel") : t("parse")}
+            <button
+              className="primary-button"
+              onClick={loading ? cancelParser : runParser}
+              title={!config && !loading ? t("configureLlmForParse") : undefined}
+            >
+              <Sparkles size={17} /> {loading ? t("cancel") : t("llmParseBtn")}
             </button>
           </div>
         </div>
-        <button className="llm-config-trigger" onClick={openLlmConfig}>
+        <button className="llm-config-trigger" onClick={openLlmConfig} aria-label={t("llmConfig")}>
           <Settings2 size={16} />
           <span>
             {config
@@ -447,7 +452,11 @@ export function LlmPage(props: {
           <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t("overwriteConfirmHeader")}</h2>
-              <button className="icon-button" onClick={() => setShowOverwriteConfirm(false)}>
+              <button
+                className="icon-button"
+                onClick={() => setShowOverwriteConfirm(false)}
+                aria-label={t("close")}
+              >
                 <X size={18} />
               </button>
             </div>
@@ -472,7 +481,11 @@ export function LlmPage(props: {
           <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t("selectParseContentTitle")}</h2>
-              <button className="icon-button" onClick={() => setShowParseChoice(false)}>
+              <button
+                className="icon-button"
+                onClick={() => setShowParseChoice(false)}
+                aria-label={t("close")}
+              >
                 <X size={18} />
               </button>
             </div>

@@ -79,7 +79,7 @@ export function QuestionEditor(props: {
       <div className="editor-title">
         <h2>{t("editQuestionTitle")}</h2>
         {!props.hideClose && (
-          <button className="icon-button" onClick={props.onCancel}>
+          <button className="icon-button" onClick={props.onCancel} aria-label={t("close")}>
             <X size={18} />
           </button>
         )}
@@ -152,6 +152,7 @@ export function QuestionEditor(props: {
             {draft.type !== "boolean" && (
               <button
                 className="icon-button"
+                aria-label={t("addOption")}
                 onClick={() =>
                   patch({
                     options: [
@@ -180,7 +181,11 @@ export function QuestionEditor(props: {
                 onChange={(event) => updateOption(option.id, { text: event.target.value })}
               />
               {draft.type !== "boolean" && (
-                <button className="icon-button" onClick={() => removeOption(option.id)}>
+                <button
+                  className="icon-button"
+                  onClick={() => removeOption(option.id)}
+                  aria-label={t("deleteOption")}
+                >
                   <Trash2 size={15} />
                 </button>
               )}
@@ -268,6 +273,7 @@ export function QuestionEditor(props: {
                         <button
                           type="button"
                           className="icon-button"
+                          aria-label={t("deleteOption")}
                           onClick={() => patch({ answer: answers.filter((_, i) => i !== index) })}
                         >
                           <Trash2 size={15} />
@@ -278,6 +284,7 @@ export function QuestionEditor(props: {
                   <button
                     type="button"
                     className="icon-button add-answer-btn"
+                    aria-label={t("addOption")}
                     onClick={() => patch({ answer: [...answers, ""] })}
                   >
                     <Plus size={16} />

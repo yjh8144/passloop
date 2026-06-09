@@ -53,12 +53,14 @@ export function Sidebar(props: { onOpenDebugDialog: () => void }) {
           rel="noopener noreferrer"
           className="icon-button github-link"
           title="GitHub"
+          aria-label="GitHub"
         >
           <Github size={17} />
         </a>
         <button
           className="icon-button desktop-sidebar-toggle"
           title={desktopSidebarCollapsed ? t("expandSidebar") : t("collapseSidebar")}
+          aria-label={desktopSidebarCollapsed ? t("expandSidebar") : t("collapseSidebar")}
           onClick={() => setDesktopSidebarCollapsed((c) => !c)}
         >
           {desktopSidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
@@ -66,6 +68,7 @@ export function Sidebar(props: { onOpenDebugDialog: () => void }) {
         <button
           className="icon-button mobile-sidebar-toggle"
           title={mobileSidebarCollapsed ? t("expandListPanel") : t("collapseListPanel")}
+          aria-label={mobileSidebarCollapsed ? t("expandListPanel") : t("collapseListPanel")}
           onClick={() => setMobileSidebarCollapsed((c) => !c)}
         >
           {mobileSidebarCollapsed ? <ChevronDown size={17} /> : <ChevronUp size={17} />}

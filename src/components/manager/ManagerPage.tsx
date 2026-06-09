@@ -34,6 +34,7 @@ export function ManagerPage(props: {
   const [filling, setFilling] = useState(false)
   const [fillStreamText, setFillStreamText] = useState("")
   const [editorFloatOpen, setEditorFloatOpen] = useState(false)
+  const [isCompactEditor, setIsCompactEditor] = useState(false)
   const [editorDirty, setEditorDirty] = useState(false)
   const [questionPage, setQuestionPage] = useState(1)
   const editorRef = useRef<HTMLElement>(null)
@@ -43,6 +44,17 @@ export function ManagerPage(props: {
     return () => {
       fillAbortRef.current?.abort()
     }
+  }, [])
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1180px)")
+    const sync = () => {
+      setIsCompactEditor(query.matches)
+      if (!query.matches) setEditorFloatOpen(false)
+    }
+    sync()
+    query.addEventListener("change", sync)
+    return () => query.removeEventListener("change", sync)
   }, [])
 
   useEffect(() => {
@@ -60,7 +72,7 @@ export function ManagerPage(props: {
 
   const [prevEditing, setPrevEditing] = useState(props.editing)
   const [prevFilling, setPrevFilling] = useState(filling)
-  if ((props.editing && !prevEditing) || (filling && !prevFilling)) {
+  if (isCompactEditor && ((props.editing && !prevEditing) || (filling && !prevFilling))) {
     setEditorFloatOpen(true)
   }
   if (props.editing !== prevEditing) setPrevEditing(props.editing)
@@ -261,10 +273,18 @@ export function ManagerPage(props: {
               <span>{questionPageData.start + index + 1}</span>
               <strong>{question.title}</strong>
               <small>{typeLabelsMap[question.type]}</small>
-              <button className="icon-button" onClick={() => handleEditSwitch(question)}>
+              <button
+                className="icon-button"
+                onClick={() => handleEditSwitch(question)}
+                aria-label={t("editQuestion")}
+              >
                 <Edit3 size={16} />
               </button>
-              <button className="icon-button" onClick={() => deleteQuestion(question.id)}>
+              <button
+                className="icon-button"
+                onClick={() => deleteQuestion(question.id)}
+                aria-label={t("deleteQuestion")}
+              >
                 <Trash2 size={16} />
               </button>
             </div>
@@ -296,12 +316,12 @@ export function ManagerPage(props: {
       </section>
 
       <aside className="editor-panel" ref={editorRef}>
-        {filling ? (
+        {!isCompactEditor && filling ? (
           <div className="fill-stream-panel">
             <h2>{t("llmFillingStatus")}</h2>
             <pre className="streaming-preview">{fillStreamText || t("waitingAiResponse")}</pre>
           </div>
-        ) : props.editing ? (
+        ) : !isCompactEditor && props.editing ? (
           <QuestionEditor
             question={props.editing}
             onCancel={() => {
@@ -312,15 +332,18 @@ export function ManagerPage(props: {
             onSave={saveQuestion}
             onDirtyChange={setEditorDirty}
           />
-        ) : (
+        ) : !isCompactEditor ? (
           <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />
-        )}
+        ) : null}
       </aside>
 
       <button
         className="editor-fab"
         onClick={() => setEditorFloatOpen(true)}
         title={t("editorTitle")}
+        aria-label={t("editorTitle")}
+        aria-hidden={!isCompactEditor || editorFloatOpen}
+        tabIndex={!isCompactEditor || editorFloatOpen ? -1 : undefined}
       >
         <FileEdit size={22} />
       </button>
@@ -340,12 +363,16 @@ export function ManagerPage(props: {
           }
         }}
       />
-      <div className={`editor-float ${editorFloatOpen ? "is-open" : ""}`}>
+      <div
+        className={`editor-float ${editorFloatOpen ? "is-open" : ""}`}
+        aria-hidden={!isCompactEditor || !editorFloatOpen}
+      >
         <div className="editor-float-inner">
           <div className="editor-float-header">
             <span>{t("editorTitle")}</span>
             <button
               className="icon-button"
+              aria-label={t("close")}
               onClick={() => {
                 if (props.editing && editorDirty) {
                   showConfirm(t("unsavedConfirm"), () => {
@@ -363,12 +390,12 @@ export function ManagerPage(props: {
               <X size={16} />
             </button>
           </div>
-          {filling ? (
+          {isCompactEditor && filling ? (
             <div className="fill-stream-panel">
               <h2>{t("llmFillingStatus")}</h2>
               <pre className="streaming-preview">{fillStreamText || t("waitingAiResponse")}</pre>
             </div>
-          ) : props.editing ? (
+          ) : isCompactEditor && props.editing ? (
             <QuestionEditor
               question={props.editing}
               onCancel={() => {
@@ -384,9 +411,9 @@ export function ManagerPage(props: {
               onDirtyChange={setEditorDirty}
               hideClose
             />
-          ) : (
+          ) : isCompactEditor ? (
             <EmptyState title={t("selectToEditTitle")} description={t("selectToEditDesc")} />
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -395,7 +422,11 @@ export function ManagerPage(props: {
           <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t("selectFillContentTitle")}</h2>
-              <button className="icon-button" onClick={() => setShowFillChoice(false)}>
+              <button
+                className="icon-button"
+                onClick={() => setShowFillChoice(false)}
+                aria-label={t("close")}
+              >
                 <X size={18} />
               </button>
             </div>

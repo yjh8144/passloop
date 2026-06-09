@@ -78,7 +78,7 @@ export function LlmConfigModal(props: { open: boolean; onClose: () => void }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("llmConfigTitle")}</h2>
-          <button className="icon-button" onClick={props.onClose}>
+          <button className="icon-button" onClick={props.onClose} aria-label={t("close")}>
             <X size={18} />
           </button>
         </div>

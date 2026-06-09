@@ -417,6 +417,8 @@ export const zh: Record<string, string> = {
     '粘贴 AI 返回的 JSON...\n\n{\n  "name": "题单名称",\n  "questions": [...]\n}',
   pleaseInputRawText: "请先粘贴未整理题目文本。",
   pleaseInputRawTextFirst: "请先在下方输入框中粘贴题目文本。",
+  configureLlmForParse: "请先配置题目解析使用的模型提供商。",
+  llmParseBtn: "LLM 解析",
   llmParseComplete: "LLM 解析完成。",
   llmParseFailed: "LLM 解析失败。",
   jsonFormatError: "解析结果 JSON 仍有格式错误，请修正后再操作。",
@@ -441,7 +443,7 @@ export const zh: Record<string, string> = {
   jsonParseSuccess: "JSON 解析成功。",
   jsonFormatErrorCheck: "JSON 格式错误，请检查内容。",
   waitingForParseTitle: "等待解析",
-  waitingForParseDesc: "使用左侧内置解析，或点击「自助解析」手动粘贴 JSON。",
+  waitingForParseDesc: "配置模型后可使用左侧「LLM 解析」，或点击「自助解析」手动粘贴 JSON。",
 
   // Parsed Questions Editor
   deleteQuestionTitle: "删除题目",

@@ -457,6 +457,8 @@ export const fr: Record<string, string> = {
     'Collez le JSON retourné par l\'AI…\n\n{\n  "name": "Nom de la liste",\n  "questions": [...]\n}',
   pleaseInputRawText: "Veuillez d'abord coller le texte des questions non formatées.",
   pleaseInputRawTextFirst: "Veuillez coller le texte des questions dans le champ ci-dessous.",
+  configureLlmForParse: "Configurez d'abord un fournisseur de modèle pour l'analyse des questions.",
+  llmParseBtn: "Analyse LLM",
   llmParseComplete: "Analyse LLM terminée.",
   llmParseFailed: "Analyse LLM échouée.",
   jsonFormatError: "Le JSON analysé contient encore des erreurs de format. Veuillez corriger.",
@@ -483,7 +485,7 @@ export const fr: Record<string, string> = {
   jsonFormatErrorCheck: "Erreur de format JSON. Vérifiez le contenu.",
   waitingForParseTitle: "En attente",
   waitingForParseDesc:
-    "Utilisez l'analyseur intégré à gauche, ou cliquez sur « Auto-analyse » pour coller du JSON manuellement.",
+    "Configurez un modèle, puis utilisez « Analyse LLM » à gauche, ou cliquez sur « Auto-analyse » pour coller du JSON manuellement.",
 
   // Parsed Questions Editor
   deleteQuestionTitle: "Supprimer la question",

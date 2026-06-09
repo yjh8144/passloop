@@ -446,6 +446,8 @@ export const en: Record<string, string> = {
     'Paste AI-returned JSON...\n\n{\n  "name": "List name",\n  "questions": [...]\n}',
   pleaseInputRawText: "Please paste unformatted question text first.",
   pleaseInputRawTextFirst: "Please paste question text in the input below first.",
+  configureLlmForParse: "Configure a model provider for question parsing first.",
+  llmParseBtn: "LLM Parse",
   llmParseComplete: "LLM parsing complete.",
   llmParseFailed: "LLM parsing failed.",
   jsonFormatError: "Parsed JSON still has format errors. Please fix before proceeding.",
@@ -472,7 +474,7 @@ export const en: Record<string, string> = {
   jsonFormatErrorCheck: "JSON format error. Please check content.",
   waitingForParseTitle: "Waiting",
   waitingForParseDesc:
-    'Use the built-in parser on the left, or click "Self-parse" to paste JSON manually.',
+    'Configure a model, then use "LLM Parse" on the left, or click "Self-parse" to paste JSON manually.',
 
   // Parsed Questions Editor
   deleteQuestionTitle: "Delete question",

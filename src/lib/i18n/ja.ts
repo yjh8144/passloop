@@ -427,6 +427,8 @@ export const ja: Record<string, string> = {
     'AI が返した JSON を貼り付け...\n\n{\n  "name": "リスト名",\n  "questions": [...]\n}',
   pleaseInputRawText: "先に未整理の問題テキストを貼り付けてください。",
   pleaseInputRawTextFirst: "下の入力欄に問題テキストを貼り付けてください。",
+  configureLlmForParse: "問題解析用のモデルプロバイダーを先に設定してください。",
+  llmParseBtn: "LLM 解析",
   llmParseComplete: "LLM 解析完了。",
   llmParseFailed: "LLM 解析失敗。",
   jsonFormatError: "解析結果の JSON にフォーマットエラーがあります。修正してください。",
@@ -452,7 +454,7 @@ export const ja: Record<string, string> = {
   jsonParseSuccess: "JSON 解析成功。",
   jsonFormatErrorCheck: "JSON フォーマットエラー。内容を確認してください。",
   waitingForParseTitle: "解析待ち",
-  waitingForParseDesc: "左側の内蔵解析を使用するか、「セルフ解析」で JSON を手動入力。",
+  waitingForParseDesc: "モデル設定後に左側の「LLM 解析」を使うか、「セルフ解析」で JSON を手動入力。",
 
   // Parsed Questions Editor
   deleteQuestionTitle: "問題を削除",

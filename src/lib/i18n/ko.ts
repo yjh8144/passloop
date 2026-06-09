@@ -425,6 +425,8 @@ export const ko: Record<string, string> = {
     'AI가 반환한 JSON 붙여넣기...\n\n{\n  "name": "목록 이름",\n  "questions": [...]\n}',
   pleaseInputRawText: "먼저 정리되지 않은 문제 텍스트를 붙여넣으세요.",
   pleaseInputRawTextFirst: "아래 입력란에 문제 텍스트를 먼저 붙여넣으세요.",
+  configureLlmForParse: "문제 분석에 사용할 모델 제공자를 먼저 설정하세요.",
+  llmParseBtn: "LLM 분석",
   llmParseComplete: "LLM 분석 완료.",
   llmParseFailed: "LLM 분석 실패.",
   jsonFormatError: "분석 결과 JSON에 형식 오류가 있습니다. 수정 후 다시 시도하세요.",
@@ -450,7 +452,7 @@ export const ko: Record<string, string> = {
   jsonParseSuccess: "JSON 분석 성공.",
   jsonFormatErrorCheck: "JSON 형식 오류. 내용을 확인하세요.",
   waitingForParseTitle: "분석 대기",
-  waitingForParseDesc: '왼쪽 내장 분석 사용 또는 "자체 분석"으로 JSON 수동 입력.',
+  waitingForParseDesc: '모델 설정 후 왼쪽 "LLM 분석"을 사용하거나 "자체 분석"으로 JSON을 수동 입력하세요.',
 
   // Parsed Questions Editor
   deleteQuestionTitle: "문제 삭제",
