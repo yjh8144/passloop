@@ -599,7 +599,8 @@ export const fr: Record<string, string> = {
   noQuestionsTitle: "Aucune question",
   noQuestionsDesc: "Importez un fichier JSON ou ajoutez des questions dans la banque de questions.",
   noSearchResultsTitle: "Aucune question correspondante",
-  noSearchResultsDesc: "Cette liste contient des questions, mais aucune ne correspond à la recherche. Modifiez ou effacez la recherche.",
+  noSearchResultsDesc:
+    "Cette liste contient des questions, mais aucune ne correspond à la recherche. Modifiez ou effacez la recherche.",
   completionDialogTitle: "Terminé",
   statTotal: "Total",
   statCorrect: "Correct",

@@ -39,7 +39,12 @@ export function ResetConfirmDialog({
       <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("clearAllDataAction")}</h2>
-          <button className="icon-button" onClick={onClose} aria-label={t("close")} title={t("close")}>
+          <button
+            className="icon-button"
+            onClick={onClose}
+            aria-label={t("close")}
+            title={t("close")}
+          >
             <X size={18} />
           </button>
         </div>

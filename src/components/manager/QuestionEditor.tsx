@@ -85,7 +85,9 @@ export function QuestionEditor(props: {
       if (validOptions.length < 2) return t("questionOptionsRequired")
       const validLabels = new Set(validOptions.map((option) => option.label.trim()))
       if (draft.type === "multiple") {
-        const answers = toArray(draft.answer).map((answer) => answer.trim()).filter(Boolean)
+        const answers = toArray(draft.answer)
+          .map((answer) => answer.trim())
+          .filter(Boolean)
         if (!answers.length) return t("questionAnswerRequired")
         if (answers.some((answer) => !validLabels.has(answer))) return t("questionAnswerInvalid")
       } else {
@@ -94,7 +96,9 @@ export function QuestionEditor(props: {
         if (!validLabels.has(answer)) return t("questionAnswerInvalid")
       }
     } else {
-      const answers = toArray(draft.answer).map((answer) => answer.trim()).filter(Boolean)
+      const answers = toArray(draft.answer)
+        .map((answer) => answer.trim())
+        .filter(Boolean)
       if (!answers.length) return t("questionAnswerRequired")
     }
     return ""
@@ -340,10 +344,7 @@ export function QuestionEditor(props: {
       </label>
       <div className="editor-actions">
         <button onClick={props.onCancel}>{t("cancel")}</button>
-        <button
-          className="primary-button"
-          onClick={handleSave}
-        >
+        <button className="primary-button" onClick={handleSave}>
           <Check size={17} /> {t("save")}
         </button>
       </div>

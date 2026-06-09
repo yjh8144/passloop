@@ -62,7 +62,12 @@ export function ConfirmDialog({
       <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("confirmTitle")}</h2>
-          <button className="icon-button" onClick={closeOnce} aria-label={t("close")} title={t("close")}>
+          <button
+            className="icon-button"
+            onClick={closeOnce}
+            aria-label={t("close")}
+            title={t("close")}
+          >
             <X size={18} />
           </button>
         </div>
@@ -78,9 +83,7 @@ export function ConfirmDialog({
           </label>
         )}
         <div className="modal-actions">
-          <button onClick={cancelOnce}>
-            {state.cancelLabel ?? t("cancel")}
-          </button>
+          <button onClick={cancelOnce}>{state.cancelLabel ?? t("cancel")}</button>
           <button
             className={state.tone === "danger" ? "danger-button" : "primary-button"}
             onClick={confirmOnce}
@@ -137,7 +140,12 @@ export function PromptDialog({
       <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{state.title}</h2>
-          <button className="icon-button" onClick={onClose} aria-label={t("close")} title={t("close")}>
+          <button
+            className="icon-button"
+            onClick={onClose}
+            aria-label={t("close")}
+            title={t("close")}
+          >
             <X size={18} />
           </button>
         </div>

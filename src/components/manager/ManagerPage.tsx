@@ -203,7 +203,11 @@ export function ManagerPage(props: {
     pushToast("success", t("questionSaved"))
   }
 
-  const questionActionLabel = (key: "editQuestion" | "deleteQuestion", question: Question, index: number) => {
+  const questionActionLabel = (
+    key: "editQuestion" | "deleteQuestion",
+    question: Question,
+    index: number,
+  ) => {
     const title = question.title.trim()
     const summary = title.length > 40 ? `${title.slice(0, 40)}...` : title || t("noPromptText")
     return `${t(key)} ${index + 1}: ${summary}`

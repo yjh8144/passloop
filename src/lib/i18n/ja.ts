@@ -455,7 +455,8 @@ export const ja: Record<string, string> = {
   jsonParseSuccess: "JSON 解析成功。",
   jsonFormatErrorCheck: "JSON フォーマットエラー。内容を確認してください。",
   waitingForParseTitle: "解析待ち",
-  waitingForParseDesc: "モデル設定後に左側の「LLM 解析」を使うか、「セルフ解析」で JSON を手動入力。",
+  waitingForParseDesc:
+    "モデル設定後に左側の「LLM 解析」を使うか、「セルフ解析」で JSON を手動入力。",
 
   // Parsed Questions Editor
   deleteQuestionTitle: "問題を削除",
@@ -563,7 +564,8 @@ export const ja: Record<string, string> = {
   noQuestionsTitle: "問題なし",
   noQuestionsDesc: "JSON ファイルをインポートするか、問題管理で追加してください。",
   noSearchResultsTitle: "一致する問題がありません",
-  noSearchResultsDesc: "このリストには問題がありますが、検索条件に一致しません。検索を変更またはクリアしてください。",
+  noSearchResultsDesc:
+    "このリストには問題がありますが、検索条件に一致しません。検索を変更またはクリアしてください。",
   completionDialogTitle: "完了",
   statTotal: "総問題数",
   statCorrect: "正解",

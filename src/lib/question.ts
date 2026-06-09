@@ -401,9 +401,7 @@ export function getListStats(list: QuestionList, attempts: AttemptRecord[]) {
   )
   const avgTime = submitted
     ? Math.round(
-        latestAttempts.reduce((total, attempt) => total + attempt.elapsedMs, 0) /
-          submitted /
-          1000,
+        latestAttempts.reduce((total, attempt) => total + attempt.elapsedMs, 0) / submitted / 1000,
       )
     : 0
   return {

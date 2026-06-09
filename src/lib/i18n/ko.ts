@@ -453,7 +453,8 @@ export const ko: Record<string, string> = {
   jsonParseSuccess: "JSON 분석 성공.",
   jsonFormatErrorCheck: "JSON 형식 오류. 내용을 확인하세요.",
   waitingForParseTitle: "분석 대기",
-  waitingForParseDesc: '모델 설정 후 왼쪽 "LLM 분석"을 사용하거나 "자체 분석"으로 JSON을 수동 입력하세요.',
+  waitingForParseDesc:
+    '모델 설정 후 왼쪽 "LLM 분석"을 사용하거나 "자체 분석"으로 JSON을 수동 입력하세요.',
 
   // Parsed Questions Editor
   deleteQuestionTitle: "문제 삭제",
@@ -561,7 +562,8 @@ export const ko: Record<string, string> = {
   noQuestionsTitle: "문제 없음",
   noQuestionsDesc: "JSON 파일을 가져오거나 문제 관리에서 추가하세요.",
   noSearchResultsTitle: "일치하는 문제 없음",
-  noSearchResultsDesc: "현재 목록에는 문제가 있지만 검색어와 일치하지 않습니다. 검색어를 수정하거나 지우세요.",
+  noSearchResultsDesc:
+    "현재 목록에는 문제가 있지만 검색어와 일치하지 않습니다. 검색어를 수정하거나 지우세요.",
   completionDialogTitle: "완료",
   statTotal: "총 문제 수",
   statCorrect: "정답",
