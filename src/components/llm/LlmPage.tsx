@@ -218,6 +218,7 @@ export function LlmPage(props: {
               className="primary-button"
               onClick={loading ? cancelParser : runParser}
               title={!config && !loading ? t("configureLlmForParse") : undefined}
+              aria-label={loading ? t("cancel") : t("llmParseActionLabel")}
             >
               <Sparkles size={17} /> {loading ? t("cancel") : t("llmParseBtn")}
             </button>

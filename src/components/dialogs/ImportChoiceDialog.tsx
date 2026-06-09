@@ -48,7 +48,7 @@ export function ImportChoiceDialog({
                 <ArrowLeft size={18} />
               </button>
               <h2>{t("selectTargetList")}</h2>
-              <button className="icon-button" onClick={handleClose}>
+              <button className="icon-button" onClick={handleClose} aria-label={t("close")} title={t("close")}>
                 <X size={18} />
               </button>
             </div>
@@ -65,7 +65,7 @@ export function ImportChoiceDialog({
           <>
             <div className="modal-header">
               <h2>{t("importTitle")}</h2>
-              <button className="icon-button" onClick={handleClose}>
+              <button className="icon-button" onClick={handleClose} aria-label={t("close")} title={t("close")}>
                 <X size={18} />
               </button>
             </div>

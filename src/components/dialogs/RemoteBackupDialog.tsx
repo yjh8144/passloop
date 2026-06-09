@@ -188,7 +188,13 @@ function RemoteBackupDialogContent({
       <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("remoteBackupTitle")}</h2>
-          <button className="icon-button" onClick={onClose} disabled={disabled}>
+          <button
+            className="icon-button"
+            onClick={onClose}
+            disabled={disabled}
+            aria-label={t("close")}
+            title={t("close")}
+          >
             <X size={18} />
           </button>
         </div>

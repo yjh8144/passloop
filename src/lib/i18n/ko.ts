@@ -118,6 +118,7 @@ export const ko: Record<string, string> = {
   answerSepHint: "답 (대체 답은 |로 구분)",
   answerFieldsLabel: "답 필드 (대체 답은 |로 구분)",
   selectAnswerHint: "클릭하여 정답 선택",
+  selectAnswerOption: "답 {0} 선택",
 
   // Self-fill dialog
   selfFillTitle: "자체 답/해설 보충",
@@ -502,7 +503,12 @@ export const ko: Record<string, string> = {
 
   // Question Editor
   editQuestionTitle: "문제 편집",
+  addQuestionTitle: "문제 추가",
   questionTypeLabel: "유형",
+  questionTitleRequired: "문제 지문을 입력하세요.",
+  questionOptionsRequired: "유효한 선택지를 2개 이상 입력하세요.",
+  questionAnswerRequired: "정답을 선택하거나 입력하세요.",
+  questionAnswerInvalid: "정답은 유효한 선택지와 일치해야 합니다.",
 
   // Self-fill Dialog
   selfFillHeader: "자체 답/해설 보충",
@@ -548,18 +554,21 @@ export const ko: Record<string, string> = {
   hideInspector: "사이드바 숨기기",
   allComplete: "전체 완료",
   completionSummary: "총 {0}문제, 정답 {1}문제, 오답 {2}문제",
-  redoAll: "처음부터 다시",
+  redoAll: "기록 지우고 다시 풀기",
   practiceWrongBtn: "오답 연습",
   exportWrongBtn: "오답 내보내기",
   submitAllAnswers: "전체 제출",
   noQuestionsTitle: "문제 없음",
   noQuestionsDesc: "JSON 파일을 가져오거나 문제 관리에서 추가하세요.",
+  noSearchResultsTitle: "일치하는 문제 없음",
+  noSearchResultsDesc: "현재 목록에는 문제가 있지만 검색어와 일치하지 않습니다. 검색어를 수정하거나 지우세요.",
   completionDialogTitle: "완료",
   statTotal: "총 문제 수",
   statCorrect: "정답",
   statWrong: "오답",
   statAccuracy: "정답률",
   statsAndNav: "통계 및 탐색",
+  llmParseActionLabel: "붙여넣은 문제 분석",
 
   // Topbar
   practiceSettingsTitle: "연습 설정",

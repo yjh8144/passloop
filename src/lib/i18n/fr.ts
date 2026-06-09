@@ -118,6 +118,7 @@ export const fr: Record<string, string> = {
   answerSepHint: "Réponse (utiliser | pour alternatives)",
   answerFieldsLabel: "Champs de réponse (utiliser | pour alternatives)",
   selectAnswerHint: "Cliquer pour sélectionner la bonne réponse",
+  selectAnswerOption: "Sélectionner la réponse {0}",
 
   // Self-fill dialog
   selfFillTitle: "Auto-complétion réponses/explications",
@@ -537,7 +538,12 @@ export const fr: Record<string, string> = {
 
   // Question Editor
   editQuestionTitle: "Modifier la question",
+  addQuestionTitle: "Ajouter une question",
   questionTypeLabel: "Type",
+  questionTitleRequired: "Saisissez d'abord l'énoncé.",
+  questionOptionsRequired: "Saisissez au moins 2 options valides.",
+  questionAnswerRequired: "Choisissez ou saisissez la bonne réponse.",
+  questionAnswerInvalid: "La bonne réponse doit correspondre à une option valide.",
 
   // Self-fill Dialog
   selfFillHeader: "Auto-complétion réponses/explications",
@@ -586,18 +592,21 @@ export const fr: Record<string, string> = {
   hideInspector: "Masquer la barre latérale",
   allComplete: "Tout terminé",
   completionSummary: "{0} questions au total, {1} correctes, {2} incorrectes",
-  redoAll: "Recommencer",
+  redoAll: "Effacer les réponses et recommencer",
   practiceWrongBtn: "Pratiquer les erreurs",
   exportWrongBtn: "Exporter les erreurs",
   submitAllAnswers: "Tout soumettre",
   noQuestionsTitle: "Aucune question",
   noQuestionsDesc: "Importez un fichier JSON ou ajoutez des questions dans la banque de questions.",
+  noSearchResultsTitle: "Aucune question correspondante",
+  noSearchResultsDesc: "Cette liste contient des questions, mais aucune ne correspond à la recherche. Modifiez ou effacez la recherche.",
   completionDialogTitle: "Terminé",
   statTotal: "Total",
   statCorrect: "Correct",
   statWrong: "Incorrect",
   statAccuracy: "Précision",
   statsAndNav: "Stats et navigation",
+  llmParseActionLabel: "Analyser les questions collées",
 
   // Topbar
   practiceSettingsTitle: "Paramètres de pratique",

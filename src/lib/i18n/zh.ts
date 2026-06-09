@@ -118,6 +118,7 @@ export const zh: Record<string, string> = {
   answerSepHint: "答案（同一空多个正确答案用 | 分隔）",
   answerFieldsLabel: "答案字段（用 | 分隔可选答案）",
   selectAnswerHint: "点击选择正确答案",
+  selectAnswerOption: "选择答案 {0}",
 
   // Self-fill dialog
   selfFillTitle: "自助补充答案/解析",
@@ -493,7 +494,12 @@ export const zh: Record<string, string> = {
 
   // Question Editor
   editQuestionTitle: "编辑题目",
+  addQuestionTitle: "新增题目",
   questionTypeLabel: "题型",
+  questionTitleRequired: "请先填写题干。",
+  questionOptionsRequired: "请至少填写 2 个有效选项。",
+  questionAnswerRequired: "请选择或填写正确答案。",
+  questionAnswerInvalid: "正确答案必须对应一个有效选项。",
 
   // Self-fill Dialog
   selfFillHeader: "自助补充答案/解析",
@@ -538,18 +544,21 @@ export const zh: Record<string, string> = {
   hideInspector: "隐藏侧栏",
   allComplete: "全部完成",
   completionSummary: "共 {0} 题，正确 {1} 题，错误 {2} 题",
-  redoAll: "重新刷题",
+  redoAll: "清空记录并重刷",
   practiceWrongBtn: "练习错题",
   exportWrongBtn: "导出错题",
   submitAllAnswers: "提交全部答案",
   noQuestionsTitle: "暂无题目",
   noQuestionsDesc: "请先导入题库 JSON，或在题库管理中新增题目。",
+  noSearchResultsTitle: "没有匹配的题目",
+  noSearchResultsDesc: "当前题单有题目，但没有匹配搜索关键词。请调整或清空搜索。",
   completionDialogTitle: "答题完成",
   statTotal: "总题数",
   statCorrect: "正确",
   statWrong: "错误",
   statAccuracy: "正确率",
   statsAndNav: "统计与导航",
+  llmParseActionLabel: "解析粘贴的题目",
 
   // Topbar
   practiceSettingsTitle: "刷题设置",

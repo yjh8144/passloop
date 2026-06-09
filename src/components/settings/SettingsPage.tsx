@@ -49,8 +49,10 @@ export function SettingsPage(props: {
           </div>
           <div className="settings-fields-grid">
             <label className="settings-field">
-              <span>{t("theme")}</span>
+              <span id="settings-theme-label">{t("theme")}</span>
               <select
+                id="settings-theme-select"
+                aria-labelledby="settings-theme-label"
                 value={data.settings.theme}
                 onChange={(event) =>
                   updateSettings({ theme: event.target.value as AppData["settings"]["theme"] })
@@ -66,11 +68,13 @@ export function SettingsPage(props: {
               </select>
             </label>
             <label className="settings-field">
-              <span>
+              <span id="settings-language-label">
                 <Languages size={16} />
                 {t("language")}
               </span>
               <select
+                id="settings-language-select"
+                aria-labelledby="settings-language-label"
                 value={data.settings.language}
                 onChange={(event) =>
                   updateSettings({

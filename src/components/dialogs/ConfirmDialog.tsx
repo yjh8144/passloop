@@ -21,20 +21,48 @@ export function ConfirmDialog({
   onClose: () => void
 }) {
   const t = useT()
+  const handledRef = useRef<{ state: ConfirmDialogState; handled: boolean }>({
+    state: null,
+    handled: false,
+  })
   const [dontAskAgain, setDontAskAgain] = useState(false)
   const [prevState, setPrevState] = useState(state)
   if (state !== prevState) {
     setDontAskAgain(false)
     setPrevState(state)
   }
-  useEscapeKey(onClose, !!state)
+  const markHandled = () => {
+    if (handledRef.current.state !== state) {
+      handledRef.current = { state, handled: false }
+    }
+    if (handledRef.current.handled) return false
+    handledRef.current.handled = true
+    return true
+  }
+  const closeOnce = () => {
+    if (!markHandled()) return
+    onClose()
+  }
+  const cancelOnce = () => {
+    if (!state) return
+    if (!markHandled()) return
+    state.onCancel?.()
+    onClose()
+  }
+  const confirmOnce = () => {
+    if (!state) return
+    if (!markHandled()) return
+    state.onConfirm(dontAskAgain)
+    onClose()
+  }
+  useEscapeKey(closeOnce, !!state)
   if (!state) return null
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={closeOnce}>
       <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("confirmTitle")}</h2>
-          <button className="icon-button" onClick={onClose}>
+          <button className="icon-button" onClick={closeOnce} aria-label={t("close")} title={t("close")}>
             <X size={18} />
           </button>
         </div>
@@ -50,20 +78,12 @@ export function ConfirmDialog({
           </label>
         )}
         <div className="modal-actions">
-          <button
-            onClick={() => {
-              state.onCancel?.()
-              onClose()
-            }}
-          >
+          <button onClick={cancelOnce}>
             {state.cancelLabel ?? t("cancel")}
           </button>
           <button
             className={state.tone === "danger" ? "danger-button" : "primary-button"}
-            onClick={() => {
-              state.onConfirm(dontAskAgain)
-              onClose()
-            }}
+            onClick={confirmOnce}
           >
             {state.confirmLabel ?? t("confirmAction")}
           </button>
@@ -117,7 +137,7 @@ export function PromptDialog({
       <div className="modal-content modal-compact" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{state.title}</h2>
-          <button className="icon-button" onClick={onClose}>
+          <button className="icon-button" onClick={onClose} aria-label={t("close")} title={t("close")}>
             <X size={18} />
           </button>
         </div>

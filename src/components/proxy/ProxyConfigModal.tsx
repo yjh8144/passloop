@@ -83,7 +83,12 @@ export function ProxyConfigModal(props: {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("proxySettingsTitle")}</h2>
-          <button className="icon-button" onClick={props.onClose}>
+          <button
+            className="icon-button"
+            onClick={props.onClose}
+            aria-label={t("close")}
+            title={t("close")}
+          >
             <X size={18} />
           </button>
         </div>
@@ -280,7 +285,12 @@ export function ProxyConfigModal(props: {
             >
               <div className="modal-header">
                 <h2>{t("corsExplainTitle")}</h2>
-                <button className="icon-button" onClick={() => setShowHelp(false)}>
+                <button
+                  className="icon-button"
+                  onClick={() => setShowHelp(false)}
+                  aria-label={t("close")}
+                  title={t("close")}
+                >
                   <X size={18} />
                 </button>
               </div>
@@ -338,7 +348,12 @@ export function ProxyConfigModal(props: {
                   >
                     {t("proxyListTestAll")}
                   </button>
-                  <button className="icon-button" onClick={() => setShowList(false)}>
+                  <button
+                    className="icon-button"
+                    onClick={() => setShowList(false)}
+                    aria-label={t("close")}
+                    title={t("close")}
+                  >
                     <X size={18} />
                   </button>
                 </div>

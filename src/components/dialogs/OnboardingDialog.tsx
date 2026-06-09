@@ -60,7 +60,7 @@ export function OnboardingDialog({ open, onClose }: { open: boolean; onClose: ()
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{current.title}</h2>
-          <button className="icon-button" onClick={onClose}>
+          <button className="icon-button" onClick={onClose} aria-label={t("close")} title={t("close")}>
             <X size={18} />
           </button>
         </div>

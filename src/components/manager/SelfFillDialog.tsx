@@ -149,7 +149,12 @@ ${questionsData}`
       <div className="modal-content modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("selfFillHeader")}</h2>
-          <button className="icon-button" onClick={props.onClose}>
+          <button
+            className="icon-button"
+            onClick={props.onClose}
+            aria-label={t("close")}
+            title={t("close")}
+          >
             <X size={18} />
           </button>
         </div>

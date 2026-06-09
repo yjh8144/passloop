@@ -56,6 +56,10 @@ const AUTO_NEXT_FAST_MS = 120
 
 type WrongListAction = "export" | "practice"
 
+function questionSignature(listId: string, questions: Question[]) {
+  return `${listId}\u0001${questions.map((question) => question.id).join("\u0000")}`
+}
+
 function createInitialState(): PracticeState {
   return {
     answers: loadSessionAnswers(),
@@ -142,7 +146,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, [data.settings.submitMode, state.answers, state.results])
 
   // --- Reset index when displayed questions change (search, sort) ---
-  const prevQuestionsRef = useRef(displayedQuestions)
+  const prevQuestionsSignatureRef = useRef(questionSignature(activeList.id, displayedQuestions))
   const prevQueryRef = useRef(query)
 
   // Restore position on initial mount
@@ -173,8 +177,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, [query, displayedQuestions.length])
 
   useEffect(() => {
-    if (displayedQuestions !== prevQuestionsRef.current) {
-      prevQuestionsRef.current = displayedQuestions
+    const nextSignature = questionSignature(activeList.id, displayedQuestions)
+    if (nextSignature !== prevQuestionsSignatureRef.current) {
+      prevQuestionsSignatureRef.current = nextSignature
       if (positionRestoredForListRef.current !== activeList.id) {
         positionRestoredForListRef.current = activeList.id
         positionRestoredRef.current = true
@@ -393,21 +398,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           elapsedMs: elapsedSince(startedAt),
           answer: answers[question.id],
         })
+        const attempt: AppData["attempts"][number] = {
+          id: createId(),
+          listId: activeList.id,
+          questionId: question.id,
+          answer: answers[question.id] ?? "",
+          correct,
+          elapsedMs: elapsedSince(startedAt),
+          submittedAt: new Date().toISOString(),
+        }
         dispatch({ type: "SUBMIT_QUESTION", questionId: question.id, correct })
         updateData((current) => ({
           ...current,
-          attempts: [
-            ...current.attempts,
-            {
-              id: createId(),
-              listId: activeList.id,
-              questionId: question.id,
-              answer: answers[question.id] ?? "",
-              correct,
-              elapsedMs: elapsedSince(startedAt),
-              submittedAt: new Date().toISOString(),
-            },
-          ],
+          attempts: [...current.attempts, attempt],
         }))
         if (data.settings.autoNext) {
           const shouldAdvance = correct || data.settings.autoNextScope === "all"
@@ -482,6 +485,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       let correctCount = 0
       const newResults: Record<string, boolean> = {}
       const newAttempts: AppData["attempts"] = []
+      const submittedAt = new Date().toISOString()
       for (const question of unsubmitted) {
         const startedAt = startedAtRef.current[question.id] ?? Date.now()
         const correct = evaluateQuestion(question, answers)
@@ -494,7 +498,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
           answer: answers[question.id] ?? "",
           correct,
           elapsedMs: elapsedSince(startedAt),
-          submittedAt: new Date().toISOString(),
+          submittedAt,
         })
       }
       dispatch({

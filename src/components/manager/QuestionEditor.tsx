@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 import { Check, Plus, Trash2, X } from "lucide-react"
 import type { ChoiceOption, Question, QuestionType } from "../../lib/types"
-import { createId, getTypeLabels, normalizeQuestion } from "../../lib/question"
+import { createId, getTypeLabels, normalizeQuestion, toArray } from "../../lib/question"
 import { questionTypes } from "../../utils/constants"
-import { useT } from "../../contexts"
+import { usePushToast, useT } from "../../contexts"
 import { useDialog } from "../../contexts/DialogContext"
 
 export function QuestionEditor(props: {
@@ -12,8 +12,10 @@ export function QuestionEditor(props: {
   onCancel: () => void
   onDirtyChange?: (dirty: boolean) => void
   hideClose?: boolean
+  isNew?: boolean
 }) {
   const t = useT()
+  const pushToast = usePushToast()
   const { showConfirm } = useDialog()
   const labels = getTypeLabels(t)
   const [draft, setDraft] = useState<Question>(props.question)
@@ -74,10 +76,41 @@ export function QuestionEditor(props: {
       return { ...current, options, answer, updatedAt: new Date().toISOString() }
     })
   }
+  const validateDraft = () => {
+    if (!draft.title.trim()) return t("questionTitleRequired")
+    if (draft.type === "single" || draft.type === "multiple" || draft.type === "boolean") {
+      const validOptions = draft.options.filter(
+        (option) => option.label.trim() && option.text.trim(),
+      )
+      if (validOptions.length < 2) return t("questionOptionsRequired")
+      const validLabels = new Set(validOptions.map((option) => option.label.trim()))
+      if (draft.type === "multiple") {
+        const answers = toArray(draft.answer).map((answer) => answer.trim()).filter(Boolean)
+        if (!answers.length) return t("questionAnswerRequired")
+        if (answers.some((answer) => !validLabels.has(answer))) return t("questionAnswerInvalid")
+      } else {
+        const answer = typeof draft.answer === "string" ? draft.answer.trim() : ""
+        if (!answer) return t("questionAnswerRequired")
+        if (!validLabels.has(answer)) return t("questionAnswerInvalid")
+      }
+    } else {
+      const answers = toArray(draft.answer).map((answer) => answer.trim()).filter(Boolean)
+      if (!answers.length) return t("questionAnswerRequired")
+    }
+    return ""
+  }
+  const handleSave = () => {
+    const error = validateDraft()
+    if (error) {
+      pushToast("error", error)
+      return
+    }
+    props.onSave(normalizeQuestion(draft, 0, t))
+  }
   return (
     <div className="question-editor">
       <div className="editor-title">
-        <h2>{t("editQuestionTitle")}</h2>
+        <h2>{props.isNew ? t("addQuestionTitle") : t("editQuestionTitle")}</h2>
         {!props.hideClose && (
           <button className="icon-button" onClick={props.onCancel} aria-label={t("close")}>
             <X size={18} />
@@ -174,6 +207,7 @@ export function QuestionEditor(props: {
             <div className="option-edit-row" key={option.id}>
               <input
                 value={option.label}
+                readOnly={draft.type === "boolean"}
                 onChange={(event) => updateOption(option.id, { label: event.target.value })}
               />
               <input
@@ -203,6 +237,7 @@ export function QuestionEditor(props: {
               <button
                 key={option.id}
                 type="button"
+                aria-label={t("selectAnswerOption", option.label)}
                 className={`answer-toggle-btn ${draft.answer === option.label ? "is-active" : ""}`}
                 onClick={() => patch({ answer: option.label })}
               >
@@ -219,6 +254,7 @@ export function QuestionEditor(props: {
                 <button
                   key={option.id}
                   type="button"
+                  aria-label={t("selectAnswerOption", option.label)}
                   className={`answer-toggle-btn ${isActive ? "is-active" : ""}`}
                   onClick={() =>
                     patch({
@@ -306,7 +342,7 @@ export function QuestionEditor(props: {
         <button onClick={props.onCancel}>{t("cancel")}</button>
         <button
           className="primary-button"
-          onClick={() => props.onSave(normalizeQuestion(draft, 0, t))}
+          onClick={handleSave}
         >
           <Check size={17} /> {t("save")}
         </button>

@@ -114,10 +114,12 @@ export function ControlPanel(props: {
             </label>
           </>
         )}
-      <label className="field-label">
+      <label className="field-label" htmlFor="practice-sort-select">
         {t("sort")}
         <span className="sort-row">
           <select
+            id="practice-sort-select"
+            aria-label={t("sort")}
             value={props.settings.sortMode}
             onChange={(event) => {
               const newSort = event.target.value as AppData["settings"]["sortMode"]

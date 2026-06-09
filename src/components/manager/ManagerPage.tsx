@@ -174,6 +174,17 @@ export function ManagerPage(props: {
     fillAbortRef.current?.abort()
   }
 
+  const isEditingNewQuestion =
+    props.editing !== null &&
+    !props.list.questions.some((question) => question.id === props.editing?.id)
+
+  const cancelEditing = (closeFloat = false) => {
+    setEditorDirty(false)
+    managerUnsavedRef.current = false
+    props.setEditing(null)
+    if (closeFloat) setEditorFloatOpen(false)
+  }
+
   const saveQuestion = (question: Question) => {
     debugLog("Question saved", { id: question.id, title: question.title, type: question.type })
     props.updateList((list) => {
@@ -190,6 +201,12 @@ export function ManagerPage(props: {
     managerUnsavedRef.current = false
     props.setEditing(null)
     pushToast("success", t("questionSaved"))
+  }
+
+  const questionActionLabel = (key: "editQuestion" | "deleteQuestion", question: Question, index: number) => {
+    const title = question.title.trim()
+    const summary = title.length > 40 ? `${title.slice(0, 40)}...` : title || t("noPromptText")
+    return `${t(key)} ${index + 1}: ${summary}`
   }
 
   const deleteQuestion = (id: string) => {
@@ -276,14 +293,22 @@ export function ManagerPage(props: {
               <button
                 className="icon-button"
                 onClick={() => handleEditSwitch(question)}
-                aria-label={t("editQuestion")}
+                aria-label={questionActionLabel(
+                  "editQuestion",
+                  question,
+                  questionPageData.start + index,
+                )}
               >
                 <Edit3 size={16} />
               </button>
               <button
                 className="icon-button"
                 onClick={() => deleteQuestion(question.id)}
-                aria-label={t("deleteQuestion")}
+                aria-label={questionActionLabel(
+                  "deleteQuestion",
+                  question,
+                  questionPageData.start + index,
+                )}
               >
                 <Trash2 size={16} />
               </button>
@@ -324,11 +349,8 @@ export function ManagerPage(props: {
         ) : !isCompactEditor && props.editing ? (
           <QuestionEditor
             question={props.editing}
-            onCancel={() => {
-              setEditorDirty(false)
-              managerUnsavedRef.current = false
-              props.setEditing(null)
-            }}
+            isNew={isEditingNewQuestion}
+            onCancel={() => cancelEditing()}
             onSave={saveQuestion}
             onDirtyChange={setEditorDirty}
           />
@@ -352,14 +374,10 @@ export function ManagerPage(props: {
         onClick={() => {
           if (props.editing && editorDirty) {
             showConfirm(t("unsavedConfirm"), () => {
-              setEditorDirty(false)
-              managerUnsavedRef.current = false
-              props.setEditing(null)
-              setEditorFloatOpen(false)
+              cancelEditing(true)
             })
           } else {
-            props.setEditing(null)
-            setEditorFloatOpen(false)
+            cancelEditing(true)
           }
         }}
       />
@@ -376,14 +394,10 @@ export function ManagerPage(props: {
               onClick={() => {
                 if (props.editing && editorDirty) {
                   showConfirm(t("unsavedConfirm"), () => {
-                    setEditorDirty(false)
-                    managerUnsavedRef.current = false
-                    props.setEditing(null)
-                    setEditorFloatOpen(false)
+                    cancelEditing(true)
                   })
                 } else {
-                  props.setEditing(null)
-                  setEditorFloatOpen(false)
+                  cancelEditing(true)
                 }
               }}
             >
@@ -398,12 +412,8 @@ export function ManagerPage(props: {
           ) : isCompactEditor && props.editing ? (
             <QuestionEditor
               question={props.editing}
-              onCancel={() => {
-                setEditorDirty(false)
-                managerUnsavedRef.current = false
-                props.setEditing(null)
-                setEditorFloatOpen(false)
-              }}
+              isNew={isEditingNewQuestion}
+              onCancel={() => cancelEditing(true)}
               onSave={(q) => {
                 saveQuestion(q)
                 setEditorFloatOpen(false)

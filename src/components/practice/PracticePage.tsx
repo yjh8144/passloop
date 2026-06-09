@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BarChart3, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { EmptyState } from "../ui/EmptyState"
 import { Navigator } from "./Navigator"
@@ -8,12 +8,14 @@ import { CompletionDialog } from "./CompletionDialog"
 import { useT, usePracticeContext, useAppData } from "../../contexts"
 import { loadPosition } from "../../utils/session"
 import { debugLog } from "../../lib/debug"
+import { getListStats } from "../../lib/question"
+import type { AttemptRecord } from "../../lib/types"
 
 const PAPER_SCROLL_LOCK_MS = 650
 
 export function PracticePage() {
   const t = useT()
-  const { data, stats, clearActiveListAttempts, activeList } = useAppData()
+  const { data, clearActiveListAttempts, activeList } = useAppData()
   const {
     practiceQuestions: questions,
     currentIndex,
@@ -44,6 +46,30 @@ export function PracticePage() {
   const allSubmitted = questions.length > 0 && questions.every((q) => q.id in results)
   const correctCount = questions.filter((q) => results[q.id] === true).length
   const wrongCount = questions.filter((q) => results[q.id] === false).length
+  const visibleStats = useMemo(() => {
+    const attemptByQuestion = new Map<string, AttemptRecord>()
+    for (const attempt of data.attempts) {
+      if (attempt.listId !== activeList.id) continue
+      const prev = attemptByQuestion.get(attempt.questionId)
+      if (!prev || attempt.submittedAt >= prev.submittedAt) {
+        attemptByQuestion.set(attempt.questionId, attempt)
+      }
+    }
+    for (const question of questions) {
+      if (!(question.id in results)) continue
+      const prev = attemptByQuestion.get(question.id)
+      attemptByQuestion.set(question.id, {
+        id: prev?.id ?? `session-${question.id}`,
+        listId: activeList.id,
+        questionId: question.id,
+        answer: prev?.answer ?? answers[question.id] ?? "",
+        correct: results[question.id],
+        elapsedMs: prev?.elapsedMs ?? 0,
+        submittedAt: prev?.submittedAt ?? "",
+      })
+    }
+    return getListStats({ ...activeList, questions }, [...attemptByQuestion.values()])
+  }, [activeList, questions, data.attempts, results, answers])
 
   useEffect(() => {
     if (!inspectorFloatOpen) return
@@ -54,22 +80,22 @@ export function PracticePage() {
     return () => document.removeEventListener("keydown", onKey)
   }, [inspectorFloatOpen])
 
-  const [prevAllSubmitted, setPrevAllSubmitted] = useState(false)
-  const [showCompletionBanner, setShowCompletionBanner] = useState(false)
+  const completionLoggedRef = useRef(false)
+  const showCompletionBanner = allSubmitted
 
-  if (allSubmitted && !prevAllSubmitted) {
-    debugLog("[PracticePage] all questions submitted", {
-      total: questions.length,
-      correctCount,
-      wrongCount,
-    })
-    setShowCompletionBanner(true)
-    setPrevAllSubmitted(true)
-  }
-  if (!allSubmitted && prevAllSubmitted) {
-    setShowCompletionBanner(false)
-    setPrevAllSubmitted(false)
-  }
+  useEffect(() => {
+    if (allSubmitted && !completionLoggedRef.current) {
+      debugLog("[PracticePage] all questions submitted", {
+        total: questions.length,
+        correctCount,
+        wrongCount,
+      })
+      completionLoggedRef.current = true
+    }
+    if (!allSubmitted && completionLoggedRef.current) {
+      completionLoggedRef.current = false
+    }
+  }, [allSubmitted, correctCount, questions.length, wrongCount])
 
   const paperStackRef = useRef<HTMLDivElement>(null)
   const initialScrollDoneRef = useRef<string | null>(null)
@@ -162,9 +188,14 @@ export function PracticePage() {
     })
   }, [settings.viewMode, questions.length, activeList.id, setCurrentIndex])
 
+  const emptyTitle = activeList.questions.length ? t("noSearchResultsTitle") : t("noQuestionsTitle")
+  const emptyDescription = activeList.questions.length
+    ? t("noSearchResultsDesc")
+    : t("noQuestionsDesc")
+
   const content =
     questions.length === 0 ? (
-      <EmptyState title={t("noQuestionsTitle")} description={t("noQuestionsDesc")} />
+      <EmptyState title={emptyTitle} description={emptyDescription} />
     ) : settings.viewMode === "paper" ? (
       <div className="paper-stack" ref={paperStackRef}>
         {questions.map((question, index) => (
@@ -297,7 +328,7 @@ export function PracticePage() {
             currentIndex={currentIndex}
             setCurrentIndex={setCurrentIndex}
             results={results}
-            stats={stats}
+            stats={visibleStats}
             settings={settings}
             allSubmitted={allSubmitted}
             correctCount={correctCount}
@@ -333,7 +364,7 @@ export function PracticePage() {
               setInspectorFloatOpen(false)
             }}
             results={results}
-            stats={stats}
+            stats={visibleStats}
             settings={settings}
             allSubmitted={allSubmitted}
             correctCount={correctCount}

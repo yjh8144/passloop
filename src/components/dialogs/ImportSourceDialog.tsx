@@ -53,7 +53,13 @@ export function ImportSourceDialog({
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
         <div className="modal-header">
           <h2>{title ?? t("importTitle")}</h2>
-          <button className="icon-button" onClick={onClose} disabled={loading}>
+          <button
+            className="icon-button"
+            onClick={onClose}
+            disabled={loading}
+            aria-label={t("close")}
+            title={t("close")}
+          >
             <X size={18} />
           </button>
         </div>

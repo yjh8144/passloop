@@ -119,6 +119,7 @@ export const en: Record<string, string> = {
   answerSepHint: "Answer (use | for alternatives)",
   answerFieldsLabel: "Answer fields (use | for alternatives)",
   selectAnswerHint: "Click to select correct answer",
+  selectAnswerOption: "Select answer {0}",
 
   // Self-fill dialog
   selfFillTitle: "Self-fill Answers/Explanations",
@@ -524,7 +525,12 @@ export const en: Record<string, string> = {
 
   // Question Editor
   editQuestionTitle: "Edit Question",
+  addQuestionTitle: "Add Question",
   questionTypeLabel: "Type",
+  questionTitleRequired: "Enter the question prompt first.",
+  questionOptionsRequired: "Enter at least 2 valid options.",
+  questionAnswerRequired: "Choose or enter the correct answer.",
+  questionAnswerInvalid: "The correct answer must match a valid option.",
 
   // Self-fill Dialog
   selfFillHeader: "Self-fill Answers/Explanations",
@@ -571,18 +577,21 @@ export const en: Record<string, string> = {
   hideInspector: "Hide sidebar",
   allComplete: "All Complete",
   completionSummary: "{0} questions total, {1} correct, {2} wrong",
-  redoAll: "Start over",
+  redoAll: "Clear records and restart",
   practiceWrongBtn: "Practice wrong",
   exportWrongBtn: "Export wrong",
   submitAllAnswers: "Submit All",
   noQuestionsTitle: "No questions",
   noQuestionsDesc: "Import a JSON file or add questions in Question Bank.",
+  noSearchResultsTitle: "No matching questions",
+  noSearchResultsDesc: "This list has questions, but none match the search. Adjust or clear it.",
   completionDialogTitle: "Complete",
   statTotal: "Total",
   statCorrect: "Correct",
   statWrong: "Wrong",
   statAccuracy: "Accuracy",
   statsAndNav: "Stats & Navigation",
+  llmParseActionLabel: "Parse pasted questions",
 
   // Topbar
   practiceSettingsTitle: "Practice settings",

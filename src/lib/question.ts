@@ -373,35 +373,44 @@ export function formatAnswer(value: string | string[]) {
 }
 
 export function getListStats(list: QuestionList, attempts: AttemptRecord[]) {
-  const related = attempts.filter((attempt) => attempt.listId === list.id)
-  const submitted = related.length
-  const correct = related.filter((attempt) => attempt.correct).length
+  const questionIds = new Set(list.questions.map((question) => question.id))
+  const related = attempts.filter(
+    (attempt) => attempt.listId === list.id && questionIds.has(attempt.questionId),
+  )
   // Track the latest attempt per question by submission time, not array order, so
   // merged/imported attempts (appended out of chronological order) are handled correctly.
-  const lastAttemptByQuestion = new Map<string, { correct: boolean; at: string }>()
+  const lastAttemptByQuestion = new Map<
+    string,
+    { correct: boolean; elapsedMs: number; at: string }
+  >()
   for (const attempt of related) {
     const prev = lastAttemptByQuestion.get(attempt.questionId)
     if (!prev || attempt.submittedAt >= prev.at) {
       lastAttemptByQuestion.set(attempt.questionId, {
         correct: attempt.correct,
+        elapsedMs: attempt.elapsedMs,
         at: attempt.submittedAt,
       })
     }
   }
+  const latestAttempts = [...lastAttemptByQuestion.values()]
+  const submitted = latestAttempts.length
+  const correct = latestAttempts.filter((attempt) => attempt.correct).length
   const wrongQuestionIds = new Set(
     [...lastAttemptByQuestion.entries()].filter(([, last]) => !last.correct).map(([id]) => id),
   )
-  const attemptedQuestionIds = new Set(related.map((attempt) => attempt.questionId))
   const avgTime = submitted
     ? Math.round(
-        related.reduce((total, attempt) => total + attempt.elapsedMs, 0) / submitted / 1000,
+        latestAttempts.reduce((total, attempt) => total + attempt.elapsedMs, 0) /
+          submitted /
+          1000,
       )
     : 0
   return {
     submitted,
     correct,
     total: list.questions.length,
-    attempted: attemptedQuestionIds.size,
+    attempted: submitted,
     wrong: wrongQuestionIds.size,
     accuracy: submitted ? Math.round((correct / submitted) * 100) : 0,
     avgTime,

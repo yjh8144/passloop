@@ -118,6 +118,7 @@ export const ja: Record<string, string> = {
   answerSepHint: "答え（代替答えは | で区切る）",
   answerFieldsLabel: "解答欄（代替答えは | で区切る）",
   selectAnswerHint: "クリックして正解を選択",
+  selectAnswerOption: "解答 {0} を選択",
 
   // Self-fill dialog
   selfFillTitle: "自助 答え/解説補充",
@@ -504,7 +505,12 @@ export const ja: Record<string, string> = {
 
   // Question Editor
   editQuestionTitle: "問題を編集",
+  addQuestionTitle: "問題を追加",
   questionTypeLabel: "問題タイプ",
+  questionTitleRequired: "問題文を入力してください。",
+  questionOptionsRequired: "有効な選択肢を 2 つ以上入力してください。",
+  questionAnswerRequired: "正解を選択または入力してください。",
+  questionAnswerInvalid: "正解は有効な選択肢に対応している必要があります。",
 
   // Self-fill Dialog
   selfFillHeader: "セルフ補充 解答/解説",
@@ -550,18 +556,21 @@ export const ja: Record<string, string> = {
   hideInspector: "サイドバー非表示",
   allComplete: "全問完了",
   completionSummary: "全 {0} 問、正解 {1} 問、不正解 {2} 問",
-  redoAll: "最初からやり直す",
+  redoAll: "記録をクリアしてやり直す",
   practiceWrongBtn: "誤答を練習",
   exportWrongBtn: "誤答をエクスポート",
   submitAllAnswers: "全回答を提出",
   noQuestionsTitle: "問題なし",
   noQuestionsDesc: "JSON ファイルをインポートするか、問題管理で追加してください。",
+  noSearchResultsTitle: "一致する問題がありません",
+  noSearchResultsDesc: "このリストには問題がありますが、検索条件に一致しません。検索を変更またはクリアしてください。",
   completionDialogTitle: "完了",
   statTotal: "総問題数",
   statCorrect: "正解",
   statWrong: "不正解",
   statAccuracy: "正答率",
   statsAndNav: "統計とナビ",
+  llmParseActionLabel: "貼り付けた問題を解析",
 
   // Topbar
   practiceSettingsTitle: "練習設定",
